@@ -15,7 +15,7 @@ let searchQuery = $state('');
 let selectedRole = $state('all');
 let capabilityTypeFilter = $state('all'); // all, core, external, custom
 let showGranted = $state(true);
-let showDenied = $state(true);
+let showNotGranted = $state(true);
 let showAddCapModal = $state(false);
 let newCapability = $state({
   role: '',
@@ -45,20 +45,20 @@ let filteredCapabilities = $derived(
     }
 
     // If both toggles are on or both off, show all capabilities
-    if ((showGranted && showDenied) || (!showGranted && !showDenied)) {
+    if ((showGranted && showNotGranted) || (!showGranted && !showNotGranted)) {
       return true;
     }
 
-    // Check if capability is granted or denied in any of the filtered roles
+    // Check if capability is granted or not granted in any of the filtered roles
     const relevantRoles = selectedRole === 'all'
       ? store.roles
       : store.roles.filter(role => role.slug === selectedRole);
 
     const hasGranted = relevantRoles.some(role => cap.roles?.[role.slug]?.granted === true);
-    const hasDenied = relevantRoles.some(role => cap.roles?.[role.slug]?.denied === true);
+    const hasNotGranted = relevantRoles.some(role => cap.roles?.[role.slug]?.granted !== true);
 
     if (showGranted && hasGranted) return true;
-    if (showDenied && hasDenied) return true;
+    if (showNotGranted && hasNotGranted) return true;
 
     return false;
   })
@@ -201,9 +201,9 @@ async function deleteCapability(roleSlug, capability) {
           <label class="wpea-control" style="margin: 0;">
             <input
               type="checkbox"
-              bind:checked={showDenied}
+              bind:checked={showNotGranted}
             />
-            <span style="font-size: var(--wpea-text--sm);">Show Denied</span>
+            <span style="font-size: var(--wpea-text--sm);">Show not granted</span>
           </label>
         </div>
       </div>
