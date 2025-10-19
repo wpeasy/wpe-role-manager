@@ -14,7 +14,14 @@
       "Bash(composer dump-autoload --optimize)",
       "Read(//c/Users/Alan.Blair/Downloads/**)",
       "Bash(curl -o select2.min.css \"https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css\")",
-      "Bash(curl -o select2.min.js \"https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js\")"
+      "Bash(curl -o select2.min.js \"https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js\")",
+      "Bash(php -r \"echo ''Testing wp_prepare without parameters: ''; var_dump(sprintf(''SELECT blog_id FROM %s'', ''wp_blogs''));\")",
+      "Bash(php -r \"\n// Test the referer validation logic\n$home_url = ''http://example.com'';\n$test_cases = [\n    ''http://example.com:8080'',\n    ''https://example.com'',\n    ''http://example.com.evil.com'',\n    ''http://evil.com'',\n    ''http://example.com/admin'',\n];\n\nforeach ($test_cases as $referer) {\n    $referer_parsed = parse_url($referer);\n    $home_parsed = parse_url($home_url);\n    \n    $match = isset($referer_parsed[''host'']) && \n             isset($home_parsed[''host'']) && \n             $referer_parsed[''host''] === $home_parsed[''host''];\n    \n    echo $referer . '' => '' . ($match ? ''ALLOWED'' : ''BLOCKED'') . PHP_EOL;\n}\n\")",
+      "SlashCommand(/zip-plugin)",
+      "Bash(git add -A)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nv0.0.2-alpha: Full backup, dangerous cap override, security docs\n\nAdded:\n- Full backup/restore for all custom roles, caps, and assignments\n- Dangerous capability override setting with security warnings\n- Security documentation in Instructions page\n- Capability type filtering (All, Core, External, Custom)\n- Settings REST API endpoints\n\nChanged:\n- Settings tab redesigned (removed rate limiting)\n- Import/Export enhanced with dual-mode export\n\nFixed:\n- Capability type filter using correct boolean properties\n- Full backup export using correct API method\n- Capabilities now properly applied during restore\n- Setting scope corrected from users to roles\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git add plugin/)",
+      "Bash(git commit --amend -m \"$(cat <<''EOF''\nv0.0.2-alpha: Full backup, dangerous cap override, security docs\n\nAdded:\n- Full backup/restore for all custom roles, caps, and assignments\n- Dangerous capability override setting with security warnings\n- Security documentation in Instructions page\n- Capability type filtering (All, Core, External, Custom)\n- Settings REST API endpoints\n\nChanged:\n- Settings tab redesigned (removed rate limiting)\n- Import/Export enhanced with dual-mode export\n\nFixed:\n- Capability type filter using correct boolean properties\n- Full backup export using correct API method\n- Capabilities now properly applied during restore\n- Setting scope corrected from users to roles\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

@@ -10,18 +10,37 @@
 let { store } = $props();
 
 let settings = $state({
-  rateLimitEnabled: true,
-  rateLimitRequests: 30,
-  rateLimitWindow: 60,
+  allowCoreCapAssignment: false,
   autosaveDebounce: 500,
-  requiredCapability: 'manage_options',
 });
+
+// Load settings on mount
+$effect(() => {
+  fetchSettings();
+});
+
+async function fetchSettings() {
+  try {
+    const response = await store.apiRequest('/settings');
+    if (response.settings) {
+      settings.allowCoreCapAssignment = response.settings.allow_core_cap_assignment || false;
+      settings.autosaveDebounce = response.settings.autosave_debounce || 500;
+    }
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+  }
+}
 
 async function saveSettings() {
   try {
     store.showSaving();
-    // TODO: Implement settings save API
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await store.apiRequest('/settings', {
+      method: 'POST',
+      body: JSON.stringify({
+        allow_core_cap_assignment: settings.allowCoreCapAssignment,
+        autosave_debounce: settings.autosaveDebounce,
+      }),
+    });
     store.showSaved();
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -38,56 +57,47 @@ async function saveSettings() {
   </div>
 
   <div class="wpea-stack">
+    <!-- Security Settings -->
     <div class="wpea-card">
-      <h3 class="wpea-heading wpea-heading--sm">Rate Limiting</h3>
+      <h3 class="wpea-heading wpea-heading--sm">Security Settings</h3>
 
-      <label class="wpea-control">
-        <input
-          type="checkbox"
-          bind:checked={settings.rateLimitEnabled}
-          onchange={saveSettings}
-        />
-        <span>Enable rate limiting for bulk operations</span>
-      </label>
-
-      {#if settings.rateLimitEnabled}
-        <div class="wpea-field">
-          <label for="rate-limit-requests" class="wpea-label">Max Requests:</label>
+      <div class="wpea-stack wpea-stack--sm">
+        <label class="wpea-control">
           <input
-            type="number"
-            id="rate-limit-requests"
-            bind:value={settings.rateLimitRequests}
-            min="1"
-            max="100"
+            type="checkbox"
+            bind:checked={settings.allowCoreCapAssignment}
             onchange={saveSettings}
-            class="wpea-input"
-            style="max-width: 300px;"
           />
-          <p class="wpea-help">Maximum requests allowed per time window.</p>
+          <span>Allow assigning dangerous capabilities to roles</span>
+        </label>
+
+        <div class="wpea-alert wpea-alert--warning">
+          <p><strong>Security Warning:</strong> Enabling this option allows you to assign dangerous WordPress capabilities to roles. This includes capabilities that can lead to code execution, privilege escalation, or complete site takeover:</p>
+          <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
+            <li><code>unfiltered_html</code>, <code>unfiltered_upload</code> - Can execute arbitrary code</li>
+            <li><code>edit_plugins</code>, <code>edit_themes</code> - Can modify site code</li>
+            <li><code>manage_options</code>, <code>promote_users</code> - Can elevate privileges</li>
+            <li><code>install_plugins</code>, <code>update_core</code> - Can install malicious code</li>
+          </ul>
+          <p style="margin-top: var(--wpea-space--xs);"><strong>Recommended:</strong> Only enable this if you absolutely need to assign these capabilities and fully understand the security implications. These capabilities should normally only be available to the Administrator role.</p>
         </div>
 
-        <div class="wpea-field">
-          <label for="rate-limit-window" class="wpea-label">Time Window (seconds):</label>
-          <input
-            type="number"
-            id="rate-limit-window"
-            bind:value={settings.rateLimitWindow}
-            min="10"
-            max="300"
-            onchange={saveSettings}
-            class="wpea-input"
-            style="max-width: 300px;"
-          />
-          <p class="wpea-help">Time window for rate limiting.</p>
-        </div>
-      {/if}
+        {#if settings.allowCoreCapAssignment}
+          <div class="wpea-alert wpea-alert--danger">
+            <p><strong>⚠️ DANGER: Dangerous Capability Protection Disabled</strong></p>
+            <p>The security protection preventing dangerous capabilities from being assigned to roles is now disabled. You can assign any capability to any role, including those that can compromise your entire site.</p>
+            <p style="margin-top: var(--wpea-space--xs);"><strong>Use with extreme caution!</strong></p>
+          </div>
+        {/if}
+      </div>
     </div>
 
+    <!-- Performance Settings -->
     <div class="wpea-card">
-      <h3 class="wpea-heading wpea-heading--sm">Autosave</h3>
+      <h3 class="wpea-heading wpea-heading--sm">Performance Settings</h3>
 
       <div class="wpea-field">
-        <label for="autosave-debounce" class="wpea-label">Autosave Delay (ms):</label>
+        <label for="autosave-debounce" class="wpea-label">Autosave Delay (milliseconds):</label>
         <input
           type="number"
           id="autosave-debounce"
@@ -99,27 +109,17 @@ async function saveSettings() {
           class="wpea-input"
           style="max-width: 300px;"
         />
-        <p class="wpea-help">Delay before auto-saving changes.</p>
+        <p class="wpea-help">Delay before automatically saving changes (100-5000ms). Higher values reduce server load but delay saves.</p>
       </div>
     </div>
 
+    <!-- Information -->
     <div class="wpea-card">
       <h3 class="wpea-heading wpea-heading--sm">Access Control</h3>
+      <p class="wpea-text-muted">This plugin requires the <code>manage_options</code> capability, which is only available to Administrators. This setting cannot be changed for security reasons.</p>
 
-      <div class="wpea-field">
-        <label for="required-capability" class="wpea-label">Required Capability:</label>
-        <select
-          id="required-capability"
-          bind:value={settings.requiredCapability}
-          onchange={saveSettings}
-          class="wpea-select"
-          style="max-width: 300px;"
-        >
-          <option value="manage_options">manage_options</option>
-          <option value="edit_users">edit_users</option>
-          <option value="administrator">administrator</option>
-        </select>
-        <p class="wpea-help">Minimum capability required to access this plugin.</p>
+      <div class="wpea-alert wpea-alert--info">
+        <p><strong>Administrator-Only Access:</strong> All role and capability management operations are restricted to users with the <code>manage_options</code> capability. This ensures only site administrators can modify permissions.</p>
       </div>
     </div>
   </div>

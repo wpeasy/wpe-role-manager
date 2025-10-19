@@ -41,16 +41,20 @@ No public-facing functionality.
 
 - **Safety & Guardrails**
   - **Core roles/capabilities are read-only.** No disable/delete on core items.
+  - **Dangerous capability protection:** 26+ dangerous capabilities (like `unfiltered_html`, `edit_plugins`, `edit_themes`) are blacklisted from being assigned to roles by default.
+  - **Configurable security override:** Setting to allow dangerous capability assignment when explicitly needed (disabled by default with prominent warnings).
   - Confirmation modals for destructive actions; typed confirmation required for role deletion.
   - Activity logging (up to 500 entries) with action and details filtering.
   - Test capability feature to check if a user has a specific capability with code generation (Shortcode, PHP, Fetch, REST URL).
 
 - **UX**
   - Single-page admin UI with **tabbed navigation** (no page reloads).
-  - **Autosave on change** (no “Save” button) with a **status indicator** (Saving… / Saved / Error).
+  - **Autosave on change** (no "Save" button) with a **status indicator** (Saving… / Saved / Error).
   - Filter/search: by role, capability, user, and capability prefix.
-  - Optional **rate limiting** on bulk operations (to protect large sites).
-  - **Import/Export** JSON for custom roles/caps (no core included).
+  - Capability type filtering: All, Core, External, Custom.
+  - **Import/Export** with two modes:
+    - **Roles Only:** Export/import selected custom roles
+    - **Full Backup:** Complete backup/restore of all custom roles, capabilities, and role assignments
 
 ### Frontend
 
@@ -107,11 +111,12 @@ No public-facing functionality.
 
 ## Security Practices
 
-- **Rate limiting:** 30 requests per 60 seconds per IP.
+- **Dangerous capability blacklist:** 26+ capabilities that enable code execution or privilege escalation are blocked from being assigned to roles by default (configurable override available with warnings).
 - **Same-origin enforcement** in REST API.
 - **Nonce validation** on all endpoints.
 - **Sanitization** of all user inputs.
 - Cap all REST endpoints to users with `manage_options` (or custom high-privilege caps) and verify intent with nonces.
+- **Administrator-only access:** All role/capability management requires `manage_options` capability.
 
 ---
 
@@ -140,11 +145,15 @@ No public-facing functionality.
 ## Implementation Notes
 
 ### Data Model & Storage
-- Roles & caps are managed through WP’s native role API (`WP_Roles`, `add_role`, `remove_role`, `add_cap`, `remove_cap`).
-- “Disabled” state for roles/caps is stored in **plugin options**:
+- Roles & caps are managed through WP's native role API (`WP_Roles`, `add_role`, `remove_role`, `add_cap`, `remove_cap`).
+- "Disabled" state for roles/caps is stored in **plugin options**:
   - `wpe_rm_disabled_roles` (array of role slugs)
   - `wpe_rm_disabled_caps` (array of cap keys by role: `role => [cap, cap, ...]`)
+  - `wpe_rm_settings` (plugin settings: `allow_core_cap_assignment`, `autosave_debounce`)
+  - `wpe_rm_created_caps` (array of capability slugs created by this plugin)
+  - `wpe_rm_managed_role_caps` (capability assignments managed by this plugin: `role => [cap, ...]`)
 - Effective capabilities visualisation is computed on demand (union across roles minus disabled caps).
+- **Full Backup Format:** JSON with `backup_type: "full"`, `version`, `timestamp`, `roles`, `capabilities`, `role_capabilities`
 
 ### Admin Pages
 - Top-level menu: **WP Easy → Role Manager**
@@ -155,19 +164,23 @@ No public-facing functionality.
   - Delete role (custom only) with user migration wizard.
 - **Capabilities Tab**
   - Matrix: Roles × Capabilities with search, filter, bulk add/remove (non-core only).
+  - Radio filters: All, Core, External, Custom capability types.
   - Disable capability per-role without deleting.
 - **Users Tab**
   - Assign/remove multiple roles per user.
   - View effective capabilities (computed list).
   - Test capability feature: check if a user has a capability and generate code snippets (Shortcode, PHP, Fetch, REST URL).
-  - Bulk operations with rate limiting + progress UI.
+  - Bulk operations with progress UI.
 - **Import/Export**
-  - Export custom roles (JSON).
-  - Import (validate, preview changes, apply).
+  - Export modes: Roles Only or Full Backup
+  - Roles Only: select specific custom roles or export all
+  - Full Backup: all custom roles, capabilities, and role assignments with metadata
+  - Import: smart detection of backup type with appropriate confirmations
+  - File upload or paste JSON methods
 - **Settings**
-  - Toggle rate limit thresholds.
-  - Autosave behavior toggles (debounce interval).
-  - Permission gate option (cap required to access UI).
+  - Security: Toggle dangerous capability protection (disabled by default)
+  - Performance: Autosave debounce interval (100-5000ms)
+  - Access Control: Information about administrator-only access
 - **Logs**
   - Activity logging for all role/capability/user changes.
   - Stores up to 500 log entries with action, details, user, and timestamp.
@@ -180,12 +193,16 @@ No public-facing functionality.
   - `POST /roles/{role}/caps`, `DELETE /roles/{role}/caps/{cap}`, `PATCH /roles/{role}/caps/{cap}` (toggle)
   - `GET /users`, `PATCH /users/{id}/roles`
   - `GET /users/{id}/effective-caps`, `GET /users/{id}/can/{capability}` (test capability)
-  - `POST /import`, `GET /export`
+  - `POST /import`, `GET /export?type=full` (supports full backup export)
+  - `GET /settings`, `POST /settings` (plugin configuration)
   - `GET /logs`, `DELETE /logs`, `GET /logs/actions`
 - Same-origin + nonce validation enforced; no public endpoints.
 
 ### Capability Rules & Core Protection
 - Core roles/caps: **read-only** (cannot disable/delete).
+- **Dangerous capability blacklist:** 26+ capabilities blocked by default (unfiltered_html, edit_plugins, edit_themes, etc.)
+- Blacklist can be overridden via Settings → "Allow assigning dangerous capabilities to roles" (disabled by default)
+- When blacklist is active, attempts to assign dangerous capabilities return 403 error with guidance to enable setting
 - Non-core capabilities can be added/removed; disabling a cap on a role hides its effect without losing config.
 - Deleting a role requires handling users: reassign roles or confirm forced removal.
 

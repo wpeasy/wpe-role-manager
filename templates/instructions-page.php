@@ -201,10 +201,83 @@ defined('ABSPATH') || exit;
             </div>
         </div>
 
+        <!-- Security -->
+        <div class="wpea-card">
+            <div class="wpea-card__header">
+                <h2 class="wpea-card__title"><?php esc_html_e('5. Security Features', 'wp-easy-role-manager'); ?></h2>
+            </div>
+
+            <div class="wpea-stack wpea-stack--sm">
+                <div class="wpea-alert wpea-alert--warning">
+                    <p><strong><?php esc_html_e('Important:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('This plugin implements comprehensive security measures to protect your WordPress site from privilege escalation and code execution vulnerabilities.', 'wp-easy-role-manager'); ?></p>
+                </div>
+
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Administrator-Only Access', 'wp-easy-role-manager'); ?></h3>
+                    <p><?php esc_html_e('All role and capability management operations require the "manage_options" capability, which is only available to Administrators (and Super Admins in multisite).', 'wp-easy-role-manager'); ?></p>
+                    <ul class="wpea-list">
+                        <li><?php esc_html_e('Only administrators can create, modify, or delete roles', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('Only administrators can add, remove, or toggle capabilities', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('Only administrators can assign roles to users', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('Non-administrators cannot access any part of this plugin', 'wp-easy-role-manager'); ?></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Dangerous Capabilities Protection', 'wp-easy-role-manager'); ?></h3>
+                    <p><?php esc_html_e('The plugin prevents adding the following dangerous capabilities to any role for security reasons:', 'wp-easy-role-manager'); ?></p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--wpea-space--xs); margin-top: var(--wpea-space--sm);">
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">unfiltered_html</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">unfiltered_upload</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">edit_plugins</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">edit_themes</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">edit_files</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">install_plugins</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">install_themes</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">update_core</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">update_plugins</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">update_themes</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">delete_plugins</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">delete_themes</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">manage_options</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">activate_plugins</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">delete_users</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">create_users</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">promote_users</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">edit_users</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">list_users</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">remove_users</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">switch_themes</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">edit_dashboard</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">customize</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">delete_site</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">import</code>
+                        <code style="background: var(--wpea-color--danger-l-9); color: var(--wpea-color--danger); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm); font-size: var(--wpea-text--sm);">export</code>
+                    </div>
+                    <p style="margin-top: var(--wpea-space--sm);"><?php esc_html_e('These capabilities can lead to code execution, privilege escalation, or complete site takeover. They are permanently blocked from being added to any role through this plugin.', 'wp-easy-role-manager'); ?></p>
+                </div>
+
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Additional Security Protections', 'wp-easy-role-manager'); ?></h3>
+                    <ul class="wpea-list">
+                        <li><strong><?php esc_html_e('Self-Modification Prevention:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Administrators cannot modify their own roles to prevent accidental lockout', 'wp-easy-role-manager'); ?></li>
+                        <li><strong><?php esc_html_e('Administrator Protection:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Non-super-admins cannot modify administrator accounts', 'wp-easy-role-manager'); ?></li>
+                        <li><strong><?php esc_html_e('CSRF Protection:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('All operations are protected with WordPress nonces and referer validation', 'wp-easy-role-manager'); ?></li>
+                        <li><strong><?php esc_html_e('Input Sanitization:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('All user input is sanitized and validated before processing', 'wp-easy-role-manager'); ?></li>
+                        <li><strong><?php esc_html_e('Core Protection:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('WordPress core roles and capabilities cannot be deleted or modified', 'wp-easy-role-manager'); ?></li>
+                    </ul>
+                </div>
+
+                <div class="wpea-alert wpea-alert--danger">
+                    <p><strong><?php esc_html_e('Security Best Practice:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Never grant powerful capabilities to roles that don\'t need them. If you need to give users additional permissions, create a new role with only the specific capabilities they require, or assign them multiple roles instead of adding dangerous capabilities to existing roles.', 'wp-easy-role-manager'); ?></p>
+                </div>
+            </div>
+        </div>
+
         <!-- Best Practices -->
         <div class="wpea-card">
             <div class="wpea-card__header">
-                <h2 class="wpea-card__title"><?php esc_html_e('5. Best Practices', 'wp-easy-role-manager'); ?></h2>
+                <h2 class="wpea-card__title"><?php esc_html_e('6. Best Practices', 'wp-easy-role-manager'); ?></h2>
             </div>
 
             <div class="wpea-stack wpea-stack--sm">
@@ -242,7 +315,7 @@ defined('ABSPATH') || exit;
         <!-- Troubleshooting -->
         <div class="wpea-card">
             <div class="wpea-card__header">
-                <h2 class="wpea-card__title"><?php esc_html_e('6. Troubleshooting', 'wp-easy-role-manager'); ?></h2>
+                <h2 class="wpea-card__title"><?php esc_html_e('7. Troubleshooting', 'wp-easy-role-manager'); ?></h2>
             </div>
 
             <div class="wpea-stack wpea-stack--sm">
@@ -270,7 +343,7 @@ defined('ABSPATH') || exit;
         <!-- Activity Logs -->
         <div class="wpea-card">
             <div class="wpea-card__header">
-                <h2 class="wpea-card__title"><?php esc_html_e('7. Activity Logs', 'wp-easy-role-manager'); ?></h2>
+                <h2 class="wpea-card__title"><?php esc_html_e('8. Activity Logs', 'wp-easy-role-manager'); ?></h2>
             </div>
 
             <div class="wpea-stack wpea-stack--sm">
@@ -293,7 +366,7 @@ defined('ABSPATH') || exit;
         <!-- Support -->
         <div class="wpea-card">
             <div class="wpea-card__header">
-                <h2 class="wpea-card__title"><?php esc_html_e('8. Need Help?', 'wp-easy-role-manager'); ?></h2>
+                <h2 class="wpea-card__title"><?php esc_html_e('9. Need Help?', 'wp-easy-role-manager'); ?></h2>
             </div>
 
             <p><?php esc_html_e('If you encounter any issues or have questions:', 'wp-easy-role-manager'); ?></p>

@@ -13,6 +13,7 @@ let { store } = $props();
 // Local state
 let searchQuery = $state('');
 let selectedRole = $state('all');
+let capabilityTypeFilter = $state('all'); // all, core, external, custom
 let showGranted = $state(true);
 let showDenied = $state(true);
 let showAddCapModal = $state(false);
@@ -22,12 +23,25 @@ let newCapability = $state({
   autoAddToAdmin: true,
 });
 
-// Filtered capabilities based on search query and granted/denied toggles
+// Filtered capabilities based on search query, type filter, and granted/denied toggles
 let filteredCapabilities = $derived(
   store.capabilityMatrix.filter(cap => {
     // Check if capability matches search query
     if (!cap.capability?.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
+    }
+
+    // Filter by capability type
+    if (capabilityTypeFilter !== 'all') {
+      if (capabilityTypeFilter === 'core' && !cap.isCore) {
+        return false;
+      }
+      if (capabilityTypeFilter === 'external' && !cap.isExternal) {
+        return false;
+      }
+      if (capabilityTypeFilter === 'custom' && (cap.isCore || cap.isExternal)) {
+        return false;
+      }
     }
 
     // If both toggles are on or both off, show all capabilities
@@ -155,51 +169,94 @@ async function deleteCapability(roleSlug, capability) {
   </div>
 
   <!-- Actions Bar -->
-  <div class="wpea-cluster wpea-cluster--md" style="justify-content: space-between; flex-wrap: wrap;">
-    <div class="wpea-cluster wpea-cluster--sm">
-      <div style="flex: 1; max-width: 300px;">
-        <input
-          type="search"
-          bind:value={searchQuery}
-          placeholder="Search capabilities..."
-          class="wpea-input"
-        />
+  <div class="wpea-stack wpea-stack--sm">
+    <div class="wpea-cluster wpea-cluster--md" style="justify-content: space-between; flex-wrap: wrap;">
+      <div class="wpea-cluster wpea-cluster--sm">
+        <div style="flex: 1; max-width: 300px;">
+          <input
+            type="search"
+            bind:value={searchQuery}
+            placeholder="Search capabilities..."
+            class="wpea-input"
+          />
+        </div>
+
+        <select bind:value={selectedRole} class="wpea-select" style="min-width: 200px;">
+          <option value="all">All Roles</option>
+          {#each store.roles as role}
+            <option value={role.slug}>{role.name}</option>
+          {/each}
+        </select>
+
+        <!-- Filter Toggles -->
+        <div class="wpea-cluster wpea-cluster--xs" style="border-left: 1px solid var(--wpea-surface--border); padding-left: var(--wpea-space--sm);">
+          <label class="wpea-control" style="margin: 0;">
+            <input
+              type="checkbox"
+              bind:checked={showGranted}
+            />
+            <span style="font-size: var(--wpea-text--sm);">Show Granted</span>
+          </label>
+
+          <label class="wpea-control" style="margin: 0;">
+            <input
+              type="checkbox"
+              bind:checked={showDenied}
+            />
+            <span style="font-size: var(--wpea-text--sm);">Show Denied</span>
+          </label>
+        </div>
       </div>
 
-      <select bind:value={selectedRole} class="wpea-select" style="min-width: 200px;">
-        <option value="all">All Roles</option>
-        {#each store.roles as role}
-          <option value={role.slug}>{role.name}</option>
-        {/each}
-      </select>
-
-      <!-- Filter Toggles -->
-      <div class="wpea-cluster wpea-cluster--xs" style="border-left: 1px solid var(--wpea-surface--border); padding-left: var(--wpea-space--sm);">
-        <label class="wpea-control" style="margin: 0;">
-          <input
-            type="checkbox"
-            bind:checked={showGranted}
-          />
-          <span style="font-size: var(--wpea-text--sm);">Show Granted</span>
-        </label>
-
-        <label class="wpea-control" style="margin: 0;">
-          <input
-            type="checkbox"
-            bind:checked={showDenied}
-          />
-          <span style="font-size: var(--wpea-text--sm);">Show Denied</span>
-        </label>
-      </div>
+      <button
+        type="button"
+        class="wpea-btn wpea-btn--primary"
+        onclick={() => showAddCapModal = true}
+      >
+        + Add Capability
+      </button>
     </div>
 
-    <button
-      type="button"
-      class="wpea-btn wpea-btn--primary"
-      onclick={() => showAddCapModal = true}
-    >
-      + Add Capability
-    </button>
+    <!-- Capability Type Filter (Radio Buttons) -->
+    <div class="wpea-cluster wpea-cluster--xs" style="padding: var(--wpea-space--sm); background: var(--wpea-surface--muted); border-radius: var(--wpea-radius--sm);">
+      <span style="font-size: var(--wpea-text--sm); font-weight: 500; color: var(--wpea-surface--text-muted);">Type:</span>
+      <label class="wpea-control" style="margin: 0;">
+        <input
+          type="radio"
+          name="capability-type"
+          value="all"
+          bind:group={capabilityTypeFilter}
+        />
+        <span style="font-size: var(--wpea-text--sm);">All</span>
+      </label>
+      <label class="wpea-control" style="margin: 0;">
+        <input
+          type="radio"
+          name="capability-type"
+          value="core"
+          bind:group={capabilityTypeFilter}
+        />
+        <span style="font-size: var(--wpea-text--sm);">Core</span>
+      </label>
+      <label class="wpea-control" style="margin: 0;">
+        <input
+          type="radio"
+          name="capability-type"
+          value="external"
+          bind:group={capabilityTypeFilter}
+        />
+        <span style="font-size: var(--wpea-text--sm);">External</span>
+      </label>
+      <label class="wpea-control" style="margin: 0;">
+        <input
+          type="radio"
+          name="capability-type"
+          value="custom"
+          bind:group={capabilityTypeFilter}
+        />
+        <span style="font-size: var(--wpea-text--sm);">Custom</span>
+      </label>
+    </div>
   </div>
 
   <!-- Info Alert -->

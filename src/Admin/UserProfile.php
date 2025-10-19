@@ -261,7 +261,25 @@ final class UserProfile {
      * @return void
      */
     public static function save_role_assignments(int $user_id): void {
-        // Check permissions
+        $current_user_id = get_current_user_id();
+
+        // Prevent self-modification
+        if ($user_id === $current_user_id) {
+            add_settings_error(
+                'wpe_rm_user_roles',
+                'cannot_modify_self',
+                __('You cannot modify your own roles.', 'wp-easy-role-manager'),
+                'error'
+            );
+            return;
+        }
+
+        // Use WordPress's built-in capability check
+        if (!current_user_can('edit_user', $user_id)) {
+            return;
+        }
+
+        // Require promote_users capability
         if (!current_user_can('promote_users')) {
             return;
         }
@@ -274,6 +292,17 @@ final class UserProfile {
 
         $user = get_userdata($user_id);
         if (!$user) {
+            return;
+        }
+
+        // Prevent modification of administrators by non-super-admins
+        if (user_can($user, 'manage_options') && !current_user_can('manage_network')) {
+            add_settings_error(
+                'wpe_rm_user_roles',
+                'cannot_modify_admin',
+                __('You cannot modify administrator accounts.', 'wp-easy-role-manager'),
+                'error'
+            );
             return;
         }
 

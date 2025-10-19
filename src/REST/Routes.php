@@ -212,6 +212,24 @@ final class Routes {
                 'permission_callback' => [self::class, 'check_permissions'],
             ]
         );
+
+        // Settings endpoints
+        register_rest_route(
+            self::NAMESPACE,
+            '/settings',
+            [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [self::class, 'get_settings'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ],
+                [
+                    'methods' => WP_REST_Server::CREATABLE,
+                    'callback' => [self::class, 'update_settings'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ],
+            ]
+        );
     }
 
     /**
@@ -231,21 +249,32 @@ final class Routes {
             );
         }
 
-        // Check capability
-        $settings = get_option('wpe_rm_settings', []);
-        $capability = $settings['required_capability'] ?? 'manage_options';
-
-        if (!current_user_can($capability)) {
+        // Require administrator capability for all role/capability operations
+        if (!current_user_can('manage_options')) {
             return new WP_Error(
                 'rest_forbidden',
-                __('You do not have permission to access this resource.', WPE_RM_TEXTDOMAIN),
+                __('You must be an administrator to access this resource.', WPE_RM_TEXTDOMAIN),
                 ['status' => 403]
             );
         }
 
-        // Check same-origin
+        // Check same-origin with proper URL parsing
         $referer = $request->get_header('referer');
-        if (empty($referer) || strpos($referer, home_url()) !== 0) {
+        if (empty($referer)) {
+            return new WP_Error(
+                'rest_forbidden',
+                __('Invalid request origin.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
+            );
+        }
+
+        $home_url = home_url();
+        $referer_parsed = wp_parse_url($referer);
+        $home_parsed = wp_parse_url($home_url);
+
+        if (!isset($referer_parsed['host']) ||
+            !isset($home_parsed['host']) ||
+            $referer_parsed['host'] !== $home_parsed['host']) {
             return new WP_Error(
                 'rest_forbidden',
                 __('Invalid request origin.', WPE_RM_TEXTDOMAIN),
@@ -460,6 +489,51 @@ final class Routes {
         $capability = sanitize_key($params['capability']);
         $grant = isset($params['grant']) ? (bool) $params['grant'] : true;
 
+        // Check if dangerous capability protection is enabled
+        $settings = get_option('wpe_rm_settings', ['allow_core_cap_assignment' => false]);
+        $allow_dangerous_caps = $settings['allow_core_cap_assignment'] ?? false;
+
+        // Blacklist dangerous capabilities that allow code execution or security bypasses
+        // Only enforce if the setting is disabled (default)
+        if (!$allow_dangerous_caps) {
+            $dangerous_caps = [
+                'unfiltered_html',
+                'unfiltered_upload',
+                'edit_plugins',
+                'edit_themes',
+                'edit_files',
+                'install_plugins',
+                'install_themes',
+                'update_core',
+                'update_plugins',
+                'update_themes',
+                'delete_plugins',
+                'delete_themes',
+                'manage_options',
+                'activate_plugins',
+                'delete_users',
+                'create_users',
+                'promote_users',
+                'edit_users',
+                'list_users',
+                'remove_users',
+                'switch_themes',
+                'edit_dashboard',
+                'customize',
+                'delete_site',
+                'import',
+                'export',
+            ];
+
+            if (in_array($capability, $dangerous_caps, true)) {
+                return new WP_Error(
+                    'dangerous_capability',
+                    __('This capability cannot be added for security reasons. Enable "Allow assigning dangerous capabilities to roles" in Settings to override this protection.', WPE_RM_TEXTDOMAIN),
+                    ['status' => 403]
+                );
+            }
+        }
+
         $success = CapabilityManager::add_capability($role_slug, $capability, $grant);
 
         if (!$success) {
@@ -498,6 +572,50 @@ final class Routes {
                 __('Role slug and capability name are required.', WPE_RM_TEXTDOMAIN),
                 ['status' => 400]
             );
+        }
+
+        // Check if dangerous capability protection is enabled
+        $settings = get_option('wpe_rm_settings', ['allow_core_cap_assignment' => false]);
+        $allow_dangerous_caps = $settings['allow_core_cap_assignment'] ?? false;
+
+        // Prevent adding dangerous capabilities for security (unless setting is enabled)
+        if (!$allow_dangerous_caps && $action !== 'unset') {
+            $dangerous_caps = [
+                'unfiltered_html',
+                'unfiltered_upload',
+                'edit_plugins',
+                'edit_themes',
+                'edit_files',
+                'install_plugins',
+                'install_themes',
+                'update_core',
+                'update_plugins',
+                'update_themes',
+                'delete_plugins',
+                'delete_themes',
+                'manage_options',
+                'activate_plugins',
+                'delete_users',
+                'create_users',
+                'promote_users',
+                'edit_users',
+                'list_users',
+                'remove_users',
+                'switch_themes',
+                'edit_dashboard',
+                'customize',
+                'delete_site',
+                'import',
+                'export',
+            ];
+
+            if (in_array($capability, $dangerous_caps, true)) {
+                return new WP_Error(
+                    'dangerous_capability',
+                    __('This capability cannot be added for security reasons. Enable "Allow assigning dangerous capabilities to roles" in Settings to override this protection.', WPE_RM_TEXTDOMAIN),
+                    ['status' => 403]
+                );
+            }
         }
 
         if ($action === 'unset') {
@@ -607,6 +725,7 @@ final class Routes {
      */
     public static function update_user_roles(WP_REST_Request $request) {
         $user_id = (int) $request->get_param('id');
+        $current_user_id = get_current_user_id();
         $params = $request->get_json_params();
 
         if (empty($user_id)) {
@@ -614,6 +733,42 @@ final class Routes {
                 'missing_user_id',
                 __('User ID is required.', WPE_RM_TEXTDOMAIN),
                 ['status' => 400]
+            );
+        }
+
+        // Prevent self-modification
+        if ($user_id === $current_user_id) {
+            return new WP_Error(
+                'cannot_modify_self',
+                __('You cannot modify your own roles.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
+            );
+        }
+
+        // Require promote_users capability
+        if (!current_user_can('promote_users')) {
+            return new WP_Error(
+                'insufficient_permissions',
+                __('You do not have permission to modify user roles.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
+            );
+        }
+
+        // Prevent modification of administrators by non-super-admins
+        $target_user = get_userdata($user_id);
+        if (!$target_user) {
+            return new WP_Error(
+                'user_not_found',
+                __('User not found.', WPE_RM_TEXTDOMAIN),
+                ['status' => 404]
+            );
+        }
+
+        if (user_can($target_user, 'manage_options') && !current_user_can('manage_network')) {
+            return new WP_Error(
+                'cannot_modify_admin',
+                __('You cannot modify administrator accounts.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
             );
         }
 
@@ -738,17 +893,54 @@ final class Routes {
      * @return WP_REST_Response
      */
     public static function export_roles(WP_REST_Request $request): WP_REST_Response {
-        // Get roles parameter from query string
-        $roles_param = $request->get_param('roles');
-        $selected_roles = null;
+        // Check if this is a full backup request
+        $export_type = $request->get_param('type');
 
-        if (!empty($roles_param)) {
-            // Parse comma-separated role slugs
-            $selected_roles = array_map('sanitize_key', explode(',', $roles_param));
+        if ($export_type === 'full') {
+            // Full backup: all custom roles, capabilities, and assignments
+            $export_data = [
+                'backup_type' => 'full',
+                'version' => WPE_RM_VERSION,
+                'timestamp' => current_time('mysql'),
+                'roles' => [],
+                'capabilities' => [],
+                'role_capabilities' => [],
+            ];
+
+            // Get all roles and filter to custom roles only (exclude core and external)
+            $all_roles = RoleManager::get_all_roles();
+            foreach ($all_roles as $role_data) {
+                // Only include custom roles (plugin-created, not core, not external)
+                if (!$role_data['isCore'] && !$role_data['isExternal']) {
+                    $export_data['roles'][$role_data['slug']] = [
+                        'name' => $role_data['name'],
+                        'capabilities' => $role_data['capabilities'] ?? [],
+                    ];
+                }
+            }
+
+            // Get all plugin-created capabilities
+            $created_caps = get_option('wpe_rm_created_caps', []);
+            $export_data['capabilities'] = $created_caps;
+
+            // Get all plugin-managed capability assignments
+            $managed_caps = get_option('wpe_rm_managed_role_caps', []);
+            $export_data['role_capabilities'] = $managed_caps;
+
+            Logger::log('Full Backup Created', sprintf('Created full backup with %d custom roles', count($export_data['roles'])));
+        } else {
+            // Roles only export
+            $roles_param = $request->get_param('roles');
+            $selected_roles = null;
+
+            if (!empty($roles_param)) {
+                // Parse comma-separated role slugs
+                $selected_roles = array_map('sanitize_key', explode(',', $roles_param));
+            }
+
+            // Export all custom roles or just selected ones
+            $export_data = RoleManager::export_custom_roles($selected_roles);
         }
-
-        // Export all custom roles or just selected ones
-        $export_data = RoleManager::export_custom_roles($selected_roles);
 
         return new WP_REST_Response([
             'export' => $export_data,
@@ -773,21 +965,113 @@ final class Routes {
             );
         }
 
-        $result = RoleManager::import_roles($params);
+        // Check if this is a full backup
+        $is_full_backup = isset($params['backup_type']) && $params['backup_type'] === 'full' && isset($params['version']);
 
-        $status_code = $result['errors'] > 0 && $result['success'] === 0 ? 400 : 200;
+        if ($is_full_backup) {
+            // Full backup restore
+            $restored_roles = 0;
+            $restored_caps = 0;
+            $errors = 0;
+            $messages = [];
 
-        // Log the action
-        if ($result['success'] > 0) {
-            Logger::log('Roles Imported', sprintf('Imported %d role(s) with %d error(s)', $result['success'], $result['errors']));
+            // Restore roles
+            if (isset($params['roles']) && is_array($params['roles'])) {
+                foreach ($params['roles'] as $role_slug => $role_data) {
+                    // Skip if role already exists
+                    if (get_role($role_slug)) {
+                        $messages[] = sprintf('Role "%s" already exists, skipping.', $role_slug);
+                        continue;
+                    }
+
+                    $result = add_role(
+                        $role_slug,
+                        $role_data['name'] ?? $role_slug,
+                        $role_data['capabilities'] ?? []
+                    );
+
+                    if ($result) {
+                        $restored_roles++;
+                        // Track as custom role
+                        $custom_roles = get_option('wpe_rm_custom_roles', []);
+                        if (!in_array($role_slug, $custom_roles, true)) {
+                            $custom_roles[] = $role_slug;
+                            update_option('wpe_rm_custom_roles', $custom_roles);
+                        }
+                    } else {
+                        $errors++;
+                        $messages[] = sprintf('Failed to restore role "%s".', $role_slug);
+                    }
+                }
+            }
+
+            // Restore capabilities
+            if (isset($params['capabilities']) && is_array($params['capabilities'])) {
+                update_option('wpe_rm_created_caps', $params['capabilities']);
+                $restored_caps = count($params['capabilities']);
+            }
+
+            // Restore capability assignments
+            if (isset($params['role_capabilities']) && is_array($params['role_capabilities'])) {
+                // First, save the metadata
+                update_option('wpe_rm_managed_role_caps', $params['role_capabilities']);
+
+                // Then actually apply the capabilities to the roles
+                $cap_assignments = 0;
+                foreach ($params['role_capabilities'] as $role_slug => $capabilities) {
+                    $role = get_role($role_slug);
+
+                    // Skip if role doesn't exist
+                    if (!$role) {
+                        $messages[] = sprintf('Cannot assign capabilities to non-existent role "%s". Create the role first.', $role_slug);
+                        continue;
+                    }
+
+                    // Add each capability to the role
+                    foreach ($capabilities as $capability) {
+                        $role->add_cap($capability, true);
+                        $cap_assignments++;
+                    }
+                }
+
+                if ($cap_assignments > 0) {
+                    $messages[] = sprintf('Applied %d capability assignment(s) to roles.', $cap_assignments);
+                }
+            }
+
+            $status_code = $errors > 0 && $restored_roles === 0 ? 400 : 200;
+
+            Logger::log(
+                'Full Backup Restored',
+                sprintf('Restored %d role(s) and %d capability(ies)', $restored_roles, $restored_caps)
+            );
+
+            return new WP_REST_Response([
+                'success' => $errors === 0,
+                'imported' => $restored_roles,
+                'capabilities_restored' => $restored_caps,
+                'errors' => $errors,
+                'messages' => $messages,
+                'backup_type' => 'full',
+            ], $status_code);
+        } else {
+            // Regular role import
+            $result = RoleManager::import_roles($params);
+
+            $status_code = $result['errors'] > 0 && $result['success'] === 0 ? 400 : 200;
+
+            // Log the action
+            if ($result['success'] > 0) {
+                Logger::log('Roles Imported', sprintf('Imported %d role(s) with %d error(s)', $result['success'], $result['errors']));
+            }
+
+            return new WP_REST_Response([
+                'success' => $result['errors'] === 0,
+                'imported' => $result['success'],
+                'errors' => $result['errors'],
+                'messages' => $result['messages'],
+            ], $status_code);
         }
-
-        return new WP_REST_Response([
-            'success' => $result['errors'] === 0,
-            'imported' => $result['success'],
-            'errors' => $result['errors'],
-            'messages' => $result['messages'],
-        ], $status_code);
     }
 
     /**
@@ -832,6 +1116,71 @@ final class Routes {
         return new WP_REST_Response([
             'actions' => $actions,
             'success' => true,
+        ], 200);
+    }
+
+    /**
+     * Get plugin settings.
+     *
+     * @return WP_REST_Response
+     */
+    public static function get_settings(): WP_REST_Response {
+        $settings = get_option('wpe_rm_settings', [
+            'allow_core_cap_assignment' => false,
+            'autosave_debounce' => 500,
+        ]);
+
+        return new WP_REST_Response([
+            'settings' => $settings,
+            'success' => true,
+        ], 200);
+    }
+
+    /**
+     * Update plugin settings.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function update_settings(WP_REST_Request $request) {
+        $params = $request->get_json_params();
+
+        $settings = [
+            'allow_core_cap_assignment' => isset($params['allow_core_cap_assignment'])
+                ? (bool) $params['allow_core_cap_assignment']
+                : false,
+            'autosave_debounce' => isset($params['autosave_debounce'])
+                ? absint($params['autosave_debounce'])
+                : 500,
+        ];
+
+        // Validate autosave_debounce range
+        if ($settings['autosave_debounce'] < 100 || $settings['autosave_debounce'] > 5000) {
+            $settings['autosave_debounce'] = 500;
+        }
+
+        update_option('wpe_rm_settings', $settings);
+
+        // Log the settings change
+        $changes = [];
+        if (isset($params['allow_core_cap_assignment'])) {
+            $changes[] = sprintf(
+                'Core capability assignment: %s',
+                $settings['allow_core_cap_assignment'] ? 'enabled' : 'disabled'
+            );
+        }
+        if (isset($params['autosave_debounce'])) {
+            $changes[] = sprintf('Autosave debounce: %dms', $settings['autosave_debounce']);
+        }
+
+        if (!empty($changes)) {
+            Logger::log('Settings Updated', implode(', ', $changes));
+        }
+
+        return new WP_REST_Response([
+            'settings' => $settings,
+            'success' => true,
+            'message' => __('Settings saved successfully.', WPE_RM_TEXTDOMAIN),
         ], 200);
     }
 }
