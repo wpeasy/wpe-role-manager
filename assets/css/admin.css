@@ -10,11 +10,54 @@
 /* Main Admin Wrapper */
 .wpe-rm-admin {
     margin: var(--wpea-space--lg) var(--wpea-space--lg) 0 0;
+    background: var(--wpea-color--neutral-l-9);
+    padding: var(--wpea-space--lg);
+    border-radius: var(--wpea-radius--md);
+    min-height: calc(100vh - 100px);
+}
+
+/* Dark mode app background */
+[data-color-scheme="dark"] .wpe-rm-admin,
+:root:not([data-color-scheme]) .wpe-rm-admin {
+    @media (prefers-color-scheme: dark) {
+        background: var(--wpea-color--neutral-d-9);
+    }
+}
+
+[data-color-scheme="dark"] .wpe-rm-admin {
+    background: var(--wpea-color--neutral-d-9);
+}
+
+/* Legacy support */
+.wpea-dark .wpe-rm-admin {
+    background: var(--wpea-color--neutral-d-9);
 }
 
 /* App Container - minimal WordPress admin compatibility */
 #wpe-rm-app {
     margin-top: var(--wpea-space--lg);
+}
+
+/* Card backgrounds - elevated from app background */
+.wpea-card {
+    background: var(--wpea-color--white);
+}
+
+/* Dark mode card background */
+[data-color-scheme="dark"] .wpea-card,
+:root:not([data-color-scheme]) .wpea-card {
+    @media (prefers-color-scheme: dark) {
+        background: var(--wpea-color--neutral-d-8);
+    }
+}
+
+[data-color-scheme="dark"] .wpea-card {
+    background: var(--wpea-color--neutral-d-8);
+}
+
+/* Legacy support */
+.wpea-dark .wpea-card {
+    background: var(--wpea-color--neutral-d-8);
 }
 
 /* Loading State */
