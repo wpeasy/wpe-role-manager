@@ -25,7 +25,8 @@
       "Bash(git push origin main)",
       "Read(//c/Users/Alan.Blair/.claude/commands/**)",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File create-zip.ps1)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nUpdate plugin ZIP: exclude build files and source\n\nExcluded from ZIP:\n- node_modules directory\n- src-svelte directory (source files)\n- .md files (CLAUDE.md, CHANGELOG.md, README.md)\n- Build config files (package.json, vite.config.js, etc.)\n- Dotfiles and IDE files\n\nZIP now contains only production files (35 files, 0.23 MB)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nUpdate plugin ZIP: exclude build files and source\n\nExcluded from ZIP:\n- node_modules directory\n- src-svelte directory (source files)\n- .md files (CLAUDE.md, CHANGELOG.md, README.md)\n- Build config files (package.json, vite.config.js, etc.)\n- Dotfiles and IDE files\n\nZIP now contains only production files (35 files, 0.23 MB)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"Change ''Show Denied'' to ''Show not granted'' filter\n\nUpdated capability filter to show all non-granted capabilities (both denied and unset) instead of only explicitly denied capabilities. This provides better filtering for finding capabilities that are not granted to roles.\n\nChanges:\n- Renamed showDenied to showNotGranted\n- Updated filter logic: hasNotGranted checks for granted !== true\n- Updated UI label to ''Show not granted''\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []

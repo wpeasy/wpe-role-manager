@@ -16,18 +16,21 @@ defined('ABSPATH') || exit;
  */
 final class Logger {
     /**
-     * Maximum number of logs to keep.
-     *
-     * @var int
-     */
-    private const MAX_LOGS = 500;
-
-    /**
      * Log option name.
      *
      * @var string
      */
     private const OPTION_NAME = 'wpe_rm_activity_logs';
+
+    /**
+     * Get maximum number of logs to keep from settings.
+     *
+     * @return int
+     */
+    private static function get_max_logs(): int {
+        $settings = get_option('wpe_rm_settings', ['log_retention' => 500]);
+        return absint($settings['log_retention'] ?? 500);
+    }
 
     /**
      * Log an activity.
@@ -57,9 +60,10 @@ final class Logger {
         // Add to beginning of array (newest first)
         array_unshift($logs, $log_entry);
 
-        // Keep only the most recent logs
-        if (count($logs) > self::MAX_LOGS) {
-            $logs = array_slice($logs, 0, self::MAX_LOGS);
+        // Keep only the most recent logs based on settings
+        $max_logs = self::get_max_logs();
+        if (count($logs) > $max_logs) {
+            $logs = array_slice($logs, 0, $max_logs);
         }
 
         // Save logs

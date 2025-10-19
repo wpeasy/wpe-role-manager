@@ -1128,6 +1128,7 @@ final class Routes {
         $settings = get_option('wpe_rm_settings', [
             'allow_core_cap_assignment' => false,
             'autosave_debounce' => 500,
+            'log_retention' => 500,
         ]);
 
         return new WP_REST_Response([
@@ -1152,11 +1153,19 @@ final class Routes {
             'autosave_debounce' => isset($params['autosave_debounce'])
                 ? absint($params['autosave_debounce'])
                 : 500,
+            'log_retention' => isset($params['log_retention'])
+                ? absint($params['log_retention'])
+                : 500,
         ];
 
         // Validate autosave_debounce range
         if ($settings['autosave_debounce'] < 100 || $settings['autosave_debounce'] > 5000) {
             $settings['autosave_debounce'] = 500;
+        }
+
+        // Validate log_retention range
+        if ($settings['log_retention'] < 100 || $settings['log_retention'] > 10000) {
+            $settings['log_retention'] = 500;
         }
 
         update_option('wpe_rm_settings', $settings);
@@ -1171,6 +1180,9 @@ final class Routes {
         }
         if (isset($params['autosave_debounce'])) {
             $changes[] = sprintf('Autosave debounce: %dms', $settings['autosave_debounce']);
+        }
+        if (isset($params['log_retention'])) {
+            $changes[] = sprintf('Log retention: %d entries', $settings['log_retention']);
         }
 
         if (!empty($changes)) {

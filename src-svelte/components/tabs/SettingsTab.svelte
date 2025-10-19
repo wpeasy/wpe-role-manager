@@ -12,6 +12,7 @@ let { store } = $props();
 let settings = $state({
   allowCoreCapAssignment: false,
   autosaveDebounce: 500,
+  logRetention: 500,
 });
 
 // Load settings on mount
@@ -25,6 +26,7 @@ async function fetchSettings() {
     if (response.settings) {
       settings.allowCoreCapAssignment = response.settings.allow_core_cap_assignment || false;
       settings.autosaveDebounce = response.settings.autosave_debounce || 500;
+      settings.logRetention = response.settings.log_retention || 500;
     }
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -39,6 +41,7 @@ async function saveSettings() {
       body: JSON.stringify({
         allow_core_cap_assignment: settings.allowCoreCapAssignment,
         autosave_debounce: settings.autosaveDebounce,
+        log_retention: settings.logRetention,
       }),
     });
     store.showSaved();
@@ -111,16 +114,23 @@ async function saveSettings() {
         />
         <p class="wpea-help">Delay before automatically saving changes (100-5000ms). Higher values reduce server load but delay saves.</p>
       </div>
-    </div>
 
-    <!-- Information -->
-    <div class="wpea-card">
-      <h3 class="wpea-heading wpea-heading--sm">Access Control</h3>
-      <p class="wpea-text-muted">This plugin requires the <code>manage_options</code> capability, which is only available to Administrators. This setting cannot be changed for security reasons.</p>
-
-      <div class="wpea-alert wpea-alert--info">
-        <p><strong>Administrator-Only Access:</strong> All role and capability management operations are restricted to users with the <code>manage_options</code> capability. This ensures only site administrators can modify permissions.</p>
+      <div class="wpea-field">
+        <label for="log-retention" class="wpea-label">Log Retention (number of entries):</label>
+        <input
+          type="number"
+          id="log-retention"
+          bind:value={settings.logRetention}
+          min="100"
+          max="10000"
+          step="100"
+          onchange={saveSettings}
+          class="wpea-input"
+          style="max-width: 300px;"
+        />
+        <p class="wpea-help">Maximum number of activity log entries to retain (100-10000). Oldest entries are automatically removed when this limit is reached.</p>
       </div>
     </div>
+
   </div>
 </div>
