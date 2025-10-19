@@ -13,6 +13,7 @@ let settings = $state({
   allowCoreCapAssignment: false,
   autosaveDebounce: 500,
   logRetention: 500,
+  colorScheme: 'auto', // 'light', 'dark', 'auto'
 });
 
 // Load settings on mount
@@ -27,6 +28,7 @@ async function fetchSettings() {
       settings.allowCoreCapAssignment = response.settings.allow_core_cap_assignment || false;
       settings.autosaveDebounce = response.settings.autosave_debounce || 500;
       settings.logRetention = response.settings.log_retention || 500;
+      settings.colorScheme = response.settings.color_scheme || 'auto';
     }
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -42,6 +44,7 @@ async function saveSettings() {
         allow_core_cap_assignment: settings.allowCoreCapAssignment,
         autosave_debounce: settings.autosaveDebounce,
         log_retention: settings.logRetention,
+        color_scheme: settings.colorScheme,
       }),
     });
     store.showSaved();
@@ -60,6 +63,27 @@ async function saveSettings() {
   </div>
 
   <div class="wpea-stack">
+    <!-- Appearance Settings -->
+    <div class="wpea-card">
+      <h3 class="wpea-heading wpea-heading--sm">Appearance</h3>
+
+      <div class="wpea-field">
+        <label for="color-scheme" class="wpea-label">Color Scheme:</label>
+        <select
+          id="color-scheme"
+          bind:value={settings.colorScheme}
+          onchange={saveSettings}
+          class="wpea-input"
+          style="max-width: 300px;"
+        >
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="auto">Respect OS Setting</option>
+        </select>
+        <p class="wpea-help">Choose your preferred color scheme. "Respect OS Setting" will automatically match your system preference.</p>
+      </div>
+    </div>
+
     <!-- Security Settings -->
     <div class="wpea-card">
       <h3 class="wpea-heading wpea-heading--sm">Security Settings</h3>

@@ -1129,6 +1129,7 @@ final class Routes {
             'allow_core_cap_assignment' => false,
             'autosave_debounce' => 500,
             'log_retention' => 500,
+            'color_scheme' => 'auto',
         ]);
 
         return new WP_REST_Response([
@@ -1156,6 +1157,9 @@ final class Routes {
             'log_retention' => isset($params['log_retention'])
                 ? absint($params['log_retention'])
                 : 500,
+            'color_scheme' => isset($params['color_scheme'])
+                ? sanitize_text_field($params['color_scheme'])
+                : 'auto',
         ];
 
         // Validate autosave_debounce range
@@ -1166,6 +1170,11 @@ final class Routes {
         // Validate log_retention range
         if ($settings['log_retention'] < 100 || $settings['log_retention'] > 10000) {
             $settings['log_retention'] = 500;
+        }
+
+        // Validate color_scheme
+        if (!in_array($settings['color_scheme'], ['light', 'dark', 'auto'], true)) {
+            $settings['color_scheme'] = 'auto';
         }
 
         update_option('wpe_rm_settings', $settings);
@@ -1183,6 +1192,9 @@ final class Routes {
         }
         if (isset($params['log_retention'])) {
             $changes[] = sprintf('Log retention: %d entries', $settings['log_retention']);
+        }
+        if (isset($params['color_scheme'])) {
+            $changes[] = sprintf('Color scheme: %s', $settings['color_scheme']);
         }
 
         if (!empty($changes)) {

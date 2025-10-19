@@ -22,9 +22,59 @@ let { wpData = {} } = $props();
 // Create app store
 const store = createAppStore(wpData);
 
+// Color scheme state
+let colorScheme = $state('auto');
+
 // Initialize on mount
-onMount(() => {
+onMount(async () => {
   store.init();
+
+  // Fetch and apply color scheme
+  try {
+    const response = await store.apiRequest('/settings');
+    if (response.settings?.color_scheme) {
+      colorScheme = response.settings.color_scheme;
+      applyColorScheme(colorScheme);
+    }
+  } catch (error) {
+    console.error('Error fetching color scheme:', error);
+  }
+});
+
+// Apply color scheme to document
+function applyColorScheme(scheme) {
+  const root = document.documentElement;
+
+  if (scheme === 'light') {
+    root.setAttribute('data-color-scheme', 'light');
+  } else if (scheme === 'dark') {
+    root.setAttribute('data-color-scheme', 'dark');
+  } else {
+    // Auto - respect OS setting
+    root.removeAttribute('data-color-scheme');
+  }
+}
+
+// Watch for color scheme changes from settings
+$effect(() => {
+  // This will be triggered when settings are saved
+  const checkColorScheme = async () => {
+    try {
+      const response = await store.apiRequest('/settings');
+      if (response.settings?.color_scheme && response.settings.color_scheme !== colorScheme) {
+        colorScheme = response.settings.color_scheme;
+        applyColorScheme(colorScheme);
+      }
+    } catch (error) {
+      // Silently fail - settings might not be available yet
+    }
+  };
+
+  // Check every 2 seconds when settings tab is active
+  if (store.currentTab === 'settings') {
+    const interval = setInterval(checkColorScheme, 2000);
+    return () => clearInterval(interval);
+  }
 });
 
 // Tab configuration
