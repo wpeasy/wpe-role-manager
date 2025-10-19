@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"assets/wpea\")",
+      "WebFetch(domain:www.wpeasy.au)",
+      "Bash(curl -o \"assets/wpea/claude.md\" \"https://www.wpeasy.au/ext/wpea/claude.md\")",
+      "Bash(curl -o \"assets/wpea/test-ui.html\" \"https://www.wpeasy.au/ext/wpea/test-ui.html\")",
+      "Bash(curl -o \"assets/wpea/wpea-framework.css\" \"https://www.wpeasy.au/ext/wpea/wpea-framework.css\")",
+      "Bash(curl -o \"assets/wpea/wpea-wp-resets.css\" \"https://www.wpeasy.au/ext/wpea/wpea-wp-resets.css\")",
+      "Bash(composer install --no-dev)",
+      "Bash(tree -L 3 -I 'vendor' --dirsfirst)",
+      "Bash(npm install)",
+      "Bash(npm run build)",
+      "Bash(composer dump-autoload --optimize)",
+      "Read(//c/Users/Alan.Blair/Downloads/**)",
+      "Bash(curl -o select2.min.css \"https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css\")",
+      "Bash(curl -o select2.min.js \"https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

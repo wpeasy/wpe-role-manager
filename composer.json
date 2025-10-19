@@ -1,0 +1,25 @@
+{
+    "name": "wp-easy/role-manager",
+    "description": "Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign multiple roles to users.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "version": "0.0.1-alpha",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "WP_Easy\\RoleManager\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "WP Easy",
+            "homepage": "https://wpeasy.au"
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

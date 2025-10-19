@@ -1,0 +1,321 @@
+<?php
+/**
+ * User Profile Integration
+ *
+ * @package WP_Easy\RoleManager
+ */
+
+namespace WP_Easy\RoleManager\Admin;
+
+defined('ABSPATH') || exit;
+
+use WP_User;
+
+/**
+ * Enhance user profile/edit screen with better role management.
+ *
+ * @since 0.0.1-alpha
+ */
+final class UserProfile {
+    /**
+     * Initialize hooks.
+     *
+     * @return void
+     */
+    public static function init(): void {
+        // Enqueue assets on user edit screens
+        add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
+
+        // Remove default WordPress role dropdown
+        add_action('admin_head-user-edit.php', [self::class, 'hide_default_role_select']);
+        add_action('admin_head-profile.php', [self::class, 'hide_default_role_select']);
+
+        // Add our custom role selector
+        add_action('show_user_profile', [self::class, 'render_role_selector']);
+        add_action('edit_user_profile', [self::class, 'render_role_selector']);
+
+        // Save custom role assignments
+        add_action('personal_options_update', [self::class, 'save_role_assignments']);
+        add_action('edit_user_profile_update', [self::class, 'save_role_assignments']);
+    }
+
+    /**
+     * Enqueue Select2 and custom scripts on user edit screens.
+     *
+     * @param string $hook Current admin page hook.
+     * @return void
+     */
+    public static function enqueue_assets(string $hook): void {
+        // Only load on user edit screens
+        if (!in_array($hook, ['user-edit.php', 'profile.php'], true)) {
+            return;
+        }
+
+        // Enqueue Select2 locally
+        wp_enqueue_style(
+            'wpe-rm-select2',
+            WPE_RM_PLUGIN_URL . 'assets/libs/select2/select2.min.css',
+            [],
+            '4.1.0'
+        );
+
+        wp_enqueue_script(
+            'wpe-rm-select2',
+            WPE_RM_PLUGIN_URL . 'assets/libs/select2/select2.min.js',
+            ['jquery'],
+            '4.1.0',
+            true
+        );
+
+        // Custom styles for Select2 integration
+        wp_add_inline_style('wpe-rm-select2', '
+            .wpe-rm-role-selector {
+                margin-top: 20px;
+            }
+            .wpe-rm-role-selector .select2-container {
+                max-width: 25em;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-selection--multiple {
+                border: 1px solid #8c8f94;
+                border-radius: 4px;
+                min-height: 30px;
+                padding: 0 8px;
+                background-color: #fff;
+            }
+            .wpe-rm-role-selector .select2-container--default.select2-container--focus .select2-selection--multiple {
+                border-color: #2271b1;
+                box-shadow: 0 0 0 1px #2271b1;
+                outline: none;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+                padding: 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                align-items: center;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__choice {
+                background-color: #2271b1;
+                border: 1px solid #2271b1;
+                border-radius: 3px;
+                color: #fff;
+                padding: 3px 8px;
+                margin: 4px 0;
+                display: inline-flex;
+                align-items: center;
+                line-height: 1.4;
+                font-size: 13px;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+                color: #fff;
+                margin-right: 6px;
+                font-weight: bold;
+                cursor: pointer;
+                border: none;
+                background: transparent;
+                font-size: 16px;
+                line-height: 1;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+                color: #f0f0f1;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-search--inline {
+                display: none !important;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-search--inline .select2-search__field {
+                display: none !important;
+                width: 0 !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .wpe-rm-role-selector .select2-dropdown {
+                border: 1px solid #8c8f94;
+                border-radius: 4px;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                background-color: #2271b1;
+                color: #fff;
+            }
+            .wpe-rm-role-selector .select2-container--default .select2-results__option[aria-selected=true] {
+                background-color: #f0f0f1;
+            }
+        ');
+
+        // Initialize Select2
+        wp_add_inline_script('wpe-rm-select2', '
+            jQuery(document).ready(function($) {
+                $("#wpe_rm_user_roles").select2({
+                    placeholder: "Select roles...",
+                    allowClear: false,
+                    width: "100%",
+                    dropdownAutoWidth: true,
+                    minimumResultsForSearch: Infinity, // Disable search box
+                    closeOnSelect: false // Keep dropdown open for multiple selections
+                });
+
+                // Prevent typing in the select2 container
+                $(".wpe-rm-role-selector").on("keydown", ".select2-search__field", function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            });
+        ');
+    }
+
+    /**
+     * Hide the default WordPress role selector.
+     *
+     * @return void
+     */
+    public static function hide_default_role_select(): void {
+        echo '<style>.user-role-wrap { display: none !important; }</style>';
+    }
+
+    /**
+     * Render custom role selector with Select2.
+     *
+     * @param WP_User $user User object.
+     * @return void
+     */
+    public static function render_role_selector(WP_User $user): void {
+        // Check permissions
+        if (!current_user_can('promote_users')) {
+            return;
+        }
+
+        global $wp_roles;
+        if (!isset($wp_roles)) {
+            $wp_roles = new \WP_Roles();
+        }
+
+        $user_roles = $user->roles;
+        $disabled_roles = get_option('wpe_rm_disabled_roles', []);
+        ?>
+
+        <h2><?php esc_html_e('Role Manager', 'wp-easy-role-manager'); ?></h2>
+
+        <table class="form-table wpe-rm-role-selector" role="presentation">
+            <tr>
+                <th>
+                    <label for="wpe_rm_user_roles">
+                        <?php esc_html_e('User Roles', 'wp-easy-role-manager'); ?>
+                    </label>
+                </th>
+                <td>
+                    <select
+                        name="wpe_rm_user_roles[]"
+                        id="wpe_rm_user_roles"
+                        multiple="multiple"
+                        style="width: 25em;"
+                    >
+                        <?php foreach ($wp_roles->roles as $role_slug => $role_info): ?>
+                            <?php
+                            $is_disabled = in_array($role_slug, $disabled_roles, true);
+                            $role_name = translate_user_role($role_info['name']);
+
+                            if ($is_disabled) {
+                                $role_name .= ' (' . __('Disabled', 'wp-easy-role-manager') . ')';
+                            }
+                            ?>
+                            <option
+                                value="<?php echo esc_attr($role_slug); ?>"
+                                <?php selected(in_array($role_slug, $user_roles, true)); ?>
+                                <?php disabled($is_disabled); ?>
+                            >
+                                <?php echo esc_html($role_name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <p class="description">
+                        <?php esc_html_e('Select one or more roles for this user. Users can have multiple roles and will receive the combined capabilities of all assigned roles.', 'wp-easy-role-manager'); ?>
+                    </p>
+
+                    <?php if (count($user_roles) > 1): ?>
+                        <p class="description">
+                            <strong><?php esc_html_e('Current roles:', 'wp-easy-role-manager'); ?></strong>
+                            <?php
+                            $role_names = array_map(function($role_slug) use ($wp_roles) {
+                                return isset($wp_roles->roles[$role_slug])
+                                    ? translate_user_role($wp_roles->roles[$role_slug]['name'])
+                                    : $role_slug;
+                            }, $user_roles);
+                            echo esc_html(implode(', ', $role_names));
+                            ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php wp_nonce_field('wpe_rm_update_user_roles', 'wpe_rm_user_roles_nonce'); ?>
+                </td>
+            </tr>
+        </table>
+
+        <?php
+    }
+
+    /**
+     * Save custom role assignments.
+     *
+     * @param int $user_id User ID being updated.
+     * @return void
+     */
+    public static function save_role_assignments(int $user_id): void {
+        // Check permissions
+        if (!current_user_can('promote_users')) {
+            return;
+        }
+
+        // Verify nonce
+        if (!isset($_POST['wpe_rm_user_roles_nonce']) ||
+            !wp_verify_nonce($_POST['wpe_rm_user_roles_nonce'], 'wpe_rm_update_user_roles')) {
+            return;
+        }
+
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return;
+        }
+
+        // Get selected roles
+        $new_roles = isset($_POST['wpe_rm_user_roles']) && is_array($_POST['wpe_rm_user_roles'])
+            ? array_map('sanitize_key', $_POST['wpe_rm_user_roles'])
+            : [];
+
+        // Remove empty values
+        $new_roles = array_filter($new_roles);
+
+        // Ensure at least one role
+        if (empty($new_roles)) {
+            add_settings_error(
+                'wpe_rm_user_roles',
+                'no_roles',
+                __('User must have at least one role.', 'wp-easy-role-manager'),
+                'error'
+            );
+            return;
+        }
+
+        // Get current roles
+        $current_roles = $user->roles;
+
+        // Remove all current roles
+        foreach ($current_roles as $role) {
+            $user->remove_role($role);
+        }
+
+        // Add new roles
+        foreach ($new_roles as $role) {
+            $user->add_role($role);
+        }
+
+        // Log the action
+        if (class_exists('WP_Easy\RoleManager\Helpers\Logger')) {
+            $role_list = implode(', ', $new_roles);
+            \WP_Easy\RoleManager\Helpers\Logger::log(
+                'User Roles Updated',
+                sprintf('Updated roles for user "%s" (ID: %d): %s', $user->user_login, $user_id, $role_list)
+            );
+        }
+    }
+}

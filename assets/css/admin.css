@@ -1,0 +1,54 @@
+/**
+ * WP Easy Role Manager - Admin Styles
+ *
+ * Uses WPEA Framework tokens and classes
+ *
+ * @package WP_Easy\RoleManager
+ * @version 0.0.1-alpha
+ */
+
+/* Main Admin Wrapper */
+.wpe-rm-admin {
+    margin: var(--wpea-space--lg) var(--wpea-space--lg) 0 0;
+}
+
+/* App Container - minimal WordPress admin compatibility */
+#wpe-rm-app {
+    margin-top: var(--wpea-space--lg);
+}
+
+/* Loading State */
+.wpea-rm-loading {
+    padding: var(--wpea-space--2xl);
+    text-align: center;
+    color: var(--wpea-surface--text-muted);
+}
+
+/* Badge Component (used in multiple tabs) */
+.badge {
+    display: inline-block;
+    padding: var(--wpea-space--2xs) var(--wpea-space--xs);
+    font-size: var(--wpea-text--xs);
+    font-weight: 600;
+    border-radius: var(--wpea-radius--sm);
+    background: var(--wpea-color--primary-l-9);
+    color: var(--wpea-color--primary);
+}
+
+.badge.core {
+    background: var(--wpea-color--neutral-l-8);
+    color: var(--wpea-surface--text);
+}
+
+.badge.disabled {
+    background: var(--wpea-color--danger-l-9);
+    color: var(--wpea-color--danger);
+    opacity: 0.7;
+}
+
+/* WordPress Admin Compatibility */
+@media (max-width: 782px) {
+    .wpe-rm-admin {
+        margin: var(--wpea-space--md) var(--wpea-space--md) 0 0;
+    }
+}

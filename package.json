@@ -1,0 +1,18 @@
+{
+  "name": "wpe-role-manager",
+  "version": "0.0.1-alpha",
+  "description": "WP Easy Role Manager - Svelte 5 Admin SPA",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "watch": "vite build --watch"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "svelte": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {}
+}

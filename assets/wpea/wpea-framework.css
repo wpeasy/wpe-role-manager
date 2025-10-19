@@ -1,0 +1,734 @@
+/* =========================================================
+   WPE_Admin (wpea) — Framework
+   - Full token set (10-step variants + transparencies)
+   - System UI font stack
+   - Spacing via flex/grid gap & logical props (no mt/mb hacks)
+   - Components: headings, panels, cards, buttons, inputs, tables, alerts, badges
+   - Container-query responsive helpers (no media breakpoints)
+   - Dark Mode scoped with .wpea-dark
+   ========================================================= */
+
+/* =========================
+   TOKENS — CORE (LIGHT)
+   ========================= */
+   :root {
+    /* Font family — system UI sans-serif stack */
+    --wpea-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue",
+      Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  
+    /* Base sizing */
+    --wpea-fs-base: 16px;
+    --wpea-scale: 1.333;
+  
+    /* Palette bases (hex for readability) */
+    --wpea-color--primary: #3366ff;    /* cobalt-ish */
+    --wpea-color--secondary: #17a2b8;  /* teal-ish */
+    --wpea-color--neutral: #777777;    /* mid gray */
+    --wpea-color--success: #22c55e;    /* green */
+    --wpea-color--warning: #f59e0b;    /* amber */
+    --wpea-color--danger: #ef4444;     /* red */
+    --wpea-color--info: #3b82f6;       /* blue */
+
+    /* Fixed colors */
+    --wpea-color--black: #000000;
+    --wpea-color--white: #ffffff;
+    --wpea-color--text: #111111;
+    --wpea-color--text-muted: #666666;
+  
+    /* ---------- Primary: 10 light / 10 dark / 10 transparencies ---------- */
+    --wpea-color--primary-l-1:  color-mix(in oklab, var(--wpea-color--primary), white 10%);
+    --wpea-color--primary-l-2:  color-mix(in oklab, var(--wpea-color--primary), white 20%);
+    --wpea-color--primary-l-3:  color-mix(in oklab, var(--wpea-color--primary), white 30%);
+    --wpea-color--primary-l-4:  color-mix(in oklab, var(--wpea-color--primary), white 40%);
+    --wpea-color--primary-l-5:  color-mix(in oklab, var(--wpea-color--primary), white 50%);
+    --wpea-color--primary-l-6:  color-mix(in oklab, var(--wpea-color--primary), white 60%);
+    --wpea-color--primary-l-7:  color-mix(in oklab, var(--wpea-color--primary), white 70%);
+    --wpea-color--primary-l-8:  color-mix(in oklab, var(--wpea-color--primary), white 80%);
+    --wpea-color--primary-l-9:  color-mix(in oklab, var(--wpea-color--primary), white 90%);
+    --wpea-color--primary-l-10: color-mix(in oklab, var(--wpea-color--primary), white 100%);
+    --wpea-color--primary-d-1:  color-mix(in oklab, var(--wpea-color--primary), black 10%);
+    --wpea-color--primary-d-2:  color-mix(in oklab, var(--wpea-color--primary), black 20%);
+    --wpea-color--primary-d-3:  color-mix(in oklab, var(--wpea-color--primary), black 30%);
+    --wpea-color--primary-d-4:  color-mix(in oklab, var(--wpea-color--primary), black 40%);
+    --wpea-color--primary-d-5:  color-mix(in oklab, var(--wpea-color--primary), black 50%);
+    --wpea-color--primary-d-6:  color-mix(in oklab, var(--wpea-color--primary), black 60%);
+    --wpea-color--primary-d-7:  color-mix(in oklab, var(--wpea-color--primary), black 70%);
+    --wpea-color--primary-d-8:  color-mix(in oklab, var(--wpea-color--primary), black 80%);
+    --wpea-color--primary-d-9:  color-mix(in oklab, var(--wpea-color--primary), black 90%);
+    --wpea-color--primary-d-10: color-mix(in oklab, var(--wpea-color--primary), black 100%);
+    --wpea-color--primary-t-10: color-mix(in oklab, var(--wpea-color--primary), transparent 90%);
+    --wpea-color--primary-t-20: color-mix(in oklab, var(--wpea-color--primary), transparent 80%);
+    --wpea-color--primary-t-30: color-mix(in oklab, var(--wpea-color--primary), transparent 70%);
+    --wpea-color--primary-t-40: color-mix(in oklab, var(--wpea-color--primary), transparent 60%);
+    --wpea-color--primary-t-50: color-mix(in oklab, var(--wpea-color--primary), transparent 50%);
+    --wpea-color--primary-t-60: color-mix(in oklab, var(--wpea-color--primary), transparent 40%);
+    --wpea-color--primary-t-70: color-mix(in oklab, var(--wpea-color--primary), transparent 30%);
+    --wpea-color--primary-t-80: color-mix(in oklab, var(--wpea-color--primary), transparent 20%);
+    --wpea-color--primary-t-90: color-mix(in oklab, var(--wpea-color--primary), transparent 10%);
+    --wpea-color--primary-t-100: var(--wpea-color--primary);
+  
+    /* ---------- Secondary: 10 light / 10 dark / 10 transparencies ---------- */
+    --wpea-color--secondary-l-1:  color-mix(in oklab, var(--wpea-color--secondary), white 10%);
+    --wpea-color--secondary-l-2:  color-mix(in oklab, var(--wpea-color--secondary), white 20%);
+    --wpea-color--secondary-l-3:  color-mix(in oklab, var(--wpea-color--secondary), white 30%);
+    --wpea-color--secondary-l-4:  color-mix(in oklab, var(--wpea-color--secondary), white 40%);
+    --wpea-color--secondary-l-5:  color-mix(in oklab, var(--wpea-color--secondary), white 50%);
+    --wpea-color--secondary-l-6:  color-mix(in oklab, var(--wpea-color--secondary), white 60%);
+    --wpea-color--secondary-l-7:  color-mix(in oklab, var(--wpea-color--secondary), white 70%);
+    --wpea-color--secondary-l-8:  color-mix(in oklab, var(--wpea-color--secondary), white 80%);
+    --wpea-color--secondary-l-9:  color-mix(in oklab, var(--wpea-color--secondary), white 90%);
+    --wpea-color--secondary-l-10: color-mix(in oklab, var(--wpea-color--secondary), white 100%);
+    --wpea-color--secondary-d-1:  color-mix(in oklab, var(--wpea-color--secondary), black 10%);
+    --wpea-color--secondary-d-2:  color-mix(in oklab, var(--wpea-color--secondary), black 20%);
+    --wpea-color--secondary-d-3:  color-mix(in oklab, var(--wpea-color--secondary), black 30%);
+    --wpea-color--secondary-d-4:  color-mix(in oklab, var(--wpea-color--secondary), black 40%);
+    --wpea-color--secondary-d-5:  color-mix(in oklab, var(--wpea-color--secondary), black 50%);
+    --wpea-color--secondary-d-6:  color-mix(in oklab, var(--wpea-color--secondary), black 60%);
+    --wpea-color--secondary-d-7:  color-mix(in oklab, var(--wpea-color--secondary), black 70%);
+    --wpea-color--secondary-d-8:  color-mix(in oklab, var(--wpea-color--secondary), black 80%);
+    --wpea-color--secondary-d-9:  color-mix(in oklab, var(--wpea-color--secondary), black 90%);
+    --wpea-color--secondary-d-10: color-mix(in oklab, var(--wpea-color--secondary), black 100%);
+    --wpea-color--secondary-t-10: color-mix(in oklab, var(--wpea-color--secondary), transparent 90%);
+    --wpea-color--secondary-t-20: color-mix(in oklab, var(--wpea-color--secondary), transparent 80%);
+    --wpea-color--secondary-t-30: color-mix(in oklab, var(--wpea-color--secondary), transparent 70%);
+    --wpea-color--secondary-t-40: color-mix(in oklab, var(--wpea-color--secondary), transparent 60%);
+    --wpea-color--secondary-t-50: color-mix(in oklab, var(--wpea-color--secondary), transparent 50%);
+    --wpea-color--secondary-t-60: color-mix(in oklab, var(--wpea-color--secondary), transparent 40%);
+    --wpea-color--secondary-t-70: color-mix(in oklab, var(--wpea-color--secondary), transparent 30%);
+    --wpea-color--secondary-t-80: color-mix(in oklab, var(--wpea-color--secondary), transparent 20%);
+    --wpea-color--secondary-t-90: color-mix(in oklab, var(--wpea-color--secondary), transparent 10%);
+    --wpea-color--secondary-t-100: var(--wpea-color--secondary);
+  
+    /* ---------- Neutral: 10 light / 10 dark / 10 transparencies ---------- */
+    --wpea-color--neutral-l-1:  color-mix(in oklab, var(--wpea-color--neutral), white 10%);
+    --wpea-color--neutral-l-2:  color-mix(in oklab, var(--wpea-color--neutral), white 20%);
+    --wpea-color--neutral-l-3:  color-mix(in oklab, var(--wpea-color--neutral), white 30%);
+    --wpea-color--neutral-l-4:  color-mix(in oklab, var(--wpea-color--neutral), white 40%);
+    --wpea-color--neutral-l-5:  color-mix(in oklab, var(--wpea-color--neutral), white 50%);
+    --wpea-color--neutral-l-6:  color-mix(in oklab, var(--wpea-color--neutral), white 60%);
+    --wpea-color--neutral-l-7:  color-mix(in oklab, var(--wpea-color--neutral), white 70%);
+    --wpea-color--neutral-l-8:  color-mix(in oklab, var(--wpea-color--neutral), white 80%);
+    --wpea-color--neutral-l-9:  color-mix(in oklab, var(--wpea-color--neutral), white 90%);
+    --wpea-color--neutral-l-10: color-mix(in oklab, var(--wpea-color--neutral), white 100%);
+    --wpea-color--neutral-d-1:  color-mix(in oklab, var(--wpea-color--neutral), black 10%);
+    --wpea-color--neutral-d-2:  color-mix(in oklab, var(--wpea-color--neutral), black 20%);
+    --wpea-color--neutral-d-3:  color-mix(in oklab, var(--wpea-color--neutral), black 30%);
+    --wpea-color--neutral-d-4:  color-mix(in oklab, var(--wpea-color--neutral), black 40%);
+    --wpea-color--neutral-d-5:  color-mix(in oklab, var(--wpea-color--neutral), black 50%);
+    --wpea-color--neutral-d-6:  color-mix(in oklab, var(--wpea-color--neutral), black 60%);
+    --wpea-color--neutral-d-7:  color-mix(in oklab, var(--wpea-color--neutral), black 70%);
+    --wpea-color--neutral-d-8:  color-mix(in oklab, var(--wpea-color--neutral), black 80%);
+    --wpea-color--neutral-d-9:  color-mix(in oklab, var(--wpea-color--neutral), black 90%);
+    --wpea-color--neutral-d-10: color-mix(in oklab, var(--wpea-color--neutral), black 100%);
+    --wpea-color--neutral-t-10: color-mix(in oklab, var(--wpea-color--neutral), transparent 90%);
+    --wpea-color--neutral-t-20: color-mix(in oklab, var(--wpea-color--neutral), transparent 80%);
+    --wpea-color--neutral-t-30: color-mix(in oklab, var(--wpea-color--neutral), transparent 70%);
+    --wpea-color--neutral-t-40: color-mix(in oklab, var(--wpea-color--neutral), transparent 60%);
+    --wpea-color--neutral-t-50: color-mix(in oklab, var(--wpea-color--neutral), transparent 50%);
+    --wpea-color--neutral-t-60: color-mix(in oklab, var(--wpea-color--neutral), transparent 40%);
+    --wpea-color--neutral-t-70: color-mix(in oklab, var(--wpea-color--neutral), transparent 30%);
+    --wpea-color--neutral-t-80: color-mix(in oklab, var(--wpea-color--neutral), transparent 20%);
+    --wpea-color--neutral-t-90: color-mix(in oklab, var(--wpea-color--neutral), transparent 10%);
+    --wpea-color--neutral-t-100: var(--wpea-color--neutral);
+
+    /* ---------- Success: 10 light / 10 dark / 10 transparencies ---------- */
+    --wpea-color--success-l-1:  color-mix(in oklab, var(--wpea-color--success), white 10%);
+    --wpea-color--success-l-2:  color-mix(in oklab, var(--wpea-color--success), white 20%);
+    --wpea-color--success-l-3:  color-mix(in oklab, var(--wpea-color--success), white 30%);
+    --wpea-color--success-l-4:  color-mix(in oklab, var(--wpea-color--success), white 40%);
+    --wpea-color--success-l-5:  color-mix(in oklab, var(--wpea-color--success), white 50%);
+    --wpea-color--success-l-6:  color-mix(in oklab, var(--wpea-color--success), white 60%);
+    --wpea-color--success-l-7:  color-mix(in oklab, var(--wpea-color--success), white 70%);
+    --wpea-color--success-l-8:  color-mix(in oklab, var(--wpea-color--success), white 80%);
+    --wpea-color--success-l-9:  color-mix(in oklab, var(--wpea-color--success), white 90%);
+    --wpea-color--success-l-10: color-mix(in oklab, var(--wpea-color--success), white 100%);
+    --wpea-color--success-d-1:  color-mix(in oklab, var(--wpea-color--success), black 10%);
+    --wpea-color--success-d-2:  color-mix(in oklab, var(--wpea-color--success), black 20%);
+    --wpea-color--success-d-3:  color-mix(in oklab, var(--wpea-color--success), black 30%);
+    --wpea-color--success-d-4:  color-mix(in oklab, var(--wpea-color--success), black 40%);
+    --wpea-color--success-d-5:  color-mix(in oklab, var(--wpea-color--success), black 50%);
+    --wpea-color--success-d-6:  color-mix(in oklab, var(--wpea-color--success), black 60%);
+    --wpea-color--success-d-7:  color-mix(in oklab, var(--wpea-color--success), black 70%);
+    --wpea-color--success-d-8:  color-mix(in oklab, var(--wpea-color--success), black 80%);
+    --wpea-color--success-d-9:  color-mix(in oklab, var(--wpea-color--success), black 90%);
+    --wpea-color--success-d-10: color-mix(in oklab, var(--wpea-color--success), black 100%);
+    --wpea-color--success-t-10: color-mix(in oklab, var(--wpea-color--success), transparent 90%);
+    --wpea-color--success-t-20: color-mix(in oklab, var(--wpea-color--success), transparent 80%);
+    --wpea-color--success-t-30: color-mix(in oklab, var(--wpea-color--success), transparent 70%);
+    --wpea-color--success-t-40: color-mix(in oklab, var(--wpea-color--success), transparent 60%);
+    --wpea-color--success-t-50: color-mix(in oklab, var(--wpea-color--success), transparent 50%);
+    --wpea-color--success-t-60: color-mix(in oklab, var(--wpea-color--success), transparent 40%);
+    --wpea-color--success-t-70: color-mix(in oklab, var(--wpea-color--success), transparent 30%);
+    --wpea-color--success-t-80: color-mix(in oklab, var(--wpea-color--success), transparent 20%);
+    --wpea-color--success-t-90: color-mix(in oklab, var(--wpea-color--success), transparent 10%);
+    --wpea-color--success-t-100: var(--wpea-color--success);
+
+    /* ---------- Warning: 10 light / 10 dark / 10 transparencies ---------- */
+    --wpea-color--warning-l-1:  color-mix(in oklab, var(--wpea-color--warning), white 10%);
+    --wpea-color--warning-l-2:  color-mix(in oklab, var(--wpea-color--warning), white 20%);
+    --wpea-color--warning-l-3:  color-mix(in oklab, var(--wpea-color--warning), white 30%);
+    --wpea-color--warning-l-4:  color-mix(in oklab, var(--wpea-color--warning), white 40%);
+    --wpea-color--warning-l-5:  color-mix(in oklab, var(--wpea-color--warning), white 50%);
+    --wpea-color--warning-l-6:  color-mix(in oklab, var(--wpea-color--warning), white 60%);
+    --wpea-color--warning-l-7:  color-mix(in oklab, var(--wpea-color--warning), white 70%);
+    --wpea-color--warning-l-8:  color-mix(in oklab, var(--wpea-color--warning), white 80%);
+    --wpea-color--warning-l-9:  color-mix(in oklab, var(--wpea-color--warning), white 90%);
+    --wpea-color--warning-l-10: color-mix(in oklab, var(--wpea-color--warning), white 100%);
+    --wpea-color--warning-d-1:  color-mix(in oklab, var(--wpea-color--warning), black 10%);
+    --wpea-color--warning-d-2:  color-mix(in oklab, var(--wpea-color--warning), black 20%);
+    --wpea-color--warning-d-3:  color-mix(in oklab, var(--wpea-color--warning), black 30%);
+    --wpea-color--warning-d-4:  color-mix(in oklab, var(--wpea-color--warning), black 40%);
+    --wpea-color--warning-d-5:  color-mix(in oklab, var(--wpea-color--warning), black 50%);
+    --wpea-color--warning-d-6:  color-mix(in oklab, var(--wpea-color--warning), black 60%);
+    --wpea-color--warning-d-7:  color-mix(in oklab, var(--wpea-color--warning), black 70%);
+    --wpea-color--warning-d-8:  color-mix(in oklab, var(--wpea-color--warning), black 80%);
+    --wpea-color--warning-d-9:  color-mix(in oklab, var(--wpea-color--warning), black 90%);
+    --wpea-color--warning-d-10: color-mix(in oklab, var(--wpea-color--warning), black 100%);
+    --wpea-color--warning-t-10: color-mix(in oklab, var(--wpea-color--warning), transparent 90%);
+    --wpea-color--warning-t-20: color-mix(in oklab, var(--wpea-color--warning), transparent 80%);
+    --wpea-color--warning-t-30: color-mix(in oklab, var(--wpea-color--warning), transparent 70%);
+    --wpea-color--warning-t-40: color-mix(in oklab, var(--wpea-color--warning), transparent 60%);
+    --wpea-color--warning-t-50: color-mix(in oklab, var(--wpea-color--warning), transparent 50%);
+    --wpea-color--warning-t-60: color-mix(in oklab, var(--wpea-color--warning), transparent 40%);
+    --wpea-color--warning-t-70: color-mix(in oklab, var(--wpea-color--warning), transparent 30%);
+    --wpea-color--warning-t-80: color-mix(in oklab, var(--wpea-color--warning), transparent 20%);
+    --wpea-color--warning-t-90: color-mix(in oklab, var(--wpea-color--warning), transparent 10%);
+    --wpea-color--warning-t-100: var(--wpea-color--warning);
+
+    /* ---------- Danger: 10 light / 10 dark / 10 transparencies ---------- */
+    --wpea-color--danger-l-1:  color-mix(in oklab, var(--wpea-color--danger), white 10%);
+    --wpea-color--danger-l-2:  color-mix(in oklab, var(--wpea-color--danger), white 20%);
+    --wpea-color--danger-l-3:  color-mix(in oklab, var(--wpea-color--danger), white 30%);
+    --wpea-color--danger-l-4:  color-mix(in oklab, var(--wpea-color--danger), white 40%);
+    --wpea-color--danger-l-5:  color-mix(in oklab, var(--wpea-color--danger), white 50%);
+    --wpea-color--danger-l-6:  color-mix(in oklab, var(--wpea-color--danger), white 60%);
+    --wpea-color--danger-l-7:  color-mix(in oklab, var(--wpea-color--danger), white 70%);
+    --wpea-color--danger-l-8:  color-mix(in oklab, var(--wpea-color--danger), white 80%);
+    --wpea-color--danger-l-9:  color-mix(in oklab, var(--wpea-color--danger), white 90%);
+    --wpea-color--danger-l-10: color-mix(in oklab, var(--wpea-color--danger), white 100%);
+    --wpea-color--danger-d-1:  color-mix(in oklab, var(--wpea-color--danger), black 10%);
+    --wpea-color--danger-d-2:  color-mix(in oklab, var(--wpea-color--danger), black 20%);
+    --wpea-color--danger-d-3:  color-mix(in oklab, var(--wpea-color--danger), black 30%);
+    --wpea-color--danger-d-4:  color-mix(in oklab, var(--wpea-color--danger), black 40%);
+    --wpea-color--danger-d-5:  color-mix(in oklab, var(--wpea-color--danger), black 50%);
+    --wpea-color--danger-d-6:  color-mix(in oklab, var(--wpea-color--danger), black 60%);
+    --wpea-color--danger-d-7:  color-mix(in oklab, var(--wpea-color--danger), black 70%);
+    --wpea-color--danger-d-8:  color-mix(in oklab, var(--wpea-color--danger), black 80%);
+    --wpea-color--danger-d-9:  color-mix(in oklab, var(--wpea-color--danger), black 90%);
+    --wpea-color--danger-d-10: color-mix(in oklab, var(--wpea-color--danger), black 100%);
+    --wpea-color--danger-t-10: color-mix(in oklab, var(--wpea-color--danger), transparent 90%);
+    --wpea-color--danger-t-20: color-mix(in oklab, var(--wpea-color--danger), transparent 80%);
+    --wpea-color--danger-t-30: color-mix(in oklab, var(--wpea-color--danger), transparent 70%);
+    --wpea-color--danger-t-40: color-mix(in oklab, var(--wpea-color--danger), transparent 60%);
+    --wpea-color--danger-t-50: color-mix(in oklab, var(--wpea-color--danger), transparent 50%);
+    --wpea-color--danger-t-60: color-mix(in oklab, var(--wpea-color--danger), transparent 40%);
+    --wpea-color--danger-t-70: color-mix(in oklab, var(--wpea-color--danger), transparent 30%);
+    --wpea-color--danger-t-80: color-mix(in oklab, var(--wpea-color--danger), transparent 20%);
+    --wpea-color--danger-t-90: color-mix(in oklab, var(--wpea-color--danger), transparent 10%);
+    --wpea-color--danger-t-100: var(--wpea-color--danger);
+
+    /* ---------- Info: 10 light / 10 dark / 10 transparencies ---------- */
+    --wpea-color--info-l-1:  color-mix(in oklab, var(--wpea-color--info), white 10%);
+    --wpea-color--info-l-2:  color-mix(in oklab, var(--wpea-color--info), white 20%);
+    --wpea-color--info-l-3:  color-mix(in oklab, var(--wpea-color--info), white 30%);
+    --wpea-color--info-l-4:  color-mix(in oklab, var(--wpea-color--info), white 40%);
+    --wpea-color--info-l-5:  color-mix(in oklab, var(--wpea-color--info), white 50%);
+    --wpea-color--info-l-6:  color-mix(in oklab, var(--wpea-color--info), white 60%);
+    --wpea-color--info-l-7:  color-mix(in oklab, var(--wpea-color--info), white 70%);
+    --wpea-color--info-l-8:  color-mix(in oklab, var(--wpea-color--info), white 80%);
+    --wpea-color--info-l-9:  color-mix(in oklab, var(--wpea-color--info), white 90%);
+    --wpea-color--info-l-10: color-mix(in oklab, var(--wpea-color--info), white 100%);
+    --wpea-color--info-d-1:  color-mix(in oklab, var(--wpea-color--info), black 10%);
+    --wpea-color--info-d-2:  color-mix(in oklab, var(--wpea-color--info), black 20%);
+    --wpea-color--info-d-3:  color-mix(in oklab, var(--wpea-color--info), black 30%);
+    --wpea-color--info-d-4:  color-mix(in oklab, var(--wpea-color--info), black 40%);
+    --wpea-color--info-d-5:  color-mix(in oklab, var(--wpea-color--info), black 50%);
+    --wpea-color--info-d-6:  color-mix(in oklab, var(--wpea-color--info), black 60%);
+    --wpea-color--info-d-7:  color-mix(in oklab, var(--wpea-color--info), black 70%);
+    --wpea-color--info-d-8:  color-mix(in oklab, var(--wpea-color--info), black 80%);
+    --wpea-color--info-d-9:  color-mix(in oklab, var(--wpea-color--info), black 90%);
+    --wpea-color--info-d-10: color-mix(in oklab, var(--wpea-color--info), black 100%);
+    --wpea-color--info-t-10: color-mix(in oklab, var(--wpea-color--info), transparent 90%);
+    --wpea-color--info-t-20: color-mix(in oklab, var(--wpea-color--info), transparent 80%);
+    --wpea-color--info-t-30: color-mix(in oklab, var(--wpea-color--info), transparent 70%);
+    --wpea-color--info-t-40: color-mix(in oklab, var(--wpea-color--info), transparent 60%);
+    --wpea-color--info-t-50: color-mix(in oklab, var(--wpea-color--info), transparent 50%);
+    --wpea-color--info-t-60: color-mix(in oklab, var(--wpea-color--info), transparent 40%);
+    --wpea-color--info-t-70: color-mix(in oklab, var(--wpea-color--info), transparent 30%);
+    --wpea-color--info-t-80: color-mix(in oklab, var(--wpea-color--info), transparent 20%);
+    --wpea-color--info-t-90: color-mix(in oklab, var(--wpea-color--info), transparent 10%);
+    --wpea-color--info-t-100: var(--wpea-color--info);
+
+    /* Spacing scale (aliases helpful for short utilities) */
+    --wpea-space--xs: calc(var(--wpea-fs-base) * 0.5);
+    --wpea-space--sm: calc(var(--wpea-space--xs) * var(--wpea-scale));
+    --wpea-space--md: calc(var(--wpea-space--sm) * var(--wpea-scale));
+    --wpea-space--lg: calc(var(--wpea-space--md) * var(--wpea-scale));
+    --wpea-space--xl: calc(var(--wpea-space--lg) * var(--wpea-scale));
+    --wpea-space--2xl: calc(var(--wpea-space--xl) * var(--wpea-scale));
+    --wpea-s-1: var(--wpea-space--xs);
+    --wpea-s-2: var(--wpea-space--sm);
+    --wpea-s-3: var(--wpea-space--md);
+    --wpea-s-4: var(--wpea-space--lg);
+    --wpea-s-5: var(--wpea-space--xl);
+  
+    /* Typography sizes */
+    --wpea-text--xs: calc(var(--wpea-fs-base) * 0.75);
+    --wpea-text--sm: calc(var(--wpea-text--xs) * var(--wpea-scale));
+    --wpea-text--md: calc(var(--wpea-text--sm) * var(--wpea-scale));
+    --wpea-text--lg: calc(var(--wpea-text--md) * var(--wpea-scale));
+    --wpea-text--xl: calc(var(--wpea-text--lg) * var(--wpea-scale));
+    --wpea-text--2xl: calc(var(--wpea-text--xl) * var(--wpea-scale));
+    --wpea-text--3xl: calc(var(--wpea-text--2xl) * var(--wpea-scale));
+    --wpea-text--4xl: calc(var(--wpea-text--3xl) * var(--wpea-scale));
+  
+    /* Grids */
+    --wpea-grid--1: repeat(1, minmax(0, 1fr));
+    --wpea-grid--2: repeat(2, minmax(0, 1fr));
+    --wpea-grid--3: repeat(3, minmax(0, 1fr));
+    --wpea-grid--4: repeat(4, minmax(0, 1fr));
+    --wpea-grid--5: repeat(5, minmax(0, 1fr));
+    --wpea-grid--6: repeat(6, minmax(0, 1fr));
+    --wpea-grid-auto-fit-300: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    --wpea-grid-auto-fit-350: repeat(auto-fit, minmax(min(350px, 100%), 1fr));
+    --wpea-grid-auto-fit-400: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
+  
+    /* Animation tokens */
+    --wpea-anim-duration--fast: 150ms;
+    --wpea-anim-duration--medium: 300ms;
+    --wpea-anim-duration--slow: 600ms;
+    --wpea-anim-distance--short: calc(var(--wpea-fs-base) * 0.25);
+    --wpea-anim-distance--medium: calc(var(--wpea-fs-base) * 0.5);
+    --wpea-anim-distance--long: calc(var(--wpea-fs-base) * 1);
+  
+    /* Shadows */
+    --wpea-shadow--s: 0 1px 2px rgba(0, 0, 0, 0.1);
+    --wpea-shadow--l: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --wpea-shadow--xl: 0 8px 16px rgba(0, 0, 0, 0.2);
+  
+    /* Surfaces (LIGHT) */
+    --wpea-surface--bg: var(--wpea-color--white);
+    --wpea-surface--muted: var(--wpea-color--neutral-l-9);
+    --wpea-surface--panel: var(--wpea-color--white);
+    --wpea-surface--border: var(--wpea-color--neutral-l-7);
+    --wpea-surface--divider: var(--wpea-color--neutral-l-7);
+    --wpea-surface--text: var(--wpea-color--text);
+    --wpea-surface--text-muted: var(--wpea-color--text-muted);
+    --wpea-surface--focus: var(--wpea-color--primary-t-50);
+    --wpea-focus-shadow: 0 0 0 3px var(--wpea-surface--focus);
+  
+    /* Elevations mapped to neutral ladder */
+    --wpea-surface--elev-1: var(--wpea-color--neutral-l-9);
+    --wpea-surface--elev-2: var(--wpea-color--neutral-l-8);
+    --wpea-surface--elev-3: var(--wpea-color--neutral-l-7);
+  
+    /* Radii */
+    --wpea-radius--sm: 6px;
+    --wpea-radius--md: 10px;
+    --wpea-radius--lg: 16px;
+    --wpea-radius--xl: 999px; /* pills */
+  }
+  
+  /* =========================
+     DARK MODE — scoped
+     ========================= */
+  .wpea-dark {
+    /* swap bases; variants auto-recompute */
+    --wpea-color--primary: #7aa2ff;
+    --wpea-color--secondary: #3fc0d3;
+    --wpea-color--neutral: #9aa0a6;
+  
+    --wpea-color--text: #f3f4f6;
+    --wpea-color--text-muted: #b7bcc5;
+  
+    /* Dark surfaces — deeper */
+    --wpea-surface--bg: #0f1115;
+    --wpea-surface--muted: var(--wpea-color--neutral-d-9);
+    --wpea-surface--panel: var(--wpea-color--neutral-d-8);
+    --wpea-surface--border: color-mix(in oklab, #ffffff, transparent 84%);
+    --wpea-surface--divider: color-mix(in oklab, #ffffff, transparent 80%);
+    --wpea-surface--text: var(--wpea-color--text);
+    --wpea-surface--text-muted: var(--wpea-color--text-muted);
+    --wpea-surface--focus: color-mix(in oklab, var(--wpea-color--primary), transparent 55%);
+    --wpea-focus-shadow: 0 0 0 3px var(--wpea-surface--focus);
+  
+    /* Dark elevations */
+    --wpea-surface--elev-1: var(--wpea-color--neutral-d-8);
+    --wpea-surface--elev-2: var(--wpea-color--neutral-d-7);
+    --wpea-surface--elev-3: var(--wpea-color--neutral-d-6);
+  
+    /* Dark shadows */
+    --wpea-shadow--s: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --wpea-shadow--l: 0 6px 12px rgba(0, 0, 0, 0.5);
+    --wpea-shadow--xl: 0 12px 18px rgba(0, 0, 0, 0.55);
+  
+    /* Badge theme tokens (dark) */
+    --wpea-badge--bg: var(--wpea-color--neutral-d-3);
+    --wpea-badge--fg: var(--wpea-color--white);
+  }
+  
+  /* =========================
+     BASE / ROOT WRAPPER
+     ========================= */
+  .wpea {
+    font-family: var(--wpea-font-sans);
+    font-size: var(--wpea-fs-base);
+    line-height: 1.5;
+    color: var(--wpea-surface--text);
+    background: var(--wpea-surface--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* =========================
+     UTILITIES
+     ========================= */
+  
+  /* Stack (vertical) & Cluster (horizontal) spacing via gap */
+  .wpea-stack { display: flex; flex-direction: column; gap: var(--wpea-space--md); }
+  .wpea-stack--sm { gap: var(--wpea-space--sm); }
+  .wpea-stack--lg { gap: var(--wpea-space--lg); }
+  
+  .wpea-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--wpea-space--sm); }
+  .wpea-cluster--md { gap: var(--wpea-space--md); }
+  .wpea-cluster--lg { gap: var(--wpea-space--lg); }
+  
+  /* Grid helpers */
+  .wpea-grid-2 { display:grid; grid-template-columns: var(--wpea-grid--2); gap: var(--wpea-space--md); }
+  .wpea-grid-3 { display:grid; grid-template-columns: var(--wpea-grid--3); gap: var(--wpea-space--md); }
+  .wpea-grid-4 { display:grid; grid-template-columns: var(--wpea-grid--4); gap: var(--wpea-space--md); }
+  .wpea-grid-auto-300 { display:grid; grid-template-columns: var(--wpea-grid-auto-fit-300); gap: var(--wpea-space--md); }
+  .wpea-grid-auto-350 { display:grid; grid-template-columns: var(--wpea-grid-auto-fit-350); gap: var(--wpea-space--md); }
+  .wpea-grid-auto-400 { display:grid; grid-template-columns: var(--wpea-grid-auto-fit-400); gap: var(--wpea-space--md); }
+  
+  /* Container query context */
+  .wpea-cq { container-type: inline-size; }
+  .wpea-cq--named { container-type: inline-size; container-name: wpea; }
+  
+  /* Responsive grid via container size (no media) */
+  .wpea-cq .wpea-grid-responsive { display:grid; grid-template-columns: var(--wpea-grid--1); gap: var(--wpea-space--md); }
+  @container (min-width: 30rem) { .wpea-grid-responsive { grid-template-columns: var(--wpea-grid--2); } }
+  @container (min-width: 48rem) { .wpea-grid-responsive { grid-template-columns: var(--wpea-grid--3); } }
+  @container (min-width: 64rem) { .wpea-grid-responsive { grid-template-columns: var(--wpea-grid--4); } }
+  
+  /* Visibility helpers using container width */
+  .wpea-cq .wpea-hide-md-down { display: none !important; }
+  @container (min-width: 48rem) { .wpea-hide-md-down { display: initial !important; } }
+  
+  /* Density (container-style query) */
+  @container style(--wpea-density: compact) {
+    .wpea-stack { gap: var(--wpea-space--sm); }
+    .wpea-stack--lg { gap: var(--wpea-space--md); }
+    .wpea-cluster { gap: var(--wpea-space--xs); }
+    .wpea-panel, .wpea-card { padding-block: var(--wpea-space--sm); padding-inline: var(--wpea-space--md); }
+    .wpea-input, .wpea-select, .wpea-textarea { padding-block: .35rem; padding-inline: .55rem; }
+    .wpea-btn { padding-block: .35rem; padding-inline: .8rem; }
+    .wpea-table th, .wpea-table td { padding-block: .5rem; padding-inline: .6rem; }
+  }
+  
+  /* Mode flags (container-style query) */
+  @container style(--wpea-mode: sidebar) {
+    .wpea-heading--md { font-size: var(--wpea-text--lg); }
+  }
+  
+  /* Typography utilities */
+  .wpea-text-xs { font-size: var(--wpea-text--xs); }
+  .wpea-text-sm { font-size: var(--wpea-text--sm); }
+  .wpea-text-md { font-size: var(--wpea-text--md); }
+  .wpea-text-lg { font-size: var(--wpea-text--lg); }
+  .wpea-text-xl { font-size: var(--wpea-text--xl); }
+  .wpea-text-2xl { font-size: var(--wpea-text--2xl); }
+  .wpea-text-3xl { font-size: var(--wpea-text--3xl); }
+  .wpea-text-4xl { font-size: var(--wpea-text--4xl); }
+  
+  .wpea-text-primary { color: var(--wpea-color--primary); }
+  .wpea-text-secondary { color: var(--wpea-color--secondary); }
+  .wpea-text-muted { color: var(--wpea-surface--text-muted); }
+  
+  /* Borders & radii & dividers */
+  .wpea-border { border: 1px solid var(--wpea-surface--border); }
+  .wpea-divider { border: 0; border-block-start: 1px solid var(--wpea-surface--divider); inline-size: 100%; block-size: 0; }
+  .wpea-rounded { border-radius: var(--wpea-radius--md); }
+  .wpea-rounded-sm { border-radius: var(--wpea-radius--sm); }
+  .wpea-rounded-lg { border-radius: var(--wpea-radius--lg); }
+  .wpea-rounded-pill { border-radius: var(--wpea-radius--xl); }
+  
+  /* Focus helper */
+  .wpea-focusable { outline: none; }
+  .wpea-focusable:focus-visible { box-shadow: var(--wpea-focus-shadow); }
+  
+  /* =========================
+     COMPONENTS
+     ========================= */
+  
+  /* Panels / Cards */
+  .wpea-panel,
+  .wpea-card {
+    background: var(--wpea-surface--panel);
+    color: var(--wpea-surface--text);
+    border: 1px solid var(--wpea-surface--border);
+    border-radius: var(--wpea-radius--lg);
+    box-shadow: var(--wpea-shadow--s);
+    display: flex;
+    flex-direction: column;
+    gap: var(--wpea-space--md);
+    padding-block: var(--wpea-space--lg);
+    padding-inline: var(--wpea-space--lg);
+  }
+  .wpea-panel--muted, .wpea-card--muted { background: var(--wpea-surface--muted); }
+  .wpea-card--hover:hover {
+    box-shadow: var(--wpea-shadow--l);
+    transform: translateY(-2px);
+    transition: transform var(--wpea-anim-duration--fast), box-shadow var(--wpea-anim-duration--fast);
+  }
+  .wpea-panel__header,
+  .wpea-card__header {
+    display:flex; align-items:center; justify-content:space-between;
+    gap: var(--wpea-space--sm);
+    padding-block-end: var(--wpea-space--sm);
+    border-block-end: 1px solid var(--wpea-surface--divider);
+  }
+  .wpea-card__title { font-size: var(--wpea-text--lg); font-weight: 700; line-height: 1.2; }
+  .wpea-card__sub   { font-size: var(--wpea-text--sm); color: var(--wpea-surface--text-muted); }
+  .wpea-card__actions { display:flex; gap: var(--wpea-space--sm); }
+  
+  /* Headings */
+  .wpea-heading { font-weight: 700; line-height: 1.2; color: var(--wpea-surface--text); }
+  .wpea-heading--sm { font-size: var(--wpea-text--lg); }
+  .wpea-heading--md { font-size: var(--wpea-text--xl); }
+  .wpea-heading--lg { font-size: var(--wpea-text--2xl); }
+  .wpea-heading--muted { color: var(--wpea-surface--text-muted); }
+  
+  /* Forms */
+  .wpea-field { display:grid; gap: .4rem; }
+  .wpea-label { font-size: var(--wpea-text--sm); color: var(--wpea-surface--text); }
+  .wpea-help  { font-size: var(--wpea-text--xs); color: var(--wpea-surface--text-muted); }
+  
+  .wpea-input,
+  .wpea-select,
+  .wpea-textarea {
+    appearance: none;
+    width: 100%;
+    font: inherit;
+    color: var(--wpea-surface--text);
+    background: var(--wpea-surface--panel);
+    border: 1px solid var(--wpea-surface--border);
+    border-radius: var(--wpea-radius--sm);
+    padding-block: calc(var(--wpea-space--sm) * .6);
+    padding-inline: var(--wpea-space--sm);
+    transition: box-shadow var(--wpea-anim-duration--fast), border-color var(--wpea-anim-duration--fast), background var(--wpea-anim-duration--fast);
+  }
+  .wpea-input::placeholder,
+  .wpea-textarea::placeholder { color: var(--wpea-surface--text-muted); }
+  
+  .wpea-input:focus-visible,
+  .wpea-select:focus-visible,
+  .wpea-textarea:focus-visible {
+    border-color: var(--wpea-color--primary);
+    box-shadow: var(--wpea-focus-shadow);
+    outline: none;
+  }
+  .wpea-input[disabled],
+  .wpea-select[disabled],
+  .wpea-textarea[disabled] { opacity: .6; cursor: not-allowed; }
+  
+  /* Input sizes */
+  .wpea-input--sm { padding-block: calc(var(--wpea-space--xs) * .7); padding-inline: var(--wpea-space--sm); font-size: var(--wpea-text--sm); }
+  .wpea-input--lg { padding-block: var(--wpea-space--sm); padding-inline: var(--wpea-space--md); font-size: var(--wpea-text--lg); }
+  
+  /* Switch (aria-checked) */
+  .wpea-control { display:flex; align-items:center; gap: .6em; }
+  .wpea-switch {
+    --_h: 1.3em; --_w: 2.4em;
+    inline-size: var(--_w); block-size: var(--_h);
+    border-radius: var(--wpea-radius--xl);
+    background: var(--wpea-color--neutral-t-40);
+    position: relative; cursor: pointer;
+    border: 1px solid var(--wpea-surface--border);
+    transition: background var(--wpea-anim-duration--fast), border-color var(--wpea-anim-duration--fast);
+  }
+  .wpea-switch::after {
+    content: ""; position: absolute; inset: 2px;
+    inline-size: calc(var(--_h) - 4px); block-size: calc(var(--_h) - 4px);
+    border-radius: 999px; background: var(--wpea-color--white);
+    box-shadow: var(--wpea-shadow--s);
+    transform: translateX(0);
+    transition: transform var(--wpea-anim-duration--fast);
+  }
+  .wpea-switch[aria-checked="true"] {
+    background: var(--wpea-color--primary-t-60); border-color: var(--wpea-color--primary);
+  }
+  .wpea-switch[aria-checked="true"]::after { transform: translateX(calc(var(--_w) - var(--_h))); }
+  
+  /* Buttons */
+  .wpea-btn {
+    --_bg: var(--wpea-color--neutral);
+    --_bg-hover: var(--wpea-color--neutral-d-2);
+    --_fg: var(--wpea-color--white);
+    --_shadow: var(--wpea-shadow--s);
+  
+    display:inline-flex; align-items:center; justify-content:center; gap:.6em;
+    font-size: var(--wpea-text--md);
+    padding-block: calc(var(--wpea-s-2) * .6);
+    padding-inline: var(--wpea-s-3);
+    border-radius: var(--wpea-radius--xl);
+    border: 0; background: var(--_bg); color: var(--_fg);
+    box-shadow: var(--_shadow); cursor: pointer;
+    transition: transform var(--wpea-anim-duration--fast), box-shadow var(--wpea-anim-duration--fast), background var(--wpea-anim-duration--fast);
+  }
+  .wpea-btn:hover { transform: translateY(-1px); box-shadow: var(--wpea-shadow--l); background: var(--_bg-hover); }
+  .wpea-btn:active { transform: translateY(0); box-shadow: var(--wpea-shadow--s); }
+  .wpea-btn:focus-visible { box-shadow: var(--wpea-shadow--l), var(--wpea-focus-shadow); }
+  
+  .wpea-btn--primary   { --_bg: var(--wpea-color--primary);   --_bg-hover: var(--wpea-color--primary-d-2); }
+  .wpea-btn--secondary { --_bg: var(--wpea-color--secondary); --_bg-hover: var(--wpea-color--secondary-d-2); }
+  .wpea-btn--ghost     { --_bg: transparent; --_bg-hover: var(--wpea-color--primary-t-10); --_fg: var(--wpea-color--primary); border: 1px solid var(--wpea-color--primary-t-40); }
+  .wpea-dark .wpea-btn--ghost:hover { background: var(--wpea-color--primary-t-20); }
+  
+  .wpea-btn--sm { font-size: var(--wpea-text--sm); padding-block: calc(var(--wpea-s-2) * .45); padding-inline: var(--wpea-s-2); }
+  .wpea-btn--lg { font-size: var(--wpea-text--lg); padding-block: var(--wpea-s-2); padding-inline: var(--wpea-s-4); }
+  
+  /* Tables */
+  .wpea-table {
+    inline-size:100%;
+    border-collapse: collapse;
+    background: var(--wpea-surface--panel);
+    border: 1px solid var(--wpea-surface--border);
+    border-radius: var(--wpea-radius--md);
+    overflow: hidden;
+  }
+  .wpea-table th, .wpea-table td { padding-block: .75rem; padding-inline: 1rem; border-block-start: 1px solid var(--wpea-surface--divider); }
+  .wpea-table thead th { background: var(--wpea-surface--muted); text-align:left; font-weight:600; }
+  
+  /* Alerts */
+  .wpea-alert { border: 1px solid; padding-block: var(--wpea-space--md); padding-inline: var(--wpea-space--md); border-radius: var(--wpea-radius--md); }
+  .wpea-alert--success { background: color-mix(in oklab, #16a34a, transparent 85%); border-color: color-mix(in oklab, #16a34a, transparent 60%); }
+  .wpea-alert--warning { background: color-mix(in oklab, #f59e0b, transparent 85%); border-color: color-mix(in oklab, #f59e0b, transparent 60%); }
+  .wpea-alert--danger  { background: color-mix(in oklab, #ef4444, transparent 85%); border-color: color-mix(in oklab, #ef4444, transparent 60%); }
+  
+  /* Badges */
+  :root {
+    --wpea-badge--bg: var(--wpea-color--neutral-l-9);
+    --wpea-badge--fg: var(--wpea-surface--text);
+  }
+  .wpea-dark {
+    --wpea-badge--bg: var(--wpea-color--neutral-d-3);
+    --wpea-badge--fg: var(--wpea-color--white);
+  }
+  .badge {
+    display:inline-block;
+    padding-block:.25em;
+    padding-inline:.6em;
+    border-radius: var(--wpea-radius--xl);
+    background: var(--wpea-badge--bg);
+    color: var(--wpea-badge--fg);
+    font-size: var(--wpea-text--xs);
+    line-height: 1.25;
+  }
+  .badge--primary { background: var(--wpea-color--primary-t-20); color: var(--wpea-color--primary); }
+  .badge--success { background: color-mix(in oklab, #16a34a, transparent 85%); color: #16a34a; }
+  .badge--warning { background: color-mix(in oklab, #f59e0b, transparent 85%); color: #f59e0b; }
+  .badge--danger  { background: color-mix(in oklab, #ef4444, transparent 85%); color: #ef4444; }
+  .wpea-dark .badge--primary { background: color-mix(in oklab, var(--wpea-color--primary-d-3), transparent 15%); color: var(--wpea-color--white); }
+  .wpea-dark .badge--success { background: color-mix(in oklab, #16a34a, transparent 30%); color: #e8fce9; }
+  .wpea-dark .badge--warning { background: color-mix(in oklab, #f59e0b, transparent 35%); color: #fff7e6; }
+  .wpea-dark .badge--danger  { background: color-mix(in oklab, #ef4444, transparent 30%); color: #ffecec; }
+  
+
+  /* =========================
+   FORMS — WordPress Admin Hardening
+   ========================= */
+
+/* Make sure everything in .wpea uses border-box so widths behave */
+.wpea, .wpea * { box-sizing: border-box; }
+
+/* Field layout */
+.wpea .wpea-field { display: grid; gap: .4rem; min-inline-size: 0; }
+.wpea .wpea-label { font-size: var(--wpea-text--sm); color: var(--wpea-surface--text); }
+.wpea .wpea-help  { font-size: var(--wpea-text--xs); color: var(--wpea-surface--text-muted); }
+
+/* High-specificity normalization so WP admin styles don’t leak in */
+.wpea .wpea-input,
+.wpea input.wpea-input,
+.wpea .wpea-select,
+.wpea select.wpea-select,
+.wpea .wpea-textarea,
+.wpea textarea.wpea-textarea {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+
+  font: inherit;
+  line-height: 1.4;
+
+  color: var(--wpea-surface--text);
+  background: var(--wpea-surface--panel);
+  background-clip: padding-box;
+
+  border: 1px solid var(--wpea-surface--border);
+  border-radius: var(--wpea-radius--sm);
+
+  padding-block: calc(var(--wpea-space--sm) * .6);
+  padding-inline: var(--wpea-space--sm);
+
+  /* Nix WP’s default inner/outer box-shadows and outlines */
+  box-shadow: none;
+  outline: none;
+
+  transition:
+    box-shadow var(--wpea-anim-duration--fast),
+    border-color var(--wpea-anim-duration--fast),
+    background var(--wpea-anim-duration--fast);
+}
+
+/* Placeholder color */
+.wpea .wpea-input::placeholder,
+.wpea .wpea-textarea::placeholder { color: var(--wpea-surface--text-muted); }
+
+/* Focus — beat WP’s focus rules by matching both :focus and :focus-visible */
+.wpea .wpea-input:focus,
+.wpea .wpea-input:focus-visible,
+.wpea .wpea-select:focus,
+.wpea .wpea-select:focus-visible,
+.wpea .wpea-textarea:focus,
+.wpea .wpea-textarea:focus-visible {
+  border-color: var(--wpea-color--primary);
+  box-shadow: var(--wpea-focus-shadow);
+  outline: none;
+}
+
+/* Disabled */
+.wpea .wpea-input[disabled],
+.wpea .wpea-select[disabled],
+.wpea .wpea-textarea[disabled] {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.wpea .wpea-input--sm,
+.wpea input.wpea-input--sm { padding-block: calc(var(--wpea-space--xs) * .7); padding-inline: var(--wpea-space--sm); font-size: var(--wpea-text--sm); }
+
+.wpea .wpea-input--lg,
+.wpea input.wpea-input--lg { padding-block: var(--wpea-space--sm); padding-inline: var(--wpea-space--md); font-size: var(--wpea-text--lg); }
+
+/* Select dropdown arrow (keeps our appearance across WP) */
+.wpea .wpea-select {
+  background-image:
+    linear-gradient(45deg, transparent 49%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 51%),
+    linear-gradient(to right, transparent, transparent);
+  background-position:
+    calc(100% - .9rem) center,
+    calc(100% - .6rem) center,
+    100% 0;
+  background-size: .45rem .45rem, .45rem .45rem, 2.5rem 100%;
+  background-repeat: no-repeat;
+  padding-inline-end: 2.4rem;
+}
