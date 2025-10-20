@@ -7,6 +7,8 @@
  * @package WP_Easy\RoleManager
  */
 
+import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+
 let { store } = $props();
 
 // State
@@ -162,34 +164,36 @@ $effect(() => {
         </p>
       </div>
     {:else}
-      <table class="wpea-table">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Action</th>
-            <th>Details</th>
-            <th>User</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each logs as log}
+      <div class="wpea-table-wrapper" use:doubleScrollbar>
+        <table class="wpea-table">
+          <thead>
             <tr>
-              <td>
-                {formatDate(log.timestamp)}
-              </td>
-              <td>
-                <strong>{log.action}</strong>
-              </td>
-              <td>
-                {log.details}
-              </td>
-              <td>
-                {log.user}
-              </td>
+              <th>Timestamp</th>
+              <th>Action</th>
+              <th>Details</th>
+              <th>User</th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each logs as log}
+              <tr>
+                <td>
+                  {formatDate(log.timestamp)}
+                </td>
+                <td>
+                  <strong>{log.action}</strong>
+                </td>
+                <td>
+                  {log.details}
+                </td>
+                <td>
+                  {log.user}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     {/if}
   </div>
 

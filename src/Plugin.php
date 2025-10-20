@@ -36,6 +36,9 @@ final class Plugin {
         // Initialize user profile enhancements
         Admin\UserProfile::init();
 
+        // Initialize Bricks Builder integration
+        Integrations\BricksBuilder::init();
+
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . plugin_basename(WPE_RM_PLUGIN_FILE), [self::class, 'add_settings_link']);
     }

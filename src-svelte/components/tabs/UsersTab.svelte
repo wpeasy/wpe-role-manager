@@ -8,6 +8,8 @@
  * @package WP_Easy\RoleManager
  */
 
+import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+
 let { store } = $props();
 
 // Local state
@@ -145,6 +147,22 @@ async function generateREST() {
   }
 }
 
+// Generate Bricks Builder token and copy to clipboard
+async function generateBricks() {
+  if (!selectedUser || !selectedCapability) return;
+
+  // Generate token with user ID: {wpe_has_capability:cap_name:user_id}
+  const bricksToken = `{wpe_has_capability:${selectedCapability}:${selectedUser.id}}`;
+
+  try {
+    await navigator.clipboard.writeText(bricksToken);
+    copiedButton = 'bricks';
+    setTimeout(() => { copiedButton = null; }, 2000);
+  } catch (error) {
+    console.error('Failed to copy:', error);
+  }
+}
+
 // Generate Fetch code and copy to clipboard
 async function generateFetch() {
   if (!selectedUser || !selectedCapability) return;
@@ -206,7 +224,8 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
         <p class="wpea-text-muted">No users found.</p>
       </div>
     {:else}
-      <table class="wpea-table">
+      <div class="wpea-table-wrapper" use:doubleScrollbar>
+        <table class="wpea-table">
         <thead>
           <tr>
             <th>User</th>
@@ -257,6 +276,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
           {/each}
         </tbody>
       </table>
+      </div>
     {/if}
   </div>
 
@@ -297,7 +317,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
                 />
                 <span>{role.name}</span>
                 {#if role.isCore}
-                  <span class="badge" style="margin-left: auto; background: var(--wpea-color--neutral-l-8); color: var(--wpea-surface--text);">Core</span>
+                  <span class="badge core" style="margin-left: auto;">Core</span>
                 {/if}
               </label>
             {/each}
@@ -430,6 +450,15 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
                     onclick={generateREST}
                   >
                     {copiedButton === 'rest' ? 'Copied!' : 'REST URL'}
+                  </button>
+
+                  <button
+                    type="button"
+                    class="wpea-btn wpea-btn--sm"
+                    class:wpea-btn--success={copiedButton === 'bricks'}
+                    onclick={generateBricks}
+                  >
+                    {copiedButton === 'bricks' ? 'Copied!' : 'Bricks Token'}
                   </button>
                 </div>
               </div>

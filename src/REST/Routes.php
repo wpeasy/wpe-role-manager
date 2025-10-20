@@ -1130,6 +1130,7 @@ final class Routes {
             'autosave_debounce' => 500,
             'log_retention' => 500,
             'color_scheme' => 'auto',
+            'compact_mode' => false,
         ]);
 
         return new WP_REST_Response([
@@ -1160,6 +1161,9 @@ final class Routes {
             'color_scheme' => isset($params['color_scheme'])
                 ? sanitize_text_field($params['color_scheme'])
                 : 'auto',
+            'compact_mode' => isset($params['compact_mode'])
+                ? (bool) $params['compact_mode']
+                : false,
         ];
 
         // Validate autosave_debounce range
@@ -1195,6 +1199,9 @@ final class Routes {
         }
         if (isset($params['color_scheme'])) {
             $changes[] = sprintf('Color scheme: %s', $settings['color_scheme']);
+        }
+        if (isset($params['compact_mode'])) {
+            $changes[] = sprintf('Compact mode: %s', $settings['compact_mode'] ? 'enabled' : 'disabled');
         }
 
         if (!empty($changes)) {

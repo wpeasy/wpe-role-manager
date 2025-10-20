@@ -8,6 +8,8 @@
  * @package WP_Easy\RoleManager
  */
 
+import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+
 let { store } = $props();
 
 // Local state
@@ -241,7 +243,7 @@ async function deleteCapability(roleSlug, capability) {
         <p class="wpea-text-muted">No capabilities found.</p>
       </div>
     {:else}
-      <div style="overflow: auto; max-height: 70vh;">
+      <div class="wpea-table-wrapper" use:doubleScrollbar style="max-height: 70vh;">
         <table class="wpea-table" style="min-width: 800px; overflow: visible !important; border-radius: 0;">
           <thead>
             <tr>
@@ -264,11 +266,11 @@ async function deleteCapability(roleSlug, capability) {
                 </td>
                 <td style="position: sticky; left: 250px; background: var(--wpea-surface--panel); z-index: 1; width: 100px; min-width: 100px; max-width: 100px;">
                   {#if cap.isCore}
-                    <span class="badge" style="background: var(--wpea-color--neutral-l-8); color: var(--wpea-surface--text); font-size: var(--wpea-text--2xs);">Core</span>
+                    <span class="badge core" style="font-size: var(--wpea-text--2xs);">Core</span>
                   {:else if cap.isExternal}
-                    <span class="badge" style="background: var(--wpea-color--warning-l-9); color: var(--wpea-color--warning); font-size: var(--wpea-text--2xs);">External</span>
+                    <span class="badge external" style="font-size: var(--wpea-text--2xs);">External</span>
                   {:else}
-                    <span class="badge" style="background: var(--wpea-color--primary-l-9); color: var(--wpea-color--primary); font-size: var(--wpea-text--2xs);">Custom</span>
+                    <span class="badge badge--primary" style="font-size: var(--wpea-text--2xs);">Custom</span>
                   {/if}
                 </td>
                 {#each filteredRoles as role}
@@ -278,7 +280,7 @@ async function deleteCapability(roleSlug, capability) {
                   {@const isUnset = !isGranted && !isDenied}
                   {@const isManaged = roleCapState?.managed === true}
 
-                  {@const bgColor = isGranted ? 'var(--wpea-color--success-l-9)' : isDenied ? 'var(--wpea-color--danger-l-9)' : 'transparent'}
+                  {@const bgColor = isGranted ? 'var(--wpea-cap-granted-bg)' : isDenied ? 'var(--wpea-cap-denied-bg)' : 'transparent'}
                   {@const currentState = isGranted ? 'granted' : isDenied ? 'denied' : 'unset'}
 
                   <td style="text-align: center; background: {bgColor};">

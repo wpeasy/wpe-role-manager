@@ -74,19 +74,226 @@
     font-size: var(--wpea-text--xs);
     font-weight: 600;
     border-radius: var(--wpea-radius--sm);
-    background: var(--wpea-color--primary-l-9);
-    color: var(--wpea-color--primary);
+    background: var(--wpea-badge--bg);
+    color: var(--wpea-badge--fg);
 }
 
 .badge.core {
-    background: var(--wpea-color--neutral-l-8);
-    color: var(--wpea-surface--text);
+    background: var(--wpea-badge-core-bg);
+    color: var(--wpea-badge-core-text);
+}
+
+.badge.external {
+    background: var(--wpea-badge-external-bg);
+    color: var(--wpea-badge-external-text);
 }
 
 .badge.disabled {
     background: var(--wpea-color--danger-l-9);
     color: var(--wpea-color--danger);
     opacity: 0.7;
+}
+
+/* Capability cell backgrounds */
+:root {
+    --wpea-cap-granted-bg: var(--wpea-color--success-l-9);
+    --wpea-cap-denied-bg: var(--wpea-color--danger-l-9);
+    --wpea-badge-core-bg: var(--wpea-color--neutral-l-8);
+    --wpea-badge-core-text: var(--wpea-surface--text);
+    --wpea-badge-external-bg: var(--wpea-color--warning-l-9);
+    --wpea-badge-external-text: var(--wpea-color--warning-d-2);
+}
+
+/* Dark mode overrides for capability backgrounds and badges */
+[data-color-scheme="dark"],
+:root:not([data-color-scheme]) {
+    @media (prefers-color-scheme: dark) {
+        --wpea-cap-granted-bg: color-mix(in oklab, var(--wpea-color--success), transparent 75%);
+        --wpea-cap-denied-bg: color-mix(in oklab, var(--wpea-color--danger), transparent 75%);
+        --wpea-badge-core-bg: var(--wpea-color--neutral-d-6);
+        --wpea-badge-core-text: var(--wpea-color--white);
+        --wpea-badge-external-bg: color-mix(in oklab, var(--wpea-color--warning), transparent 65%);
+        --wpea-badge-external-text: var(--wpea-color--warning-l-3);
+    }
+}
+
+[data-color-scheme="dark"] {
+    --wpea-cap-granted-bg: color-mix(in oklab, var(--wpea-color--success), transparent 75%);
+    --wpea-cap-denied-bg: color-mix(in oklab, var(--wpea-color--danger), transparent 75%);
+    --wpea-badge-core-bg: var(--wpea-color--neutral-d-6);
+    --wpea-badge-core-text: var(--wpea-color--white);
+    --wpea-badge-external-bg: color-mix(in oklab, var(--wpea-color--warning), transparent 65%);
+    --wpea-badge-external-text: var(--wpea-color--warning-l-3);
+}
+
+/* Legacy support */
+.wpea-dark {
+    --wpea-cap-granted-bg: color-mix(in oklab, var(--wpea-color--success), transparent 75%);
+    --wpea-cap-denied-bg: color-mix(in oklab, var(--wpea-color--danger), transparent 75%);
+    --wpea-badge-core-bg: var(--wpea-color--neutral-d-6);
+    --wpea-badge-core-text: var(--wpea-color--white);
+    --wpea-badge-external-bg: color-mix(in oklab, var(--wpea-color--warning), transparent 65%);
+    --wpea-badge-external-text: var(--wpea-color--warning-l-3);
+}
+
+/* Compact Mode */
+[data-compact-mode="true"] .wpe-rm-admin {
+    font-size: 14px;
+}
+
+[data-compact-mode="true"] .wpea-table {
+    font-size: 13px;
+}
+
+[data-compact-mode="true"] .wpea-table th,
+[data-compact-mode="true"] .wpea-table td {
+    padding-block: 0.4rem;
+    padding-inline: 0.6rem;
+}
+
+[data-compact-mode="true"] .wpea-card {
+    padding-block: var(--wpea-space--md);
+    padding-inline: var(--wpea-space--md);
+}
+
+[data-compact-mode="true"] .wpea-stack {
+    gap: var(--wpea-space--sm);
+}
+
+[data-compact-mode="true"] .wpea-heading--md {
+    font-size: var(--wpea-text--lg);
+}
+
+[data-compact-mode="true"] .wpea-heading--sm {
+    font-size: var(--wpea-text--md);
+}
+
+[data-compact-mode="true"] .wpea-btn {
+    padding-block: calc(var(--wpea-space--xs) * 0.7);
+    padding-inline: var(--wpea-space--sm);
+    font-size: var(--wpea-text--sm);
+}
+
+[data-compact-mode="true"] .wpea-btn--sm {
+    padding-block: calc(var(--wpea-space--xs) * 0.5);
+    padding-inline: calc(var(--wpea-space--xs) * 0.9);
+    font-size: var(--wpea-text--xs);
+}
+
+[data-compact-mode="true"] .badge {
+    padding: calc(var(--wpea-space--2xs) * 0.6) calc(var(--wpea-space--xs) * 0.8);
+    font-size: 10px;
+}
+
+[data-compact-mode="true"] .wpea-input,
+[data-compact-mode="true"] .wpea-select,
+[data-compact-mode="true"] .wpea-textarea {
+    padding-block: calc(var(--wpea-space--xs) * 0.6);
+    padding-inline: calc(var(--wpea-space--sm) * 0.8);
+    font-size: var(--wpea-text--sm);
+}
+
+[data-compact-mode="true"] code {
+    font-size: 12px;
+}
+
+/* Table Wrapper with Overflow */
+.wpea-table-wrapper {
+    overflow: auto;
+    /* Scrollbar for webkit browsers (Chrome, Safari, Edge) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--wpea-scrollbar-thumb) var(--wpea-scrollbar-track);
+}
+
+/* Top Scrollbar */
+.wpea-top-scrollbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 12px;
+    margin-bottom: var(--wpea-space--xs);
+    scrollbar-width: thin;
+    scrollbar-color: var(--wpea-scrollbar-thumb) var(--wpea-scrollbar-track);
+}
+
+.wpea-top-scrollbar::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.wpea-top-scrollbar::-webkit-scrollbar-track {
+    background: var(--wpea-scrollbar-track);
+    border-radius: 6px;
+}
+
+.wpea-top-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--wpea-scrollbar-thumb);
+    border-radius: 6px;
+    border: 2px solid var(--wpea-scrollbar-track);
+}
+
+.wpea-top-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--wpea-scrollbar-thumb-hover);
+}
+
+/* Custom Scrollbar Styling */
+.wpea-table-wrapper,
+.wpea-card {
+    scrollbar-width: thin;
+    scrollbar-color: var(--wpea-scrollbar-thumb) var(--wpea-scrollbar-track);
+}
+
+.wpea-table-wrapper::-webkit-scrollbar,
+.wpea-card::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.wpea-table-wrapper::-webkit-scrollbar-track,
+.wpea-card::-webkit-scrollbar-track {
+    background: var(--wpea-scrollbar-track);
+    border-radius: 6px;
+}
+
+.wpea-table-wrapper::-webkit-scrollbar-thumb,
+.wpea-card::-webkit-scrollbar-thumb {
+    background: var(--wpea-scrollbar-thumb);
+    border-radius: 6px;
+    border: 2px solid var(--wpea-scrollbar-track);
+}
+
+.wpea-table-wrapper::-webkit-scrollbar-thumb:hover,
+.wpea-card::-webkit-scrollbar-thumb:hover {
+    background: var(--wpea-scrollbar-thumb-hover);
+}
+
+/* Scrollbar color tokens */
+:root {
+    --wpea-scrollbar-track: var(--wpea-color--neutral-l-9);
+    --wpea-scrollbar-thumb: var(--wpea-color--neutral-l-6);
+    --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-l-5);
+}
+
+/* Dark mode scrollbar colors */
+[data-color-scheme="dark"],
+:root:not([data-color-scheme]) {
+    @media (prefers-color-scheme: dark) {
+        --wpea-scrollbar-track: var(--wpea-color--neutral-d-9);
+        --wpea-scrollbar-thumb: var(--wpea-color--neutral-d-5);
+        --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-d-4);
+    }
+}
+
+[data-color-scheme="dark"] {
+    --wpea-scrollbar-track: var(--wpea-color--neutral-d-9);
+    --wpea-scrollbar-thumb: var(--wpea-color--neutral-d-5);
+    --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-d-4);
+}
+
+/* Legacy support */
+.wpea-dark {
+    --wpea-scrollbar-track: var(--wpea-color--neutral-d-9);
+    --wpea-scrollbar-thumb: var(--wpea-color--neutral-d-5);
+    --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-d-4);
 }
 
 /* WordPress Admin Compatibility */

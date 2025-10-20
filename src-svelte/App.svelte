@@ -22,22 +22,29 @@ let { wpData = {} } = $props();
 // Create app store
 const store = createAppStore(wpData);
 
-// Color scheme state
+// Color scheme and compact mode state
 let colorScheme = $state('auto');
+let compactMode = $state(false);
 
 // Initialize on mount
 onMount(async () => {
   store.init();
 
-  // Fetch and apply color scheme
+  // Fetch and apply settings
   try {
     const response = await store.apiRequest('/settings');
-    if (response.settings?.color_scheme) {
-      colorScheme = response.settings.color_scheme;
-      applyColorScheme(colorScheme);
+    if (response.settings) {
+      if (response.settings.color_scheme) {
+        colorScheme = response.settings.color_scheme;
+        applyColorScheme(colorScheme);
+      }
+      if (response.settings.compact_mode !== undefined) {
+        compactMode = response.settings.compact_mode;
+        applyCompactMode(compactMode);
+      }
     }
   } catch (error) {
-    console.error('Error fetching color scheme:', error);
+    console.error('Error fetching settings:', error);
   }
 });
 
@@ -55,15 +62,32 @@ function applyColorScheme(scheme) {
   }
 }
 
-// Watch for color scheme changes from settings
+// Apply compact mode to document
+function applyCompactMode(compact) {
+  const root = document.documentElement;
+
+  if (compact) {
+    root.setAttribute('data-compact-mode', 'true');
+  } else {
+    root.removeAttribute('data-compact-mode');
+  }
+}
+
+// Watch for settings changes from settings tab
 $effect(() => {
   // This will be triggered when settings are saved
-  const checkColorScheme = async () => {
+  const checkSettings = async () => {
     try {
       const response = await store.apiRequest('/settings');
-      if (response.settings?.color_scheme && response.settings.color_scheme !== colorScheme) {
-        colorScheme = response.settings.color_scheme;
-        applyColorScheme(colorScheme);
+      if (response.settings) {
+        if (response.settings.color_scheme && response.settings.color_scheme !== colorScheme) {
+          colorScheme = response.settings.color_scheme;
+          applyColorScheme(colorScheme);
+        }
+        if (response.settings.compact_mode !== undefined && response.settings.compact_mode !== compactMode) {
+          compactMode = response.settings.compact_mode;
+          applyCompactMode(compactMode);
+        }
       }
     } catch (error) {
       // Silently fail - settings might not be available yet
@@ -72,7 +96,7 @@ $effect(() => {
 
   // Check every 2 seconds when settings tab is active
   if (store.currentTab === 'settings') {
-    const interval = setInterval(checkColorScheme, 2000);
+    const interval = setInterval(checkSettings, 2000);
     return () => clearInterval(interval);
   }
 });

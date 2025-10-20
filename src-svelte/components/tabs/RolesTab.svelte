@@ -7,6 +7,8 @@
  * @package WP_Easy\RoleManager
  */
 
+import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+
 let { store } = $props();
 
 // Local state
@@ -146,7 +148,8 @@ async function deleteRole() {
         <p class="wpea-text-muted">No roles found. {searchQuery ? 'Try a different search term.' : 'Create your first role!'}</p>
       </div>
     {:else}
-      <table class="wpea-table">
+      <div class="wpea-table-wrapper" use:doubleScrollbar>
+        <table class="wpea-table">
         <thead>
           <tr>
             <th>Role Name</th>
@@ -168,9 +171,9 @@ async function deleteRole() {
               </td>
               <td>
                 {#if role.isCore}
-                  <span class="badge"  style="background: var(--wpea-color--neutral-l-8); color: var(--wpea-surface--text);">Core</span>
+                  <span class="badge core">Core</span>
                 {:else if role.isExternal}
-                  <span class="badge" style="background: var(--wpea-color--warning-l-9); color: var(--wpea-color--warning);">External</span>
+                  <span class="badge external">External</span>
                 {:else}
                   <span class="badge badge--primary">Custom</span>
                 {/if}
@@ -214,6 +217,7 @@ async function deleteRole() {
           {/each}
         </tbody>
       </table>
+      </div>
     {/if}
   </div>
 

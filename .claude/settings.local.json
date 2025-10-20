@@ -1,34 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir -p \"assets/wpea\")",
-      "WebFetch(domain:www.wpeasy.au)",
-      "Bash(curl -o \"assets/wpea/claude.md\" \"https://www.wpeasy.au/ext/wpea/claude.md\")",
-      "Bash(curl -o \"assets/wpea/test-ui.html\" \"https://www.wpeasy.au/ext/wpea/test-ui.html\")",
-      "Bash(curl -o \"assets/wpea/wpea-framework.css\" \"https://www.wpeasy.au/ext/wpea/wpea-framework.css\")",
-      "Bash(curl -o \"assets/wpea/wpea-wp-resets.css\" \"https://www.wpeasy.au/ext/wpea/wpea-wp-resets.css\")",
-      "Bash(composer install --no-dev)",
-      "Bash(tree -L 3 -I 'vendor' --dirsfirst)",
-      "Bash(npm install)",
-      "Bash(npm run build)",
-      "Bash(composer dump-autoload --optimize)",
-      "Read(//c/Users/Alan.Blair/Downloads/**)",
-      "Bash(curl -o select2.min.css \"https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css\")",
-      "Bash(curl -o select2.min.js \"https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js\")",
-      "Bash(php -r \"echo ''Testing wp_prepare without parameters: ''; var_dump(sprintf(''SELECT blog_id FROM %s'', ''wp_blogs''));\")",
-      "Bash(php -r \"\n// Test the referer validation logic\n$home_url = ''http://example.com'';\n$test_cases = [\n    ''http://example.com:8080'',\n    ''https://example.com'',\n    ''http://example.com.evil.com'',\n    ''http://evil.com'',\n    ''http://example.com/admin'',\n];\n\nforeach ($test_cases as $referer) {\n    $referer_parsed = parse_url($referer);\n    $home_parsed = parse_url($home_url);\n    \n    $match = isset($referer_parsed[''host'']) && \n             isset($home_parsed[''host'']) && \n             $referer_parsed[''host''] === $home_parsed[''host''];\n    \n    echo $referer . '' => '' . ($match ? ''ALLOWED'' : ''BLOCKED'') . PHP_EOL;\n}\n\")",
-      "SlashCommand(/zip-plugin)",
-      "Bash(git add -A)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nv0.0.2-alpha: Full backup, dangerous cap override, security docs\n\nAdded:\n- Full backup/restore for all custom roles, caps, and assignments\n- Dangerous capability override setting with security warnings\n- Security documentation in Instructions page\n- Capability type filtering (All, Core, External, Custom)\n- Settings REST API endpoints\n\nChanged:\n- Settings tab redesigned (removed rate limiting)\n- Import/Export enhanced with dual-mode export\n\nFixed:\n- Capability type filter using correct boolean properties\n- Full backup export using correct API method\n- Capabilities now properly applied during restore\n- Setting scope corrected from users to roles\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git add plugin/)",
-      "Bash(git commit --amend -m \"$(cat <<''EOF''\nv0.0.2-alpha: Full backup, dangerous cap override, security docs\n\nAdded:\n- Full backup/restore for all custom roles, caps, and assignments\n- Dangerous capability override setting with security warnings\n- Security documentation in Instructions page\n- Capability type filtering (All, Core, External, Custom)\n- Settings REST API endpoints\n\nChanged:\n- Settings tab redesigned (removed rate limiting)\n- Import/Export enhanced with dual-mode export\n\nFixed:\n- Capability type filter using correct boolean properties\n- Full backup export using correct API method\n- Capabilities now properly applied during restore\n- Setting scope corrected from users to roles\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git push origin main)",
-      "Read(//c/Users/Alan.Blair/.claude/commands/**)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File create-zip.ps1)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nUpdate plugin ZIP: exclude build files and source\n\nExcluded from ZIP:\n- node_modules directory\n- src-svelte directory (source files)\n- .md files (CLAUDE.md, CHANGELOG.md, README.md)\n- Build config files (package.json, vite.config.js, etc.)\n- Dotfiles and IDE files\n\nZIP now contains only production files (35 files, 0.23 MB)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit -m \"Change ''Show Denied'' to ''Show not granted'' filter\n\nUpdated capability filter to show all non-granted capabilities (both denied and unset) instead of only explicitly denied capabilities. This provides better filtering for finding capabilities that are not granted to roles.\n\nChanges:\n- Renamed showDenied to showNotGranted\n- Updated filter logic: hasNotGranted checks for granted !== true\n- Updated UI label to ''Show not granted''\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
-      "Bash(git commit -m \"Remove filters, Access Control section, add log retention setting\n\nChanges:\n- Removed ''Show Granted'' and ''Show not granted'' filters from Capabilities tab\n- Removed Access Control section from Settings tab\n- Added log retention setting (100-10000 entries, default 500)\n- Updated Logger class to use configurable log retention from settings\n- Settings REST API now handles log_retention parameter\n- Simplified capability filtering logic\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
-      "Bash(git commit -m \"Add Light/Dark mode theme switcher with OS preference support\n\nAdded color scheme setting with three options:\n- Light: Force light mode\n- Dark: Force dark mode\n- Respect OS Setting: Auto-detect system preference (default)\n\nImplementation:\n- Added color_scheme setting to Settings tab (Appearance section)\n- Settings persisted via REST API with validation\n- App.svelte fetches and applies theme on mount\n- Uses data-color-scheme attribute on document root\n- Auto-refreshes when settings change\n- Theme changes logged to activity log\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
+      "Bash(powershell.exe -Command \"Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::OpenRead(''wpe-role-manager.zip'').Entries | Select-Object -First 10 FullName\")"
     ],
     "deny": [],
     "ask": []

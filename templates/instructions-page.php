@@ -42,11 +42,11 @@ defined('ABSPATH') || exit;
                     <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Role Types', 'wp-easy-role-manager'); ?></h3>
                     <div class="wpea-stack wpea-stack--xs">
                         <div class="wpea-cluster wpea-cluster--xs" style="align-items: flex-start;">
-                            <span class="badge" style="background: var(--wpea-color--neutral-l-8); color: var(--wpea-surface--text);"><?php esc_html_e('Core', 'wp-easy-role-manager'); ?></span>
+                            <span class="badge core"><?php esc_html_e('Core', 'wp-easy-role-manager'); ?></span>
                             <span><?php esc_html_e('WordPress default roles (Administrator, Editor, Author, Contributor, Subscriber) - Cannot be deleted or disabled', 'wp-easy-role-manager'); ?></span>
                         </div>
                         <div class="wpea-cluster wpea-cluster--xs" style="align-items: flex-start;">
-                            <span class="badge" style="background: var(--wpea-color--warning-l-9); color: var(--wpea-color--warning);"><?php esc_html_e('External', 'wp-easy-role-manager'); ?></span>
+                            <span class="badge external"><?php esc_html_e('External', 'wp-easy-role-manager'); ?></span>
                             <span><?php esc_html_e('Roles created by other plugins or themes - Can be viewed but not managed', 'wp-easy-role-manager'); ?></span>
                         </div>
                         <div class="wpea-cluster wpea-cluster--xs" style="align-items: flex-start;">
@@ -96,7 +96,7 @@ defined('ABSPATH') || exit;
                             <span><?php esc_html_e('User with this role explicitly does NOT have the capability', 'wp-easy-role-manager'); ?></span>
                         </div>
                         <div class="wpea-cluster wpea-cluster--xs">
-                            <span class="badge" style="background: var(--wpea-color--neutral-l-7); color: var(--wpea-surface--text);"><?php esc_html_e('Unset', 'wp-easy-role-manager'); ?></span>
+                            <span class="badge"><?php esc_html_e('Unset', 'wp-easy-role-manager'); ?></span>
                             <span><?php esc_html_e('Capability is not assigned to this role', 'wp-easy-role-manager'); ?></span>
                         </div>
                     </div>

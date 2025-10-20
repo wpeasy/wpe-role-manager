@@ -5,6 +5,124 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.3-alpha] - 2025-01-20
+
+### Added
+
+- **Custom Scrollbar Styling**
+  - Styled scrollbars throughout plugin to match light/dark mode theme
+  - Custom scrollbar colors: light mode (neutral-l-6 thumb, neutral-l-9 track), dark mode (neutral-d-5 thumb, neutral-d-9 track)
+  - Rounded scrollbar design with hover states
+  - Applied to all table views (Roles, Capabilities, Users, Logs)
+
+- **Double Scrollbar Feature**
+  - Synchronized top scrollbar for horizontally scrollable tables
+  - Top scrollbar appears automatically when table has horizontal overflow
+  - Bidirectional scroll synchronization (top ↔ bottom)
+  - ResizeObserver integration for responsive updates
+  - Svelte action: `doubleScrollbar` for reusable implementation
+
+- **Bricks Builder Integration**
+  - Custom condition group: "Role Manager" in Bricks Builder conditionals
+  - Condition: "User Has Capability" - check if current user has a capability
+  - Condition: "Specific User Has Capability" - check capability for specific user ID
+  - Dynamic data tag: `{wpe_has_capability:cap_name}` returns true/false/denied
+  - Optional user ID parameter: `{wpe_has_capability:cap_name:user_id}`
+  - "Bricks Token" button in Test Capability modal generates properly formatted tokens
+
+- **Light/Dark/Auto Theme Switcher**
+  - Setting: Color Scheme with three options (Light, Dark, Respect OS Setting)
+  - Auto-detect system preference when set to "Respect OS Setting" (default)
+  - Theme changes applied via `data-color-scheme` attribute on document root
+  - Theme persisted via REST API settings
+  - Theme changes logged to activity log
+
+- **Compact Mode**
+  - New setting: "Compact Mode" to reduce font sizes, spacing, and padding
+  - Reduces table font to 13px, row padding by ~30%
+  - Affects buttons, badges, inputs, headings, cards
+  - Applied via `data-compact-mode` attribute for global control
+  - Particularly useful for viewing more data on screen
+
+- **Custom Menu Icon**
+  - Replaced default dashicons-admin-users with custom SVG icon
+  - Icon represents role/capability management with interconnected nodes
+  - Properly sized (20x20) for WordPress admin sidebar
+  - Applied to both regular and network admin menus
+
+- **Log Retention Setting**
+  - Configurable log retention (100-10000 entries, default 500)
+  - Setting persisted via REST API
+  - Logger class uses configurable retention from settings
+  - Allows users to adjust based on their monitoring needs
+
+### Changed
+
+- **Settings Tab Reorganization**
+  - Removed "Access Control" section
+  - Added "Appearance" section with Color Scheme and Compact Mode settings
+  - Log Retention moved to Settings tab from hardcoded value
+  - Simplified UI with clearer section grouping
+
+- **WPEA Framework CSS Optimization**
+  - Consolidated redundant dark mode color definitions
+  - Reduced framework CSS by ~37 lines
+  - Simplified from three dark mode blocks to two (OS preference + explicit dark mode)
+  - Only override base colors in dark mode (variants auto-recalculate via color-mix)
+
+- **Shadow Tokens Enhancement**
+  - Shadows now use color tokens instead of static RGBA values
+  - Dark mode shadows become subtle colored glows using primary color
+  - Layered shadow approach: colored glow + black depth shadow
+  - All shadow levels (s, m, l, xl) updated with dynamic color-mix
+
+- **Table Structure**
+  - All tables wrapped in `.wpea-table-wrapper` div for overflow control
+  - Tables now properly scrollable horizontally when content overflows
+  - Consistent structure across all tabs (Roles, Users, Capabilities, Logs)
+
+### Removed
+
+- **Capability Filters from Capabilities Tab**
+  - Removed "Show Granted" and "Show not granted" filters
+  - Simplified capability matrix to show all states clearly
+  - Reduced UI complexity in Capabilities tab
+
+### Fixed
+
+- **Badge Dark Mode Issues (Comprehensive Fix)**
+  - Fixed all badges throughout plugin not respecting dark mode
+  - Removed hardcoded inline styles from RolesTab.svelte (Type, Status badges)
+  - Removed hardcoded inline styles from CapabilitiesTab.svelte (Type badges)
+  - Removed hardcoded inline styles from UsersTab.svelte (Role badges)
+  - Removed hardcoded inline styles from templates/instructions-page.php (example badges)
+  - Changed base `.badge` class to use CSS custom properties (`--wpea-badge--bg`, `--wpea-badge--fg`)
+  - Added proper dark mode support for all badge variants (core, external, success, warning, danger)
+  - Added all three dark mode trigger support: `[data-color-scheme="dark"]`, OS preference, `.wpea-dark` legacy
+
+- **Bricks Builder Integration Timing**
+  - Fixed BRICKS_VERSION not defined error on plugin initialization
+  - Changed hook from `plugins_loaded` to `after_setup_theme` with priority 20
+  - Ensures Bricks theme constant is available before integration attempts
+
+- **Bricks Builder Type Error**
+  - Fixed PHP Fatal error: `render_dynamic_tag(): Argument #1 ($tag) must be of type string, array given`
+  - Changed parameter type from `string $tag` to mixed `$tag` with type check
+  - Handles cases where Bricks passes array to filter
+
+- **Card Background Contrast**
+  - Added distinct backgrounds for app vs cards to improve visual separation
+  - App background: neutral-l-9 (light) / neutral-d-9 (dark)
+  - Card background: white (light) / neutral-d-8 (dark)
+  - Better depth perception and content hierarchy
+
+### Technical
+
+- **New File**: `src-svelte/lib/doubleScrollbar.js` - Svelte action for synchronized scrollbars
+- **New Integration**: `src/Integrations/BricksBuilder.php` - Complete Bricks Builder integration
+- **CSS Enhancement**: `assets/css/admin.css` - Scrollbar styling, compact mode, badge fixes (lines 200-260)
+- **Build System**: Vite build updated to include new Svelte action and imports
+
 ## [0.0.2-alpha] - 2025-01-19
 
 ### Added

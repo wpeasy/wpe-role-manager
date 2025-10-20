@@ -14,6 +14,7 @@ let settings = $state({
   autosaveDebounce: 500,
   logRetention: 500,
   colorScheme: 'auto', // 'light', 'dark', 'auto'
+  compactMode: false,
 });
 
 // Load settings on mount
@@ -29,6 +30,7 @@ async function fetchSettings() {
       settings.autosaveDebounce = response.settings.autosave_debounce || 500;
       settings.logRetention = response.settings.log_retention || 500;
       settings.colorScheme = response.settings.color_scheme || 'auto';
+      settings.compactMode = response.settings.compact_mode || false;
     }
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -45,6 +47,7 @@ async function saveSettings() {
         autosave_debounce: settings.autosaveDebounce,
         log_retention: settings.logRetention,
         color_scheme: settings.colorScheme,
+        compact_mode: settings.compactMode,
       }),
     });
     store.showSaved();
@@ -81,6 +84,18 @@ async function saveSettings() {
           <option value="auto">Respect OS Setting</option>
         </select>
         <p class="wpea-help">Choose your preferred color scheme. "Respect OS Setting" will automatically match your system preference.</p>
+      </div>
+
+      <div class="wpea-field">
+        <label class="wpea-control">
+          <input
+            type="checkbox"
+            bind:checked={settings.compactMode}
+            onchange={saveSettings}
+          />
+          <span>Compact Mode</span>
+        </label>
+        <p class="wpea-help">Reduces font sizes, spacing, and padding throughout the interface, especially in tables. Useful for viewing more data on screen.</p>
       </div>
     </div>
 
