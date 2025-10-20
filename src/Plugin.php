@@ -36,6 +36,9 @@ final class Plugin {
         // Initialize user profile enhancements
         Admin\UserProfile::init();
 
+        // Initialize capability filtering (enforce disabled roles/caps)
+        Helpers\CapabilityFilter::init();
+
         // Initialize Bricks Builder integration
         Integrations\BricksBuilder::init();
 

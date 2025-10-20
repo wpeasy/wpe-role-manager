@@ -17,7 +17,8 @@
       "Bash(git commit -m \"Optimize zip-plugin: permanent script, 80% less tokens\")",
       "Bash(git commit -m \"Add dark mode support to Instructions page and Select2 to user-new.php\")",
       "Bash(git commit -m \"Fix dark mode flash on page load\")",
-      "Bash(git commit -m \"Fix compact mode flash on page load\")"
+      "Bash(git commit -m \"Fix compact mode flash on page load\")",
+      "Bash(git commit -m \"SECURITY: Enforce disabled roles in WordPress capability checks\n\n- Added CapabilityFilter to hook user_has_cap filter\n- Disabled roles now actually block capabilities (not just UI)\n- Users with disabled roles no longer have those capabilities active\n- Critical security fix\")"
     ],
     "deny": [],
     "ask": []
