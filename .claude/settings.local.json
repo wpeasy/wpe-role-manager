@@ -20,7 +20,8 @@
       "Bash(git commit -m \"Fix compact mode flash on page load\")",
       "Bash(git commit -m \"SECURITY: Enforce disabled roles in WordPress capability checks\n\n- Added CapabilityFilter to hook user_has_cap filter\n- Disabled roles now actually block capabilities (not just UI)\n- Users with disabled roles no longer have those capabilities active\n- Critical security fix\")",
       "Bash(npm run build)",
-      "Bash(git commit -m \"Show ''Role Disabled'' status in Test Capability for disabled roles\n\n- Updated test_user_capability endpoint to detect disabled roles\n- Returns role_disabled status with disabled role names\n- Frontend displays Role Disabled message instead of Denied\n- Shows which specific roles are disabled\")"
+      "Bash(git commit -m \"Show ''Role Disabled'' status in Test Capability for disabled roles\n\n- Updated test_user_capability endpoint to detect disabled roles\n- Returns role_disabled status with disabled role names\n- Frontend displays Role Disabled message instead of Denied\n- Shows which specific roles are disabled\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nRemove disabled roles from user roles array completely\n\n- Added get_user_metadata filter to CapabilityFilter\n- Disabled roles now removed from wp_capabilities meta\n- Affects $user->roles array directly\n- Fixes Bricks Builder and all plugins checking role membership\n- Disabled roles are truly invisible to WordPress core and plugins\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
