@@ -166,14 +166,21 @@ final class Menu {
     private static function output_theme_script(): void {
         $settings = get_option('wpe_rm_settings', []);
         $color_scheme = $settings['color_scheme'] ?? 'auto';
+        $compact_mode = $settings['compact_mode'] ?? false;
         ?>
         <script>
         (function() {
             var scheme = <?php echo json_encode($color_scheme); ?>;
+            var compact = <?php echo json_encode($compact_mode); ?>;
+
             if (scheme === 'light') {
                 document.documentElement.setAttribute('data-color-scheme', 'light');
             } else if (scheme === 'dark') {
                 document.documentElement.setAttribute('data-color-scheme', 'dark');
+            }
+
+            if (compact) {
+                document.documentElement.setAttribute('data-compact-mode', 'true');
             }
         })();
         </script>
