@@ -863,13 +863,61 @@ final class Routes {
             );
         }
 
-        // Test if user has the capability
+        $disabled_roles = get_option('wpe_rm_disabled_roles', []);
+        $disabled_caps = get_option('wpe_rm_disabled_caps', []);
+
+        // Check if capability comes from a disabled role or is a disabled capability
+        $from_disabled_role = false;
+        $disabled_role_names = [];
+
+        foreach ($user->roles as $role_slug) {
+            $role = get_role($role_slug);
+            if (!$role) {
+                continue;
+            }
+
+            // Check if capability exists in this role
+            if (isset($role->capabilities[$capability])) {
+                // Check if entire role is disabled
+                if (in_array($role_slug, $disabled_roles, true)) {
+                    $from_disabled_role = true;
+                    global $wp_roles;
+                    $role_name = isset($wp_roles->roles[$role_slug])
+                        ? translate_user_role($wp_roles->roles[$role_slug]['name'])
+                        : $role_slug;
+                    $disabled_role_names[] = $role_name;
+                }
+
+                // Check if capability is disabled for this role
+                $role_disabled_caps = $disabled_caps[$role_slug] ?? [];
+                if (in_array($capability, $role_disabled_caps, true)) {
+                    $from_disabled_role = true;
+                    global $wp_roles;
+                    $role_name = isset($wp_roles->roles[$role_slug])
+                        ? translate_user_role($wp_roles->roles[$role_slug]['name'])
+                        : $role_slug;
+                    $disabled_role_names[] = $role_name . ' (capability disabled)';
+                }
+            }
+        }
+
+        // If capability only comes from disabled roles/caps, return special status
+        if ($from_disabled_role) {
+            return new WP_REST_Response([
+                'success' => true,
+                'result' => 'role_disabled',
+                'user_id' => $user_id,
+                'capability' => $capability,
+                'disabled_roles' => $disabled_role_names,
+            ], 200);
+        }
+
+        // Test if user has the capability (respects CapabilityFilter)
         $has_cap = $user->has_cap($capability);
 
         // Check if it's explicitly denied (false) or just not set (null)
         $all_caps = $user->get_role_caps();
         $is_denied = isset($all_caps[$capability]) && $all_caps[$capability] === false;
-        $is_not_set = !isset($all_caps[$capability]);
 
         $result = 'not_set';
         if ($has_cap) {

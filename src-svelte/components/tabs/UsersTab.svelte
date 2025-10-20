@@ -79,7 +79,7 @@ async function testUserCan() {
   try {
     store.showSaving();
     const response = await store.apiRequest(`/users/${selectedUser.id}/can/${selectedCapability}`);
-    testResult = response.result; // "granted", "denied", or "not_set"
+    testResult = response; // Now stores full response including disabled_roles if applicable
     store.showSaved();
   } catch (error) {
     console.error('Error testing capability:', error);
@@ -96,8 +96,8 @@ async function generateShortcode() {
 
   // Determine granted parameter based on test result
   // If capability is granted, show content when granted="true"
-  // If capability is denied or not_set, show content when granted="false"
-  const grantedParam = testResult === 'granted' ? 'true' : 'false';
+  // If capability is denied, not_set, or role_disabled, show content when granted="false"
+  const grantedParam = testResult?.result === 'granted' ? 'true' : 'false';
 
   const shortcode = `[wpe_cap capability="${selectedCapability}" granted="${grantedParam}"]Content only visible to users with this capability[/wpe_cap]`;
 
@@ -388,13 +388,18 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
             </div>
             <!-- Test Result -->
             {#if testResult}
-              <div class="wpea-alert" class:wpea-alert--success={testResult === 'granted'} class:wpea-alert--danger={testResult === 'denied'} class:wpea-alert--warning={testResult === 'not_set'}>
+              <div class="wpea-alert" class:wpea-alert--success={testResult.result === 'granted'} class:wpea-alert--danger={testResult.result === 'denied'} class:wpea-alert--warning={testResult.result === 'not_set' || testResult.result === 'role_disabled'}>
                 <p>
                   <strong>Result:</strong>
-                  {#if testResult === 'granted'}
+                  {#if testResult.result === 'granted'}
                     ✓ Granted - User has this capability
-                  {:else if testResult === 'denied'}
+                  {:else if testResult.result === 'denied'}
                     ✗ Denied - User does not have this capability
+                  {:else if testResult.result === 'role_disabled'}
+                    🚫 Role Disabled - This capability comes from a disabled role
+                    {#if testResult.disabled_roles && testResult.disabled_roles.length > 0}
+                      <br><small>Disabled roles: {testResult.disabled_roles.join(', ')}</small>
+                    {/if}
                   {:else}
                     − Not Set - Capability is not assigned to this user
                   {/if}

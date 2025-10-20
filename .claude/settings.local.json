@@ -18,7 +18,9 @@
       "Bash(git commit -m \"Add dark mode support to Instructions page and Select2 to user-new.php\")",
       "Bash(git commit -m \"Fix dark mode flash on page load\")",
       "Bash(git commit -m \"Fix compact mode flash on page load\")",
-      "Bash(git commit -m \"SECURITY: Enforce disabled roles in WordPress capability checks\n\n- Added CapabilityFilter to hook user_has_cap filter\n- Disabled roles now actually block capabilities (not just UI)\n- Users with disabled roles no longer have those capabilities active\n- Critical security fix\")"
+      "Bash(git commit -m \"SECURITY: Enforce disabled roles in WordPress capability checks\n\n- Added CapabilityFilter to hook user_has_cap filter\n- Disabled roles now actually block capabilities (not just UI)\n- Users with disabled roles no longer have those capabilities active\n- Critical security fix\")",
+      "Bash(npm run build)",
+      "Bash(git commit -m \"Show ''Role Disabled'' status in Test Capability for disabled roles\n\n- Updated test_user_capability endpoint to detect disabled roles\n- Returns role_disabled status with disabled role names\n- Frontend displays Role Disabled message instead of Denied\n- Shows which specific roles are disabled\")"
     ],
     "deny": [],
     "ask": []
