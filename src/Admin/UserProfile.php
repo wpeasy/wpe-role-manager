@@ -109,6 +109,10 @@ final class UserProfile {
                 line-height: 1.4;
                 font-size: 13px;
             }
+            .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__choice.role-disabled {
+                background-color: #d63638;
+                border-color: #d63638;
+            }
             .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
                 color: #fff;
                 margin-right: 6px;
@@ -143,19 +147,72 @@ final class UserProfile {
             .wpe-rm-role-selector .select2-container--default .select2-results__option[aria-selected=true] {
                 background-color: #f0f0f1;
             }
+            .wpe-rm-role-selector .select2-container--default .select2-results__option.role-disabled {
+                color: #d63638;
+                font-style: italic;
+            }
+            .wpe-rm-disabled-role-notice {
+                background: #fcf3cd;
+                border-left: 4px solid #dba617;
+                padding: 8px 12px;
+                margin-top: 8px;
+                display: none;
+            }
+            .wpe-rm-disabled-role-notice.visible {
+                display: block;
+            }
         ');
 
         // Initialize Select2
         wp_add_inline_script('wpe-rm-select2', '
             jQuery(document).ready(function($) {
+                var disabledRoles = ' . json_encode(get_option('wpe_rm_disabled_roles', [])) . ';
+
                 $("#wpe_rm_user_roles").select2({
                     placeholder: "Select roles...",
                     allowClear: false,
                     width: "100%",
                     dropdownAutoWidth: true,
-                    minimumResultsForSearch: Infinity, // Disable search box
-                    closeOnSelect: false // Keep dropdown open for multiple selections
+                    minimumResultsForSearch: Infinity,
+                    closeOnSelect: false,
+                    templateResult: function(data) {
+                        if (!data.id) return data.text;
+                        var $result = $("<span></span>");
+                        $result.text(data.text);
+                        if (disabledRoles.indexOf(data.id) !== -1) {
+                            $result.addClass("role-disabled");
+                        }
+                        return $result;
+                    }
                 });
+
+                // Update badge styling and notice when selection changes
+                function updateDisabledRoleIndicators() {
+                    var hasDisabled = false;
+                    $("#wpe_rm_user_roles").find("option:selected").each(function() {
+                        if (disabledRoles.indexOf($(this).val()) !== -1) {
+                            hasDisabled = true;
+                        }
+                    });
+
+                    // Add red styling to disabled role badges
+                    $(".select2-selection__choice").each(function() {
+                        var roleSlug = $(this).attr("title");
+                        if (roleSlug && disabledRoles.indexOf(roleSlug) !== -1) {
+                            $(this).addClass("role-disabled");
+                        }
+                    });
+
+                    // Show/hide notice
+                    if (hasDisabled) {
+                        $(".wpe-rm-disabled-role-notice").addClass("visible");
+                    } else {
+                        $(".wpe-rm-disabled-role-notice").removeClass("visible");
+                    }
+                }
+
+                $("#wpe_rm_user_roles").on("change", updateDisabledRoleIndicators);
+                updateDisabledRoleIndicators();
 
                 // Prevent typing in the select2 container
                 $(".wpe-rm-role-selector").on("keydown", ".select2-search__field", function(e) {
@@ -187,12 +244,16 @@ final class UserProfile {
             return;
         }
 
-        global $wp_roles;
+        global $wp_roles, $wpdb;
         if (!isset($wp_roles)) {
             $wp_roles = new \WP_Roles();
         }
 
-        $user_roles = $user->roles;
+        // Get raw user roles directly from database (bypassing filters)
+        // This ensures we can see disabled roles that are assigned
+        $capabilities = get_user_meta($user->ID, $wpdb->get_blog_prefix() . 'capabilities', true);
+        $user_roles = is_array($capabilities) ? array_keys($capabilities) : [];
+
         $disabled_roles = get_option('wpe_rm_disabled_roles', []);
         ?>
 
@@ -224,7 +285,6 @@ final class UserProfile {
                             <option
                                 value="<?php echo esc_attr($role_slug); ?>"
                                 <?php selected(in_array($role_slug, $user_roles, true)); ?>
-                                <?php disabled($is_disabled); ?>
                             >
                                 <?php echo esc_html($role_name); ?>
                             </option>
@@ -234,6 +294,11 @@ final class UserProfile {
                     <p class="description">
                         <?php esc_html_e('Select one or more roles for this user. Users can have multiple roles and will receive the combined capabilities of all assigned roles.', 'wp-easy-role-manager'); ?>
                     </p>
+
+                    <div class="wpe-rm-disabled-role-notice">
+                        <strong><?php esc_html_e('Warning:', 'wp-easy-role-manager'); ?></strong>
+                        <?php esc_html_e('One or more selected roles are disabled. Users with disabled roles will not have access to any capabilities from those roles.', 'wp-easy-role-manager'); ?>
+                    </div>
 
                     <?php if (count($user_roles) > 1): ?>
                         <p class="description">
@@ -389,7 +454,7 @@ final class UserProfile {
                                 $role_name .= ' (' . __('Disabled', 'wp-easy-role-manager') . ')';
                             }
                             ?>
-                            <option value="<?php echo esc_attr($role_slug); ?>" <?php selected($role_slug, $default_role); ?> <?php disabled($is_disabled); ?>>
+                            <option value="<?php echo esc_attr($role_slug); ?>" <?php selected($role_slug, $default_role); ?>>
                                 <?php echo esc_html($role_name); ?>
                             </option>
                         <?php endforeach; ?>
@@ -397,6 +462,12 @@ final class UserProfile {
                     <p class="description">
                         <?php esc_html_e('Select one or more roles for this user. Users can have multiple roles and will receive the combined capabilities of all assigned roles.', 'wp-easy-role-manager'); ?>
                     </p>
+
+                    <div class="wpe-rm-disabled-role-notice">
+                        <strong><?php esc_html_e('Warning:', 'wp-easy-role-manager'); ?></strong>
+                        <?php esc_html_e('One or more selected roles are disabled. Users with disabled roles will not have access to any capabilities from those roles.', 'wp-easy-role-manager'); ?>
+                    </div>
+
                     <?php wp_nonce_field('wpe_rm_update_user_roles', 'wpe_rm_user_roles_nonce'); ?>
                 </td>
             </tr>
