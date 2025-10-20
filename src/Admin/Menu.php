@@ -100,6 +100,9 @@ final class Menu {
             );
         }
 
+        // Apply theme immediately to prevent flash
+        self::output_theme_script();
+
         // Load the admin page template
         include WPE_RM_PLUGIN_PATH . 'templates/admin-page.php';
     }
@@ -118,6 +121,9 @@ final class Menu {
                 ['response' => 403]
             );
         }
+
+        // Apply theme immediately to prevent flash
+        self::output_theme_script();
 
         // Load the instructions page template
         include WPE_RM_PLUGIN_PATH . 'templates/instructions-page.php';
@@ -150,5 +156,27 @@ final class Menu {
     private static function get_required_capability(): string {
         $settings = get_option('wpe_rm_settings', []);
         return $settings['required_capability'] ?? 'manage_options';
+    }
+
+    /**
+     * Output inline script to apply theme immediately (prevent flash).
+     *
+     * @return void
+     */
+    private static function output_theme_script(): void {
+        $settings = get_option('wpe_rm_settings', []);
+        $color_scheme = $settings['color_scheme'] ?? 'auto';
+        ?>
+        <script>
+        (function() {
+            var scheme = <?php echo json_encode($color_scheme); ?>;
+            if (scheme === 'light') {
+                document.documentElement.setAttribute('data-color-scheme', 'light');
+            } else if (scheme === 'dark') {
+                document.documentElement.setAttribute('data-color-scheme', 'dark');
+            }
+        })();
+        </script>
+        <?php
     }
 }
