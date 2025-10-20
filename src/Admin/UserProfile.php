@@ -249,9 +249,14 @@ final class UserProfile {
             $wp_roles = new \WP_Roles();
         }
 
-        // Get raw user roles directly from database (bypassing filters)
+        // Get raw user roles directly from database (bypassing ALL filters including ours)
         // This ensures we can see disabled roles that are assigned
-        $capabilities = get_user_meta($user->ID, $wpdb->get_blog_prefix() . 'capabilities', true);
+        $capabilities = $wpdb->get_var($wpdb->prepare(
+            "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s",
+            $user->ID,
+            $wpdb->get_blog_prefix() . 'capabilities'
+        ));
+        $capabilities = maybe_unserialize($capabilities);
         $user_roles = is_array($capabilities) ? array_keys($capabilities) : [];
 
         $disabled_roles = get_option('wpe_rm_disabled_roles', []);
@@ -393,8 +398,15 @@ final class UserProfile {
             return;
         }
 
-        // Get current roles
-        $current_roles = $user->roles;
+        // Get current roles directly from database (bypassing filters)
+        global $wpdb;
+        $capabilities = $wpdb->get_var($wpdb->prepare(
+            "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s",
+            $user_id,
+            $wpdb->get_blog_prefix() . 'capabilities'
+        ));
+        $capabilities = maybe_unserialize($capabilities);
+        $current_roles = is_array($capabilities) ? array_keys($capabilities) : [];
 
         // Remove all current roles
         foreach ($current_roles as $role) {
@@ -506,7 +518,17 @@ final class UserProfile {
             return;
         }
 
-        foreach ($user->roles as $role) {
+        // Get current roles directly from database (bypassing filters)
+        global $wpdb;
+        $capabilities = $wpdb->get_var($wpdb->prepare(
+            "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s",
+            $user_id,
+            $wpdb->get_blog_prefix() . 'capabilities'
+        ));
+        $capabilities = maybe_unserialize($capabilities);
+        $current_roles = is_array($capabilities) ? array_keys($capabilities) : [];
+
+        foreach ($current_roles as $role) {
             $user->remove_role($role);
         }
 
