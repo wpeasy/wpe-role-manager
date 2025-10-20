@@ -379,3 +379,33 @@ defined('ABSPATH') || exit;
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    // Apply color scheme from settings
+    async function applyColorScheme() {
+        try {
+            const response = await fetch('<?php echo esc_url(rest_url('wpe-rm/v1/settings')); ?>', {
+                headers: {
+                    'X-WP-Nonce': '<?php echo wp_create_nonce('wp_rest'); ?>'
+                }
+            });
+            const data = await response.json();
+            const colorScheme = data.settings?.color_scheme || 'auto';
+
+            if (colorScheme === 'light') {
+                document.documentElement.setAttribute('data-color-scheme', 'light');
+            } else if (colorScheme === 'dark') {
+                document.documentElement.setAttribute('data-color-scheme', 'dark');
+            } else {
+                // Auto mode - respect OS preference
+                document.documentElement.removeAttribute('data-color-scheme');
+            }
+        } catch (error) {
+            console.error('Failed to load color scheme:', error);
+        }
+    }
+
+    applyColorScheme();
+})();
+</script>

@@ -14,7 +14,8 @@
       "Bash(unzip -l plugin/wpe-role-manager.zip)",
       "Bash(git commit -m \"Add plugin ZIP to correct location (plugin/ subfolder)\")",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File create-plugin-zip.ps1)",
-      "Bash(git commit -m \"Optimize zip-plugin: permanent script, 80% less tokens\")"
+      "Bash(git commit -m \"Optimize zip-plugin: permanent script, 80% less tokens\")",
+      "Bash(git commit -m \"Add dark mode support to Instructions page and Select2 to user-new.php\")"
     ],
     "deny": [],
     "ask": []

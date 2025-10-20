@@ -29,14 +29,17 @@ final class UserProfile {
         // Remove default WordPress role dropdown
         add_action('admin_head-user-edit.php', [self::class, 'hide_default_role_select']);
         add_action('admin_head-profile.php', [self::class, 'hide_default_role_select']);
+        add_action('admin_head-user-new.php', [self::class, 'hide_default_role_select']);
 
         // Add our custom role selector
         add_action('show_user_profile', [self::class, 'render_role_selector']);
         add_action('edit_user_profile', [self::class, 'render_role_selector']);
+        add_action('user_new_form', [self::class, 'render_role_selector_new_user']);
 
         // Save custom role assignments
         add_action('personal_options_update', [self::class, 'save_role_assignments']);
         add_action('edit_user_profile_update', [self::class, 'save_role_assignments']);
+        add_action('user_register', [self::class, 'save_role_assignments_new_user']);
     }
 
     /**
@@ -47,7 +50,7 @@ final class UserProfile {
      */
     public static function enqueue_assets(string $hook): void {
         // Only load on user edit screens
-        if (!in_array($hook, ['user-edit.php', 'profile.php'], true)) {
+        if (!in_array($hook, ['user-edit.php', 'profile.php', 'user-new.php'], true)) {
             return;
         }
 
@@ -344,6 +347,107 @@ final class UserProfile {
             \WP_Easy\RoleManager\Helpers\Logger::log(
                 'User Roles Updated',
                 sprintf('Updated roles for user "%s" (ID: %d): %s', $user->user_login, $user_id, $role_list)
+            );
+        }
+    }
+
+    /**
+     * Render role selector for new user screen.
+     *
+     * @return void
+     */
+    public static function render_role_selector_new_user(): void {
+        if (!current_user_can('promote_users')) {
+            return;
+        }
+
+        global $wp_roles;
+        if (!isset($wp_roles)) {
+            $wp_roles = new \WP_Roles();
+        }
+
+        $disabled_roles = get_option('wpe_rm_disabled_roles', []);
+        $default_role = get_option('default_role', 'subscriber');
+        ?>
+
+        <h2><?php esc_html_e('Role Manager', 'wp-easy-role-manager'); ?></h2>
+
+        <table class="form-table wpe-rm-role-selector" role="presentation">
+            <tr>
+                <th>
+                    <label for="wpe_rm_user_roles">
+                        <?php esc_html_e('User Roles', 'wp-easy-role-manager'); ?>
+                    </label>
+                </th>
+                <td>
+                    <select name="wpe_rm_user_roles[]" id="wpe_rm_user_roles" multiple="multiple" style="width: 25em;">
+                        <?php foreach ($wp_roles->roles as $role_slug => $role_info): ?>
+                            <?php
+                            $is_disabled = in_array($role_slug, $disabled_roles, true);
+                            $role_name = translate_user_role($role_info['name']);
+                            if ($is_disabled) {
+                                $role_name .= ' (' . __('Disabled', 'wp-easy-role-manager') . ')';
+                            }
+                            ?>
+                            <option value="<?php echo esc_attr($role_slug); ?>" <?php selected($role_slug, $default_role); ?> <?php disabled($is_disabled); ?>>
+                                <?php echo esc_html($role_name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description">
+                        <?php esc_html_e('Select one or more roles for this user. Users can have multiple roles and will receive the combined capabilities of all assigned roles.', 'wp-easy-role-manager'); ?>
+                    </p>
+                    <?php wp_nonce_field('wpe_rm_update_user_roles', 'wpe_rm_user_roles_nonce'); ?>
+                </td>
+            </tr>
+        </table>
+
+        <?php
+    }
+
+    /**
+     * Save role assignments for new user.
+     *
+     * @param int $user_id User ID.
+     * @return void
+     */
+    public static function save_role_assignments_new_user(int $user_id): void {
+        if (!current_user_can('promote_users')) {
+            return;
+        }
+
+        if (!isset($_POST['wpe_rm_user_roles_nonce']) || !wp_verify_nonce($_POST['wpe_rm_user_roles_nonce'], 'wpe_rm_update_user_roles')) {
+            return;
+        }
+
+        $new_roles = isset($_POST['wpe_rm_user_roles']) && is_array($_POST['wpe_rm_user_roles'])
+            ? array_map('sanitize_key', $_POST['wpe_rm_user_roles'])
+            : [];
+
+        $new_roles = array_filter($new_roles);
+
+        if (empty($new_roles)) {
+            return;
+        }
+
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return;
+        }
+
+        foreach ($user->roles as $role) {
+            $user->remove_role($role);
+        }
+
+        foreach ($new_roles as $role) {
+            $user->add_role($role);
+        }
+
+        if (class_exists('WP_Easy\RoleManager\Helpers\Logger')) {
+            $role_list = implode(', ', $new_roles);
+            \WP_Easy\RoleManager\Helpers\Logger::log(
+                'User Created',
+                sprintf('Created user "%s" (ID: %d) with roles: %s', $user->user_login, $user_id, $role_list)
             );
         }
     }
