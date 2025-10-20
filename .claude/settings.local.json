@@ -7,7 +7,11 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -File create-zip.ps1)",
       "Read(//c/Users/Alan.Blair/Local Sites/bricks-playground/app/public/wp-content/**)",
       "Bash(git rm wpe-role-manager.zip)",
-      "Bash(git add -A)"
+      "Bash(git add -A)",
+      "Bash(git commit -m \"Updated Plugin ZIP\")",
+      "Bash(git push origin main)",
+      "Bash(unzip -l wpe-role-manager.zip)",
+      "Bash(unzip -l plugin/wpe-role-manager.zip)"
     ],
     "deny": [],
     "ask": []
