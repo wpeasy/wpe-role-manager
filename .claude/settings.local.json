@@ -11,7 +11,10 @@
       "Bash(git commit -m \"Updated Plugin ZIP\")",
       "Bash(git push origin main)",
       "Bash(unzip -l wpe-role-manager.zip)",
-      "Bash(unzip -l plugin/wpe-role-manager.zip)"
+      "Bash(unzip -l plugin/wpe-role-manager.zip)",
+      "Bash(git commit -m \"Add plugin ZIP to correct location (plugin/ subfolder)\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File create-plugin-zip.ps1)",
+      "Bash(git commit -m \"Optimize zip-plugin: permanent script, 80% less tokens\")"
     ],
     "deny": [],
     "ask": []
