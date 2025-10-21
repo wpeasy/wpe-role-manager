@@ -36,10 +36,15 @@ final class UserProfile {
         add_action('edit_user_profile', [self::class, 'render_role_selector']);
         add_action('user_new_form', [self::class, 'render_role_selector_new_user']);
 
+        // Remove WordPress's default role field from POST to prevent it from overwriting ours
+        add_action('personal_options_update', [self::class, 'remove_default_role_field'], 1);
+        add_action('edit_user_profile_update', [self::class, 'remove_default_role_field'], 1);
+        add_action('user_register', [self::class, 'remove_default_role_field'], 1);
+
         // Save custom role assignments
-        add_action('personal_options_update', [self::class, 'save_role_assignments']);
-        add_action('edit_user_profile_update', [self::class, 'save_role_assignments']);
-        add_action('user_register', [self::class, 'save_role_assignments_new_user']);
+        add_action('personal_options_update', [self::class, 'save_role_assignments'], 10);
+        add_action('edit_user_profile_update', [self::class, 'save_role_assignments'], 10);
+        add_action('user_register', [self::class, 'save_role_assignments_new_user'], 10);
     }
 
     /**
@@ -233,6 +238,23 @@ final class UserProfile {
     }
 
     /**
+     * Remove WordPress's default role field from POST data.
+     *
+     * This prevents WordPress from overwriting our custom role assignments.
+     *
+     * @return void
+     */
+    public static function remove_default_role_field(): void {
+        if (!isset($_POST['wpe_rm_user_roles_nonce'])) {
+            // Not our form submission, skip
+            return;
+        }
+
+        // Remove WordPress's default role field to prevent it from overwriting our changes
+        unset($_POST['role']);
+    }
+
+    /**
      * Render custom role selector with Select2.
      *
      * @param WP_User $user User object.
@@ -248,6 +270,9 @@ final class UserProfile {
         if (!isset($wp_roles)) {
             $wp_roles = new \WP_Roles();
         }
+
+        // Clear user cache to ensure fresh data after save
+        clean_user_cache($user->ID);
 
         // Get raw user roles directly from database (bypassing ALL filters including ours)
         // This ensures we can see disabled roles that are assigned
@@ -398,18 +423,8 @@ final class UserProfile {
             return;
         }
 
-        // Get current roles directly from database (bypassing filters)
-        global $wpdb;
-        $capabilities = $wpdb->get_var($wpdb->prepare(
-            "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s",
-            $user_id,
-            $wpdb->get_blog_prefix() . 'capabilities'
-        ));
-        $capabilities = maybe_unserialize($capabilities);
-        $current_roles = is_array($capabilities) ? array_keys($capabilities) : [];
-
         // Remove all current roles
-        foreach ($current_roles as $role) {
+        foreach ($user->roles as $role) {
             $user->remove_role($role);
         }
 
@@ -518,17 +533,8 @@ final class UserProfile {
             return;
         }
 
-        // Get current roles directly from database (bypassing filters)
-        global $wpdb;
-        $capabilities = $wpdb->get_var($wpdb->prepare(
-            "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s",
-            $user_id,
-            $wpdb->get_blog_prefix() . 'capabilities'
-        ));
-        $capabilities = maybe_unserialize($capabilities);
-        $current_roles = is_array($capabilities) ? array_keys($capabilities) : [];
-
-        foreach ($current_roles as $role) {
+        // Remove default role assigned by WordPress
+        foreach ($user->roles as $role) {
             $user->remove_role($role);
         }
 

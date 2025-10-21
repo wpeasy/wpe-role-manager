@@ -99,17 +99,11 @@ final class CapabilityFilter {
             return $value;
         }
 
-        // Don't filter in admin contexts where we're managing roles
-        // This allows admins to see and edit disabled roles
+        // Only filter on frontend - do NOT filter in admin area at all
+        // This allows full admin control over roles while still blocking on frontend
         if (is_admin()) {
-            $current_screen = function_exists('get_current_screen') ? get_current_screen() : null;
-            if ($current_screen && in_array($current_screen->id, ['user-edit', 'user', 'profile', 'user-new'], true)) {
-                return $value;
-            }
-            // Also check for AJAX requests from our plugin
-            if (defined('DOING_AJAX') && DOING_AJAX) {
-                return $value;
-            }
+            // Don't filter in admin - allow full role management
+            return $value;
         }
 
         // Get disabled roles

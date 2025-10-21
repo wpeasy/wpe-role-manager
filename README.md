@@ -12,7 +12,12 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 
 ### Role Management
 - Create new custom roles (from scratch or based on existing roles)
-- Disable custom roles (soft-disable - users keep role mapping but role grants no capabilities)
+- Disable custom roles completely:
+  - Users retain role assignment in admin for visibility
+  - Role becomes invisible to WordPress core, plugins, and themes
+  - No capabilities granted from disabled roles
+  - Role membership checks (e.g., Bricks Builder conditions) return false
+  - Visual indicators (red badges) when assigning disabled roles
 - Delete custom roles (with user migration wizard)
 - Core roles are read-only and protected
 
@@ -24,10 +29,13 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 - Core capabilities are read-only
 
 ### User Management
-- Assign multiple roles to users
-- View effective capabilities (union across all user roles)
-- Test capability feature: check if a user has a specific capability
-- Generate code snippets for capability checks (Shortcode, PHP, Fetch, REST URL)
+- Assign multiple roles to users via Select2 interface on user edit screens
+- Visual warnings when assigning disabled roles (red badges)
+- View effective capabilities (union across all user roles, excluding disabled roles)
+- Test capability feature:
+  - Check if a user has a specific capability
+  - Shows "Role Disabled" status for capabilities from disabled roles
+  - Generate code snippets (Shortcode, PHP, Fetch, REST URL)
 - Bulk role assignment operations
 - User migration wizard when deleting roles
 
@@ -51,6 +59,16 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 - Status indicator (Saving… / Saved / Error)
 - Filter/search by role, capability, user, and prefix
 - Import/Export custom roles as JSON
+
+### Third-Party Integrations
+- **Bricks Builder Integration**:
+  - Custom element conditions: "User Has Capability", "Specific User Has Capability"
+  - Dynamic data tags: `{wpe_has_capability:cap_name}` and `{wpe_has_capability:cap_name:user_id}`
+  - Respects disabled roles (conditions return false for disabled role membership)
+- **WordPress User Edit Screens**:
+  - Enhanced Select2 multi-role assignment
+  - Replaces default WordPress single-role dropdown
+  - Shows disabled roles with visual warnings
 
 ### Multisite Compatible
 - Fully compatible with WordPress multisite
@@ -139,6 +157,25 @@ All endpoints require:
 - `GET /logs/actions` - Get unique action types for filtering
 
 ## Changelog
+
+### 0.0.3-alpha
+- Added custom scrollbar styling with light/dark mode support
+- Added double scrollbar (top/bottom) for wide tables
+- Added Bricks Builder integration (conditions and dynamic tags)
+- Added Light/Dark/Auto theme switcher with OS preference support
+- Added compact mode setting for denser UI
+- Added custom menu icon replacing default dashicons
+- Added log retention setting (100-10000 entries)
+- Added Appearance settings section
+- Fixed all dark mode badge issues across all tabs
+- Fixed Bricks Builder integration timing and type issues
+- Comprehensive disabled role enforcement:
+  - Disabled roles now filter from `$user->roles` on frontend
+  - Blocks capability grants from disabled roles
+  - Blocks role membership checks in third-party plugins
+  - Visual indicators (red badges) in Select2 on user edit screens
+- Enhanced Select2 role assignment on WordPress user edit/new pages
+- Improved card background contrast for better visual hierarchy
 
 ### 0.0.1-alpha
 - Initial development release

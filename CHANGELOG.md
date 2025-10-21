@@ -5,6 +5,64 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4-alpha] - 2025-01-21
+
+### Added
+
+- **Enhanced Select2 Role Assignment**
+  - Multi-role Select2 interface on WordPress user-edit.php and user-new.php screens
+  - Replaces default WordPress single-role dropdown
+  - Visual indicators for disabled roles (red italic text in dropdown, red badges when selected)
+  - Warning notice when disabled roles are selected
+  - Fully functional save with proper WordPress integration
+
+- **Comprehensive Disabled Role Enforcement**
+  - Disabled roles completely hidden from `$user->roles` array on frontend
+  - Role membership checks return false for disabled roles in all contexts
+  - Bricks Builder conditions correctly evaluate disabled roles as not present
+  - Capabilities from disabled roles completely blocked via `user_has_cap` filter
+  - Admin contexts bypass filtering to allow role management
+
+- **Test Capability "Role Disabled" Status**
+  - Test Capability feature now detects when capability comes from disabled role
+  - Returns special `role_disabled` status with list of disabled role names
+  - UI displays "🚫 Role Disabled" instead of "✗ Denied"
+  - Shows which specific roles are disabled affecting the capability
+
+### Fixed
+
+- **Select2 Save Bug**
+  - Fixed WordPress's default role field overwriting custom role assignments
+  - Added hook to remove `$_POST['role']` before WordPress processes it (priority 1)
+  - Select2 role changes now persist correctly on both user-edit.php and user-new.php
+  - User cache properly cleared to display fresh data after save
+
+- **Metadata Filter Admin Bypass**
+  - Disabled role filter now properly bypasses all admin contexts
+  - Select2 can display and edit disabled roles in admin
+  - Direct database reads for admin display to bypass all filters
+  - Filter still applies on frontend and in third-party plugins
+
+### Changed
+
+- **Instructions Page**
+  - Added "How Disabled Roles Work" section with comprehensive explanation
+  - Documented visual indicators and enforcement behavior
+  - Added use cases for disabling roles (seasonal, testing, deprecation)
+  - Updated user assignment section with disabled role warnings
+
+- **README Documentation**
+  - Expanded disabled role functionality documentation
+  - Added Third-Party Integrations section (Bricks Builder, WordPress User Screens)
+  - Updated changelog with v0.0.3-alpha and v0.0.4-alpha features
+
+### Technical
+
+- **New Filter Hook**: `remove_default_role_field()` - Prevents WordPress role field from overwriting custom assignments
+- **Enhanced CapabilityFilter**: Admin context detection via `is_admin()` check
+- **Database Direct Reads**: `$wpdb->get_var()` for user capabilities in admin render functions
+- **User Cache Management**: `clean_user_cache()` calls ensure fresh data display
+
 ## [0.0.3-alpha] - 2025-01-20
 
 ### Added

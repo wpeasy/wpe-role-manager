@@ -61,12 +61,28 @@ defined('ABSPATH') || exit;
                     <div class="wpea-stack wpea-stack--xs">
                         <div class="wpea-cluster wpea-cluster--xs" style="align-items: flex-start;">
                             <strong><?php esc_html_e('Disable:', 'wp-easy-role-manager'); ?></strong>
-                            <span><?php esc_html_e('Users keep the role assignment, but the role grants no capabilities. Good for temporary deactivation.', 'wp-easy-role-manager'); ?></span>
+                            <span><?php esc_html_e('Users keep the role assignment, but the role grants no capabilities. Good for temporary deactivation or deprecating roles.', 'wp-easy-role-manager'); ?></span>
                         </div>
                         <div class="wpea-cluster wpea-cluster--xs" style="align-items: flex-start;">
                             <strong><?php esc_html_e('Delete:', 'wp-easy-role-manager'); ?></strong>
                             <span><?php esc_html_e('Permanently removes the role. If users are assigned to this role, you must migrate them to another role first.', 'wp-easy-role-manager'); ?></span>
                         </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('How Disabled Roles Work', 'wp-easy-role-manager'); ?></h3>
+                    <p><?php esc_html_e('When a role is disabled:', 'wp-easy-role-manager'); ?></p>
+                    <ul class="wpea-list">
+                        <li><?php esc_html_e('Users with the disabled role retain the assignment in the admin area', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('The role is completely invisible to WordPress core, plugins, and themes', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('No capabilities from the disabled role are granted to users', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('Role membership checks (like Bricks Builder conditions) return false', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('Disabled roles can still be assigned to users with a visual warning', 'wp-easy-role-manager'); ?></li>
+                        <li><?php esc_html_e('In user edit screens, disabled roles display as red badges', 'wp-easy-role-manager'); ?></li>
+                    </ul>
+                    <div class="wpea-alert wpea-alert--info" style="margin-top: var(--wpea-space--sm);">
+                        <p><strong><?php esc_html_e('Use Case:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Disable roles when you want to temporarily revoke access without reassigning users. This is useful for seasonal roles, testing access restrictions, or deprecating roles gradually.', 'wp-easy-role-manager'); ?></p>
                     </div>
                 </div>
             </div>
@@ -134,6 +150,9 @@ defined('ABSPATH') || exit;
                         <li><?php esc_html_e('Check/uncheck roles - Changes save automatically', 'wp-easy-role-manager'); ?></li>
                         <li><?php esc_html_e('Users can have multiple roles', 'wp-easy-role-manager'); ?></li>
                     </ol>
+                    <div class="wpea-alert wpea-alert--warning" style="margin-top: var(--wpea-space--sm);">
+                        <p><strong><?php esc_html_e('Disabled Roles:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('When assigning roles on the user edit page, disabled roles appear in red italic text with a warning notice. You can still assign them, but users will not receive any capabilities or role membership from disabled roles.', 'wp-easy-role-manager'); ?></p>
+                    </div>
                 </div>
 
                 <div>
