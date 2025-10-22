@@ -393,6 +393,9 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
                   <strong>Result:</strong>
                   {#if testResult.result === 'granted'}
                     ✓ Granted - User has this capability
+                    {#if testResult.granting_roles && testResult.granting_roles.length > 0}
+                      <br><small>Granted by: {testResult.granting_roles.join(', ')}</small>
+                    {/if}
                   {:else if testResult.result === 'denied'}
                     ✗ Denied - User does not have this capability
                   {:else if testResult.result === 'role_disabled'}

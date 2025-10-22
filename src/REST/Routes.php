@@ -920,18 +920,44 @@ final class Routes {
         $is_denied = isset($all_caps[$capability]) && $all_caps[$capability] === false;
 
         $result = 'not_set';
+        $granting_roles = [];
+
         if ($has_cap) {
             $result = 'granted';
+
+            // Determine which roles granted this capability
+            global $wp_roles;
+            foreach ($user->roles as $role_slug) {
+                $role = get_role($role_slug);
+                if (!$role) {
+                    continue;
+                }
+
+                // Check if this role grants the capability (true value)
+                if (isset($role->capabilities[$capability]) && $role->capabilities[$capability] === true) {
+                    $role_name = isset($wp_roles->roles[$role_slug])
+                        ? translate_user_role($wp_roles->roles[$role_slug]['name'])
+                        : $role_slug;
+                    $granting_roles[] = $role_name;
+                }
+            }
         } elseif ($is_denied) {
             $result = 'denied';
         }
 
-        return new WP_REST_Response([
+        $response = [
             'success' => true,
             'result' => $result,
             'user_id' => $user_id,
             'capability' => $capability,
-        ], 200);
+        ];
+
+        // Add granting roles if capability is granted
+        if ($result === 'granted' && !empty($granting_roles)) {
+            $response['granting_roles'] = $granting_roles;
+        }
+
+        return new WP_REST_Response($response, 200);
     }
 
     /**
