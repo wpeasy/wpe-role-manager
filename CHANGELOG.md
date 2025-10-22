@@ -84,8 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom condition group: "Role Manager" in Bricks Builder conditionals
   - Condition: "User Has Capability" - check if current user has a capability
   - Condition: "Specific User Has Capability" - check capability for specific user ID
-  - Dynamic data tag: `{wpe_has_capability:cap_name}` returns true/false/denied
-  - Optional user ID parameter: `{wpe_has_capability:cap_name:user_id}`
+  - Dynamic data tag: `{wpe_rm_has_capability:cap_name}` returns true/false/denied
+  - Optional user ID parameter: `{wpe_rm_has_capability:cap_name:user_id}`
   - "Bricks Token" button in Test Capability modal generates properly formatted tokens
 
 - **Light/Dark/Auto Theme Switcher**

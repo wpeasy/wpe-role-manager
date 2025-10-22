@@ -151,8 +151,8 @@ async function generateREST() {
 async function generateBricks() {
   if (!selectedUser || !selectedCapability) return;
 
-  // Generate token with user ID: {wpe_has_capability:cap_name:user_id}
-  const bricksToken = `{wpe_has_capability:${selectedCapability}:${selectedUser.id}}`;
+  // Generate token with user ID: {wpe_rm_has_capability:cap_name:user_id}
+  const bricksToken = `{wpe_rm_has_capability:${selectedCapability}:${selectedUser.id}}`;
 
   try {
     await navigator.clipboard.writeText(bricksToken);
