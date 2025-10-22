@@ -5,6 +5,31 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5-alpha] - 2025-01-21
+
+### Added
+
+- **Test Capability: Granting Roles Display**
+  - Test Capability now shows which roles granted a capability
+  - Displays "Granted by: Role1, Role2, ..." under granted results
+  - REST API returns `granting_roles` array with role names
+  - Helps administrators understand capability sources
+
+### Changed
+
+- **Bricks Builder Prefix Update**
+  - Condition keys: `wpe_user_capability` → `wpe_rm_user_capability`
+  - Condition keys: `wpe_user_capability_for_user` → `wpe_rm_user_capability_for_user`
+  - Dynamic tag: `{wpe_has_capability}` → `{wpe_rm_has_capability}`
+  - Tag label: "WPE: Has Capability" → "WPE RM: Has Capability"
+  - Better namespacing specific to Role Manager plugin
+  - Avoids conflicts with other WP Easy plugins
+
+### Technical
+
+- **REST API Enhancement**: `/users/{id}/can/{capability}` now includes `granting_roles` in response
+- **Namespace Consistency**: All Bricks Builder integrations now use `wpe_rm_` prefix
+
 ## [0.0.4-alpha] - 2025-01-21
 
 ### Added
