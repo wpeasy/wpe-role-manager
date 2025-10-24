@@ -93,6 +93,7 @@ final class BricksBuilder {
                 'type'        => 'select',
                 'options'     => $capabilities,
                 'placeholder' => __('Select capability...', 'wp-easy-role-manager'),
+                'searchable'  => true,
             ],
         ];
 
