@@ -184,6 +184,81 @@ defined('ABSPATH') || exit;
                             <code style="background: var(--wpea-surface--muted); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm);">REST URL</code>
                             <span><?php esc_html_e('Direct REST API endpoint URL', 'wp-easy-role-manager'); ?></span>
                         </div>
+                        <div class="wpea-cluster wpea-cluster--xs">
+                            <code style="background: var(--wpea-surface--muted); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm);">Bricks Token</code>
+                            <span><?php esc_html_e('Bricks Builder dynamic tag token (if Bricks is active)', 'wp-easy-role-manager'); ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Integrations -->
+        <div class="wpea-card">
+            <div class="wpea-card__header">
+                <h2 class="wpea-card__title"><?php esc_html_e('3.5. Developer Integrations', 'wp-easy-role-manager'); ?></h2>
+            </div>
+
+            <div class="wpea-stack wpea-stack--sm">
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Shortcode: [wpe_rm_cap]', 'wp-easy-role-manager'); ?></h3>
+                    <p><?php esc_html_e('Use this shortcode to conditionally display content based on user capabilities.', 'wp-easy-role-manager'); ?></p>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Basic Usage:', 'wp-easy-role-manager'); ?></strong>
+                        <pre style="background: var(--wpea-surface--muted); padding: var(--wpea-space--sm); border-radius: var(--wpea-radius--sm); overflow-x: auto; margin-top: var(--wpea-space--xs);"><code>[wpe_rm_cap capability="edit_posts" granted="true"]
+    This content is only visible to users with edit_posts capability
+[/wpe_rm_cap]</code></pre>
+                    </div>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Show content when user lacks capability:', 'wp-easy-role-manager'); ?></strong>
+                        <pre style="background: var(--wpea-surface--muted); padding: var(--wpea-space--sm); border-radius: var(--wpea-radius--sm); overflow-x: auto; margin-top: var(--wpea-space--xs);"><code>[wpe_rm_cap capability="edit_posts" granted="false"]
+    Upgrade to Editor to create posts!
+[/wpe_rm_cap]</code></pre>
+                    </div>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Check specific user (by ID):', 'wp-easy-role-manager'); ?></strong>
+                        <pre style="background: var(--wpea-surface--muted); padding: var(--wpea-space--sm); border-radius: var(--wpea-radius--sm); overflow-x: auto; margin-top: var(--wpea-space--xs);"><code>[wpe_rm_cap capability="manage_options" granted="true" user_id="5"]
+    User ID 5 is an administrator
+[/wpe_rm_cap]</code></pre>
+                    </div>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Attributes:', 'wp-easy-role-manager'); ?></strong>
+                        <ul class="wpea-list" style="margin-top: var(--wpea-space--xs);">
+                            <li><code>capability</code> <?php esc_html_e('(required) - The capability to check', 'wp-easy-role-manager'); ?></li>
+                            <li><code>granted</code> <?php esc_html_e('(optional, default: true) - Show content when user has (true) or lacks (false) the capability', 'wp-easy-role-manager'); ?></li>
+                            <li><code>user_id</code> <?php esc_html_e('(optional, default: current user) - Check a specific user by ID', 'wp-easy-role-manager'); ?></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Bricks Builder Integration', 'wp-easy-role-manager'); ?></h3>
+                    <p><?php esc_html_e('If you have Bricks Builder installed, you can use custom conditions and dynamic data tags.', 'wp-easy-role-manager'); ?></p>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Element Conditions:', 'wp-easy-role-manager'); ?></strong>
+                        <ul class="wpea-list" style="margin-top: var(--wpea-space--xs);">
+                            <li><strong>User Has Capability</strong> - <?php esc_html_e('Check if current user has a capability (dropdown selection)', 'wp-easy-role-manager'); ?></li>
+                            <li><strong>Specific User Has Capability</strong> - <?php esc_html_e('Check capability for specific user (format: capability:user_id)', 'wp-easy-role-manager'); ?></li>
+                        </ul>
+                        <p style="margin-top: var(--wpea-space--xs);" class="wpea-text-muted"><?php esc_html_e('Find these under "Role Manager" group in Bricks element conditions.', 'wp-easy-role-manager'); ?></p>
+                    </div>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Dynamic Data Tag:', 'wp-easy-role-manager'); ?></strong>
+                        <pre style="background: var(--wpea-surface--muted); padding: var(--wpea-space--sm); border-radius: var(--wpea-radius--sm); overflow-x: auto; margin-top: var(--wpea-space--xs);"><code>{wpe_rm_capability_status:edit_posts}</code></pre>
+                        <p style="margin-top: var(--wpea-space--xs);" class="wpea-text-muted"><?php esc_html_e('Returns: "granted", "not-granted", or "denied"', 'wp-easy-role-manager'); ?></p>
+
+                        <strong style="display: block; margin-top: var(--wpea-space--sm);"><?php esc_html_e('For specific user:', 'wp-easy-role-manager'); ?></strong>
+                        <pre style="background: var(--wpea-surface--muted); padding: var(--wpea-space--sm); border-radius: var(--wpea-radius--sm); overflow-x: auto; margin-top: var(--wpea-space--xs);"><code>{wpe_rm_capability_status:edit_posts:5}</code></pre>
+                    </div>
+
+                    <div class="wpea-alert wpea-alert--info" style="margin-top: var(--wpea-space--sm);">
+                        <p><strong><?php esc_html_e('Tip:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Use the "Bricks Token" button in Test Capability to automatically generate the correct token syntax for any capability and user.', 'wp-easy-role-manager'); ?></p>
                     </div>
                 </div>
             </div>
