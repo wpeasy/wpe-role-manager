@@ -63,7 +63,8 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 ### Third-Party Integrations
 - **Bricks Builder Integration**:
   - Custom element conditions: "User Has Capability", "Specific User Has Capability"
-  - Dynamic data tags: `{wpe_rm_has_capability:cap_name}` and `{wpe_rm_has_capability:cap_name:user_id}`
+  - Dynamic data tags: `{wpe_rm_capability_status:cap_name}` and `{wpe_rm_capability_status:cap_name:user_id}`
+  - Tag returns: "granted", "not-granted", or "denied"
   - Respects disabled roles (conditions return false for disabled role membership)
 - **WordPress User Edit Screens**:
   - Enhanced Select2 multi-role assignment

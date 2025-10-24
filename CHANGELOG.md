@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bricks Builder Prefix Update**
   - Condition keys: `wpe_user_capability` → `wpe_rm_user_capability`
   - Condition keys: `wpe_user_capability_for_user` → `wpe_rm_user_capability_for_user`
-  - Dynamic tag: `{wpe_has_capability}` → `{wpe_rm_has_capability}`
+  - Dynamic tag: `{wpe_has_capability}` → `{wpe_rm_capability_status}`
   - Tag label: "WPE: Has Capability" → "WPE RM: Has Capability"
   - Better namespacing specific to Role Manager plugin
   - Avoids conflicts with other WP Easy plugins
@@ -109,8 +109,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom condition group: "Role Manager" in Bricks Builder conditionals
   - Condition: "User Has Capability" - check if current user has a capability
   - Condition: "Specific User Has Capability" - check capability for specific user ID
-  - Dynamic data tag: `{wpe_rm_has_capability:cap_name}` returns true/false/denied
-  - Optional user ID parameter: `{wpe_rm_has_capability:cap_name:user_id}`
+  - Dynamic data tag: `{wpe_rm_capability_status:cap_name}` returns granted/not-granted/denied
+  - Optional user ID parameter: `{wpe_rm_capability_status:cap_name:user_id}`
   - "Bricks Token" button in Test Capability modal generates properly formatted tokens
 
 - **Light/Dark/Auto Theme Switcher**

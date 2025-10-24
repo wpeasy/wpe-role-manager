@@ -170,8 +170,8 @@ final class BricksBuilder {
      */
     public static function register_dynamic_tags(array $tags): array {
         $tags[] = [
-            'name'  => '{wpe_rm_has_capability}',
-            'label' => 'WPE RM: Has Capability',
+            'name'  => '{wpe_rm_capability_status}',
+            'label' => 'WPE RM: Capability Status',
             'group' => 'Role Manager',
         ];
 
@@ -193,7 +193,7 @@ final class BricksBuilder {
         }
 
         // Check if this is our tag
-        if (strpos($tag, 'wpe_rm_has_capability') === false) {
+        if (strpos($tag, 'wpe_rm_capability_status') === false) {
             return $tag;
         }
 
@@ -210,13 +210,13 @@ final class BricksBuilder {
      */
     public static function render_dynamic_content(string $content, $post, string $context): string {
         // Check if content contains our tag
-        if (strpos($content, '{wpe_rm_has_capability') === false) {
+        if (strpos($content, '{wpe_rm_capability_status') === false) {
             return $content;
         }
 
         // Replace all instances of our tag
         return preg_replace_callback(
-            '/\{wpe_rm_has_capability:([^}]+)\}/',
+            '/\{wpe_rm_capability_status:([^}]+)\}/',
             function ($matches) {
                 return self::process_capability_tag($matches[0]);
             },
@@ -227,29 +227,29 @@ final class BricksBuilder {
     /**
      * Process the capability tag and return the result.
      *
-     * Syntax: {wpe_rm_has_capability:cap_name} or {wpe_rm_has_capability:cap_name:user_id}
+     * Syntax: {wpe_rm_capability_status:cap_name} or {wpe_rm_capability_status:cap_name:user_id}
      *
      * @param string $tag The full tag string.
-     * @return string Returns 'true', 'false', or 'denied'.
+     * @return string Returns 'granted', 'not-granted', or 'denied'.
      */
     private static function process_capability_tag(string $tag): string {
-        // Extract parameters from tag: {wpe_rm_has_capability:cap_name} or {wpe_rm_has_capability:cap_name:user_id}
-        if (!preg_match('/\{wpe_rm_has_capability:([^:}]+)(?::(\d+))?\}/', $tag, $matches)) {
-            return 'false';
+        // Extract parameters from tag: {wpe_rm_capability_status:cap_name} or {wpe_rm_capability_status:cap_name:user_id}
+        if (!preg_match('/\{wpe_rm_capability_status:([^:}]+)(?::(\d+))?\}/', $tag, $matches)) {
+            return 'not-granted';
         }
 
         $capability = sanitize_key($matches[1]);
         $user_id = isset($matches[2]) ? absint($matches[2]) : get_current_user_id();
 
-        // If no user ID, return false
+        // If no user ID, return not-granted
         if (!$user_id) {
-            return 'false';
+            return 'not-granted';
         }
 
         // Get the user
         $user = get_user_by('id', $user_id);
         if (!$user) {
-            return 'false';
+            return 'not-granted';
         }
 
         // Check if capability is explicitly denied
@@ -259,10 +259,10 @@ final class BricksBuilder {
 
         // Check if user has the capability
         if (user_can($user, $capability)) {
-            return 'true';
+            return 'granted';
         }
 
-        return 'false';
+        return 'not-granted';
     }
 
     /**
@@ -298,9 +298,9 @@ final class BricksBuilder {
      */
     public static function generate_token(string $capability, int $user_id = 0): string {
         if ($user_id > 0) {
-            return sprintf('{wpe_rm_has_capability:%s:%d}', $capability, $user_id);
+            return sprintf('{wpe_rm_capability_status:%s:%d}', $capability, $user_id);
         }
 
-        return sprintf('{wpe_rm_has_capability:%s}', $capability);
+        return sprintf('{wpe_rm_capability_status:%s}', $capability);
     }
 }
