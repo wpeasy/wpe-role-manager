@@ -99,7 +99,7 @@ async function generateShortcode() {
   // If capability is denied, not_set, or role_disabled, show content when granted="false"
   const grantedParam = testResult?.result === 'granted' ? 'true' : 'false';
 
-  const shortcode = `[wpe_cap capability="${selectedCapability}" granted="${grantedParam}"]Content only visible to users with this capability[/wpe_cap]`;
+  const shortcode = `[wpe_rm_cap capability="${selectedCapability}" granted="${grantedParam}"]Content only visible to users with this capability[/wpe_rm_cap]`;
 
   try {
     await navigator.clipboard.writeText(shortcode);
