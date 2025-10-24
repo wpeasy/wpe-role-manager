@@ -73,6 +73,9 @@ final class BricksBuilder {
      * @return array Modified conditions array.
      */
     public static function register_conditions(array $options): array {
+        // Get all available capabilities
+        $capabilities = self::get_all_capabilities();
+
         // Condition: Current user has capability
         $options[] = [
             'key'     => 'wpe_rm_user_capability',
@@ -87,8 +90,9 @@ final class BricksBuilder {
                 'placeholder' => __('has', 'wp-easy-role-manager'),
             ],
             'value'   => [
-                'type'        => 'text',
-                'placeholder' => __('Capability name (e.g. edit_posts)', 'wp-easy-role-manager'),
+                'type'        => 'select',
+                'options'     => $capabilities,
+                'placeholder' => __('Select capability...', 'wp-easy-role-manager'),
             ],
         ];
 
@@ -112,6 +116,39 @@ final class BricksBuilder {
         ];
 
         return $options;
+    }
+
+    /**
+     * Get all capabilities from all roles.
+     *
+     * @return array Array of capabilities with slug as key and display name as value.
+     */
+    private static function get_all_capabilities(): array {
+        global $wp_roles;
+
+        if (!isset($wp_roles)) {
+            $wp_roles = new \WP_Roles();
+        }
+
+        $capabilities = [];
+
+        // Collect all capabilities from all roles
+        foreach ($wp_roles->roles as $role_slug => $role_data) {
+            if (!isset($role_data['capabilities'])) {
+                continue;
+            }
+
+            foreach ($role_data['capabilities'] as $cap => $granted) {
+                // Use capability slug as both key and value
+                // Format: convert underscores to spaces and capitalize words for display
+                $capabilities[$cap] = ucwords(str_replace('_', ' ', $cap));
+            }
+        }
+
+        // Sort alphabetically by capability slug
+        ksort($capabilities);
+
+        return $capabilities;
     }
 
     /**
