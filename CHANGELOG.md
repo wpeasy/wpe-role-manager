@@ -5,6 +5,42 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.6-alpha] - 2025-01-21
+
+### Added
+
+- **WordPress Shortcode: `[wpe_rm_cap]`**
+  - Conditionally display content based on user capabilities
+  - Attributes: `capability` (required), `granted` (true/false), `user_id` (optional)
+  - Supports both current user and specific user ID checks
+  - Example: `[wpe_rm_cap capability="edit_posts" granted="true"]Content[/wpe_rm_cap]`
+
+- **Bricks Builder Capability Dropdown**
+  - "User Has Capability" condition now uses searchable dropdown
+  - Automatically populated with all available capabilities
+  - Capabilities sorted alphabetically
+  - Filterable/searchable for easy selection
+
+- **Developer Integrations Documentation**
+  - Added section 3.5 to Instructions page
+  - Complete shortcode documentation with examples
+  - Bricks Builder integration guide
+  - Code generation examples for all methods
+
+### Changed
+
+- **Bricks Builder Dynamic Tag Updates**
+  - Tag renamed: `{wpe_rm_has_capability}` → `{wpe_rm_capability_status}`
+  - Return values changed: `true/false/denied` → `granted/not-granted/denied`
+  - More semantic and descriptive status strings
+  - Tag label updated: "Has Capability" → "Capability Status"
+
+### Technical
+
+- **New Class**: `src/Helpers/Shortcodes.php` - WordPress shortcode handler
+- **Bricks Integration**: Added `get_all_capabilities()` method for dropdown population
+- **Shortcode Registration**: Initialized in `Plugin.php` via `Shortcodes::init()`
+
 ## [0.0.5-alpha] - 2025-01-21
 
 ### Added
