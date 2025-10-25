@@ -153,76 +153,72 @@ async function deleteCapability(roleSlug, capability) {
   </div>
 
   <!-- Actions Bar -->
-  <div class="wpea-stack wpea-stack--sm">
-    <div class="wpea-cluster wpea-cluster--md" style="justify-content: space-between; flex-wrap: wrap;">
-      <div class="wpea-cluster wpea-cluster--sm">
-        <div style="flex: 1; max-width: 300px;">
+  <div class="wpea-cluster wpea-cluster--sm" style="justify-content: space-between; flex-wrap: wrap; align-items: center;">
+    <div class="wpea-cluster wpea-cluster--sm" style="align-items: center;">
+      <input
+        type="search"
+        bind:value={searchQuery}
+        placeholder="Search capabilities..."
+        class="wpea-input"
+        style="width: 250px;"
+      />
+
+      <select bind:value={selectedRole} class="wpea-select" style="width: 180px;">
+        <option value="all">All Roles</option>
+        {#each store.roles as role}
+          <option value={role.slug}>{role.name}</option>
+        {/each}
+      </select>
+
+      <!-- Capability Type Filter (Radio Buttons) -->
+      <div class="wpea-cluster wpea-cluster--xs" style="padding: var(--wpea-space--sm); background: var(--wpea-surface--muted); border-radius: var(--wpea-radius--sm);">
+        <span style="font-size: var(--wpea-text--sm); font-weight: 500; color: var(--wpea-surface--text-muted);">Type:</span>
+        <label class="wpea-control" style="margin: 0;">
           <input
-            type="search"
-            bind:value={searchQuery}
-            placeholder="Search capabilities..."
-            class="wpea-input"
+            type="radio"
+            name="capability-type"
+            value="all"
+            bind:group={capabilityTypeFilter}
           />
-        </div>
-
-        <select bind:value={selectedRole} class="wpea-select" style="min-width: 200px;">
-          <option value="all">All Roles</option>
-          {#each store.roles as role}
-            <option value={role.slug}>{role.name}</option>
-          {/each}
-        </select>
-
+          <span style="font-size: var(--wpea-text--sm);">All</span>
+        </label>
+        <label class="wpea-control" style="margin: 0;">
+          <input
+            type="radio"
+            name="capability-type"
+            value="core"
+            bind:group={capabilityTypeFilter}
+          />
+          <span style="font-size: var(--wpea-text--sm);">Core</span>
+        </label>
+        <label class="wpea-control" style="margin: 0;">
+          <input
+            type="radio"
+            name="capability-type"
+            value="external"
+            bind:group={capabilityTypeFilter}
+          />
+          <span style="font-size: var(--wpea-text--sm);">External</span>
+        </label>
+        <label class="wpea-control" style="margin: 0;">
+          <input
+            type="radio"
+            name="capability-type"
+            value="custom"
+            bind:group={capabilityTypeFilter}
+          />
+          <span style="font-size: var(--wpea-text--sm);">Custom</span>
+        </label>
       </div>
-
-      <button
-        type="button"
-        class="wpea-btn wpea-btn--primary"
-        onclick={() => showAddCapModal = true}
-      >
-        + Add Capability
-      </button>
     </div>
 
-    <!-- Capability Type Filter (Radio Buttons) -->
-    <div class="wpea-cluster wpea-cluster--xs" style="padding: var(--wpea-space--sm); background: var(--wpea-surface--muted); border-radius: var(--wpea-radius--sm);">
-      <span style="font-size: var(--wpea-text--sm); font-weight: 500; color: var(--wpea-surface--text-muted);">Type:</span>
-      <label class="wpea-control" style="margin: 0;">
-        <input
-          type="radio"
-          name="capability-type"
-          value="all"
-          bind:group={capabilityTypeFilter}
-        />
-        <span style="font-size: var(--wpea-text--sm);">All</span>
-      </label>
-      <label class="wpea-control" style="margin: 0;">
-        <input
-          type="radio"
-          name="capability-type"
-          value="core"
-          bind:group={capabilityTypeFilter}
-        />
-        <span style="font-size: var(--wpea-text--sm);">Core</span>
-      </label>
-      <label class="wpea-control" style="margin: 0;">
-        <input
-          type="radio"
-          name="capability-type"
-          value="external"
-          bind:group={capabilityTypeFilter}
-        />
-        <span style="font-size: var(--wpea-text--sm);">External</span>
-      </label>
-      <label class="wpea-control" style="margin: 0;">
-        <input
-          type="radio"
-          name="capability-type"
-          value="custom"
-          bind:group={capabilityTypeFilter}
-        />
-        <span style="font-size: var(--wpea-text--sm);">Custom</span>
-      </label>
-    </div>
+    <button
+      type="button"
+      class="wpea-btn wpea-btn--primary"
+      onclick={() => showAddCapModal = true}
+    >
+      + Add Capability
+    </button>
   </div>
 
   <!-- Info Alert -->

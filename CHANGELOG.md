@@ -5,6 +5,17 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.7-alpha] - 2025-01-25
+
+### Changed
+
+- **Capabilities Tab UI Optimization**
+  - Search, Role Select, and Radio filter now on single row
+  - Reduced vertical space usage
+  - More compact layout
+  - Search input: 250px width
+  - Role Select: 180px width
+
 ## [0.0.6-alpha] - 2025-01-21
 
 ### Added

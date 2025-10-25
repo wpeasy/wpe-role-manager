@@ -26,7 +26,8 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nFix Select2 role assignment by bypassing metadata filters\n\n- Read raw capabilities directly from database in all user profile functions\n- Ensures disabled roles are visible for editing\n- Ensures disabled roles are properly removed when updating\n- Fixes empty role selection after save\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit -m \"$(cat <<''EOF''\nFix role assignment saves by skipping filter in admin contexts\n\n- Skip metadata filter when in user edit/profile/new screens\n- Allows disabled roles to be properly saved and removed\n- Filter still applies on frontend and in Bricks Builder\n- Fixes issue where role changes weren''t being saved\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit -m \"v0.0.4-alpha: First fully working version\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "SlashCommand(/zip-plugin)"
     ],
     "deny": [],
     "ask": []
