@@ -16,6 +16,7 @@ let showCreateModal = $state(false);
 let showDeleteModal = $state(false);
 let roleToDelete = $state(null);
 let deleteConfirmation = $state('');
+let removeFromUsers = $state(false);
 let newRole = $state({
   slug: '',
   name: '',
@@ -107,6 +108,7 @@ async function toggleRoleStatus(role) {
 function confirmDeleteRole(role) {
   roleToDelete = role;
   deleteConfirmation = '';
+  removeFromUsers = false;
   showDeleteModal = true;
 }
 
@@ -120,9 +122,24 @@ async function deleteRole() {
     return;
   }
 
+  // If role has users and checkbox not checked, show error
+  if (roleToDelete.userCount > 0 && !removeFromUsers) {
+    alert('Please check the box to confirm removal from users');
+    return;
+  }
+
   try {
     store.showSaving();
-    await store.apiRequest(`/roles/${roleToDelete.slug}`, {
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (removeFromUsers) {
+      params.append('remove_from_users', 'true');
+    }
+
+    const url = `/roles/${roleToDelete.slug}${params.toString() ? '?' + params.toString() : ''}`;
+
+    await store.apiRequest(url, {
       method: 'DELETE',
     });
 
@@ -132,6 +149,7 @@ async function deleteRole() {
     showDeleteModal = false;
     roleToDelete = null;
     deleteConfirmation = '';
+    removeFromUsers = false;
   } catch (error) {
     console.error('Error deleting role:', error);
     store.showError();
@@ -370,6 +388,29 @@ async function deleteRole() {
             You are about to delete the role <strong>{roleToDelete.name}</strong> (slug: <code>{roleToDelete.slug}</code>).
           </p>
 
+          {#if roleToDelete.userCount > 0}
+            <div class="wpea-alert wpea-alert--warning">
+              <p>
+                <strong>This role is assigned to {roleToDelete.userCount} user{roleToDelete.userCount === 1 ? '' : 's'}.</strong><br>
+                Roles assigned to users cannot be deleted unless you remove the role from all users first.
+              </p>
+            </div>
+
+            <div class="wpea-field">
+              <label style="display: flex; align-items: center; gap: var(--wpea-space--sm); cursor: pointer;">
+                <input
+                  type="checkbox"
+                  bind:checked={removeFromUsers}
+                  style="margin: 0; cursor: pointer;"
+                />
+                <span>
+                  I understand that this will remove the role from all {roleToDelete.userCount} user{roleToDelete.userCount === 1 ? '' : 's'} before deleting it
+                  <span style="color: #d63638;">*</span>
+                </span>
+              </label>
+            </div>
+          {/if}
+
           <div class="wpea-field">
             <label for="delete-confirm" class="wpea-label">
               Type <strong>delete</strong> to confirm <span style="color: #d63638;">*</span>
@@ -399,7 +440,7 @@ async function deleteRole() {
             class="wpea-btn"
             style="background: var(--wpea-color--danger); color: white;"
             onclick={deleteRole}
-            disabled={deleteConfirmation.toLowerCase() !== 'delete'}
+            disabled={deleteConfirmation.toLowerCase() !== 'delete' || (roleToDelete.userCount > 0 && !removeFromUsers)}
           >
             Delete Role
           </button>

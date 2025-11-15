@@ -483,6 +483,7 @@ final class Routes {
     public static function delete_role(WP_REST_Request $request) {
         $role_slug = sanitize_key($request->get_param('role'));
         $force = $request->get_param('force') === 'true' || $request->get_param('force') === true;
+        $remove_from_users = $request->get_param('remove_from_users') === 'true' || $request->get_param('remove_from_users') === true;
 
         if (empty($role_slug)) {
             return new WP_Error(
@@ -494,14 +495,28 @@ final class Routes {
 
         // Check if users exist with this role
         $user_count = RoleManager::count_users_in_role($role_slug);
-        if ($user_count > 0 && !$force) {
+        if ($user_count > 0 && !$force && !$remove_from_users) {
             return new WP_Error(
                 'role_has_users',
                 sprintf(
-                    __('Cannot delete role. %d user(s) currently have this role. Use force=true to delete anyway.', WPE_RM_TEXTDOMAIN),
+                    __('Cannot delete role. %d user(s) currently have this role. Use remove_from_users=true to remove from all users first.', WPE_RM_TEXTDOMAIN),
                     $user_count
                 ),
                 ['status' => 400, 'user_count' => $user_count]
+            );
+        }
+
+        // Remove role from all users if requested
+        if ($remove_from_users && $user_count > 0) {
+            $users = get_users(['role' => $role_slug]);
+            foreach ($users as $user) {
+                $user->remove_role($role_slug);
+            }
+
+            Logger::log(
+                'role',
+                'removed_from_users',
+                sprintf('Role "%s" removed from %d user(s) before deletion', $role_slug, $user_count)
             );
         }
 
@@ -530,7 +545,7 @@ final class Routes {
             );
         }
 
-        $success = RoleManager::delete_role($role_slug, $force);
+        $success = RoleManager::delete_role($role_slug, $force || $remove_from_users);
 
         if (!$success) {
             return new WP_Error(

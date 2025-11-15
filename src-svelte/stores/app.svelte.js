@@ -84,10 +84,8 @@ export function createAppStore(wpData = {}) {
   // Data fetching methods
   async function fetchRoles() {
     try {
-      showSaving();
       const data = await apiRequest('/roles');
       roles = data.roles || [];
-      showSaved();
     } catch (error) {
       console.error('Error fetching roles:', error);
       showError();
@@ -96,10 +94,8 @@ export function createAppStore(wpData = {}) {
 
   async function fetchUsers() {
     try {
-      showSaving();
       const data = await apiRequest('/users');
       users = data.users || [];
-      showSaved();
     } catch (error) {
       console.error('Error fetching users:', error);
       showError();
@@ -108,10 +104,8 @@ export function createAppStore(wpData = {}) {
 
   async function fetchCapabilities() {
     try {
-      showSaving();
       const data = await apiRequest('/capabilities');
       capabilities = data.capabilities || [];
-      showSaved();
     } catch (error) {
       console.error('Error fetching capabilities:', error);
       showError();
@@ -120,12 +114,10 @@ export function createAppStore(wpData = {}) {
 
   async function fetchCapabilityMatrix() {
     try {
-      showSaving();
       const data = await apiRequest('/capabilities/matrix');
       capabilityMatrix = data.matrix || [];
-      showSaved();
     } catch (error) {
-      console.error('Error fetching capability matrix:', error);
+      console.error('Error fetching capabilities:', error);
       showError();
     }
   }

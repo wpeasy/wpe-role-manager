@@ -115,9 +115,46 @@ const tabs = [
   { id: 'logs', label: wpData.i18n?.logsTab || 'Logs', component: LogsTab },
 ];
 
-// Get current tab component
+// Refresh data when switching tabs
+let previousTab = $state('');
 $effect(() => {
-  console.log('Current tab:', store.currentTab);
+  const currentTabId = store.currentTab;
+
+  // Skip refresh on initial load
+  if (previousTab === '') {
+    previousTab = currentTabId;
+    return;
+  }
+
+  // Only refresh if tab actually changed
+  if (previousTab !== currentTabId) {
+    console.log('Tab changed from', previousTab, 'to', currentTabId, '- refreshing data');
+
+    // Refresh data based on the new tab
+    switch (currentTabId) {
+      case 'roles':
+        store.fetchRoles();
+        break;
+      case 'capabilities':
+        store.fetchCapabilityMatrix();
+        break;
+      case 'users':
+        store.fetchUsers();
+        break;
+      case 'settings':
+        store.fetchSettings();
+        break;
+      // Logs and Revisions tabs handle their own data fetching via $effect in their components
+      default:
+        // For other tabs, refresh all core data
+        store.fetchRoles();
+        store.fetchCapabilityMatrix();
+        store.fetchUsers();
+        break;
+    }
+
+    previousTab = currentTabId;
+  }
 });
 </script>
 

@@ -5,6 +5,60 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.9-alpha] - 2025-01-25
+
+### Added
+
+- **Enhanced Role Deletion Safety**
+  - Delete modal shows warning when role is assigned to users
+  - Displays user count assigned to role
+  - Required checkbox confirmation to remove role from all users before deletion
+  - Delete button disabled until both confirmations complete (typed "delete" + checkbox if users exist)
+  - Backend removes role from all users before deletion when `remove_from_users=true`
+  - Activity log entry created when role removed from users before deletion
+
+- **Automatic Data Refresh on Tab Switch**
+  - Data automatically refreshes when switching between tabs
+  - Roles tab: refreshes roles data
+  - Capabilities tab: refreshes capability matrix
+  - Users tab: refreshes users data
+  - Settings tab: refreshes settings
+  - Other tabs: refresh all core data
+  - Console logging for tab change tracking
+
+### Changed
+
+- **Status Indicators Behavior**
+  - Removed "Saving/Saved" status from data fetch operations
+  - Status indicators now only appear for actual save/modify operations
+  - Silent background data loading on tab switches
+  - Error status still shown if fetch operations fail
+
+### Technical
+
+- **Routes.php Enhancement**:
+  - `delete_role` endpoint: Added `remove_from_users` parameter handling
+  - Removes role from all users via `$user->remove_role()` before deletion
+  - Activity logging for user role removal before deletion
+
+- **RolesTab.svelte Updates**:
+  - Added `removeFromUsers` state variable
+  - Enhanced delete modal with user count warning
+  - Required checkbox for roles with users
+  - Delete button disabled logic updated
+  - API call includes `remove_from_users` query parameter
+
+- **App.svelte Enhancements**:
+  - Added `previousTab` state tracking
+  - `$effect` hook watches for tab changes
+  - Automatic data refresh based on active tab
+  - Skip refresh on initial page load
+
+- **Store Updates (app.svelte.js)**:
+  - Removed `showSaving()` and `showSaved()` calls from all fetch methods
+  - `fetchRoles()`, `fetchUsers()`, `fetchCapabilities()`, `fetchCapabilityMatrix()`: silent fetching
+  - Error status still displayed on fetch failures
+
 ## [0.0.8-alpha] - 2025-01-25
 
 ### Added
