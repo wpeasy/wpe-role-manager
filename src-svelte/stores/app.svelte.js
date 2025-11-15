@@ -130,10 +130,19 @@ export function createAppStore(wpData = {}) {
     }
   }
 
+  async function fetchSettings() {
+    try {
+      const data = await apiRequest('/settings');
+      settings = data.settings || {};
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  }
+
   // Initialize data
   async function init() {
     console.log('WP Easy Role Manager - Svelte 5 App Initialized', wpData);
-    await Promise.all([fetchRoles(), fetchUsers(), fetchCapabilityMatrix()]);
+    await Promise.all([fetchRoles(), fetchUsers(), fetchCapabilityMatrix(), fetchSettings()]);
   }
 
   // Return the store interface
@@ -201,6 +210,7 @@ export function createAppStore(wpData = {}) {
     fetchUsers,
     fetchCapabilities,
     fetchCapabilityMatrix,
+    fetchSettings,
     init,
 
     // WordPress data

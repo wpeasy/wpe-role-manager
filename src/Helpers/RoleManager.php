@@ -184,6 +184,14 @@ final class RoleManager {
             return false;
         }
 
+        // Check if external deletion is allowed
+        $settings = get_option('wpe_rm_settings', ['allow_external_deletion' => false]);
+        $allow_external_deletion = $settings['allow_external_deletion'] ?? false;
+
+        if (self::is_external_role($slug) && !$allow_external_deletion) {
+            return false;
+        }
+
         // Check if role exists
         if (!get_role($slug)) {
             return false;
@@ -305,6 +313,45 @@ final class RoleManager {
             'fields' => 'ID',
             'number' => -1,
         ]);
+    }
+
+    /**
+     * Reset core WordPress roles to their default capabilities.
+     *
+     * @return array Result with success/error information.
+     */
+    public static function reset_core_roles(): array {
+        global $wp_roles;
+
+        if (!isset($wp_roles)) {
+            $wp_roles = new \WP_Roles();
+        }
+
+        // Save revision before resetting with complete snapshot
+        $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+        \WP_Easy\RoleManager\Helpers\Revisions::save(
+            'role',
+            'reset',
+            'Core roles reset to WordPress defaults',
+            $snapshot
+        );
+
+        // Remove all core roles
+        foreach (self::CORE_ROLES as $role_slug) {
+            remove_role($role_slug);
+        }
+
+        // Repopulate default roles and capabilities
+        require_once ABSPATH . 'wp-admin/includes/schema.php';
+        populate_roles();
+
+        $reset_count = count(self::CORE_ROLES);
+
+        return [
+            'success' => true,
+            'reset_count' => $reset_count,
+            'roles' => self::CORE_ROLES,
+        ];
     }
 
     /**

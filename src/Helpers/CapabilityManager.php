@@ -139,13 +139,23 @@ final class CapabilityManager {
             return false;
         }
 
+        // Cannot remove core capabilities
+        if (self::is_core_capability($capability)) {
+            return false;
+        }
+
         // Check if this role+capability pair was managed by the plugin
         $plugin_managed_caps = get_option('wpe_rm_managed_role_caps', []);
         $is_managed = isset($plugin_managed_caps[$role_slug]) &&
                       in_array($capability, $plugin_managed_caps[$role_slug], true);
 
-        // Can only remove capabilities that were added by this plugin
-        if (!$is_managed) {
+        // Check if external deletion is allowed
+        $settings = get_option('wpe_rm_settings', ['allow_external_deletion' => false]);
+        $allow_external_deletion = $settings['allow_external_deletion'] ?? false;
+        $is_external = self::is_external_capability($capability);
+
+        // Can remove if: managed by plugin OR (external AND setting allows it)
+        if (!$is_managed && !($is_external && $allow_external_deletion)) {
             return false;
         }
 

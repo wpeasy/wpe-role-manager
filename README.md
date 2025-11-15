@@ -30,6 +30,7 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 
 ### User Management
 - Assign multiple roles to users via Select2 interface on user edit screens
+- Default WordPress role selector hidden on user-new.php to avoid confusion
 - Visual warnings when assigning disabled roles (red badges)
 - View effective capabilities (union across all user roles, excluding disabled roles)
 - Test capability feature:
@@ -46,6 +47,19 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 - Tracks who changed what and when
 - Timestamps in both local and GMT
 
+### Revision History
+- **Complete state snapshots** for all role and capability changes
+- Automatic revision tracking for all operations:
+  - Role creation, modification, deletion
+  - Capability addition, removal, toggle (grant/deny/unset)
+  - Role enable/disable operations
+- **Full plugin metadata preservation** in snapshots:
+  - Tracks which roles and capabilities were created by the plugin
+  - Ensures proper classification (Core, External, Custom) after restoration
+  - Preserves disabled states and managed capability assignments
+- One-click restoration to any previous state
+- Complete audit trail of configuration changes
+
 ### Safety Features
 - Core roles and capabilities are protected (read-only)
 - Typed confirmation required for role deletion
@@ -54,10 +68,11 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 - Rate limiting on bulk operations
 
 ### UX Features
-- Single-page admin UI with tabbed navigation
+- Single-page admin UI with tabbed navigation (Roles, Capabilities, Users, Import/Export, Settings, Tools, Revisions, Logs)
 - Autosave on change (no "Save" button needed)
 - Status indicator (Saving… / Saved / Error)
 - Filter/search by role, capability, user, and prefix
+- **Sortable table columns:** Role Name and Capability columns with toggle sort direction (↑/↓) and alphabetical default sort
 - Import/Export custom roles as JSON
 
 ### Third-Party Integrations
@@ -141,18 +156,21 @@ All endpoints require:
 
 ### Endpoints
 - `GET /roles` - Get all roles
-- `POST /roles` - Create new role
-- `PATCH /roles/{role}` - Update role
-- `DELETE /roles/{role}` - Delete role
-- `POST /roles/{role}/caps` - Add capability to role
-- `PATCH /roles/{role}/caps/{cap}` - Toggle capability state (grant/deny/unset)
-- `DELETE /roles/{role}/caps/{cap}` - Remove capability from role
+- `POST /roles` - Create new role (saves revision)
+- `PATCH /roles/{role}` - Update role (saves revision)
+- `DELETE /roles/{role}` - Delete role (saves revision)
+- `POST /roles/{role}/caps` - Add capability to role (saves revision)
+- `PATCH /roles/{role}/caps/{cap}` - Toggle capability state (grant/deny/unset) (saves revision)
+- `DELETE /roles/{role}/caps/{cap}` - Remove capability from role (saves revision)
 - `GET /users` - Get users with roles
 - `PATCH /users/{id}/roles` - Update user roles
 - `GET /users/{id}/effective-caps` - Get user's effective capabilities
 - `GET /users/{id}/can/{capability}` - Test if user has a capability
 - `GET /export` - Export custom roles to JSON
 - `POST /import` - Import roles from JSON
+- `GET /revisions` - Get all revision snapshots
+- `POST /revisions/{id}/restore` - Restore to a specific revision
+- `DELETE /revisions/{id}` - Delete a specific revision
 - `GET /logs` - Get activity logs (with optional action/details filters)
 - `DELETE /logs` - Clear all logs
 - `GET /logs/actions` - Get unique action types for filtering

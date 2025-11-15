@@ -13,6 +13,8 @@ import RolesTab from './components/tabs/RolesTab.svelte';
 import CapabilitiesTab from './components/tabs/CapabilitiesTab.svelte';
 import UsersTab from './components/tabs/UsersTab.svelte';
 import ImportExportTab from './components/tabs/ImportExportTab.svelte';
+import RevisionsTab from './components/tabs/RevisionsTab.svelte';
+import ToolsTab from './components/tabs/ToolsTab.svelte';
 import SettingsTab from './components/tabs/SettingsTab.svelte';
 import LogsTab from './components/tabs/LogsTab.svelte';
 
@@ -108,6 +110,8 @@ const tabs = [
   { id: 'users', label: wpData.i18n?.usersTab || 'Users', component: UsersTab },
   { id: 'import-export', label: wpData.i18n?.importExportTab || 'Import/Export', component: ImportExportTab },
   { id: 'settings', label: wpData.i18n?.settingsTab || 'Settings', component: SettingsTab },
+  { id: 'tools', label: wpData.i18n?.toolsTab || 'Tools', component: ToolsTab },
+  { id: 'revisions', label: wpData.i18n?.revisionsTab || 'Revisions', component: RevisionsTab },
   { id: 'logs', label: wpData.i18n?.logsTab || 'Logs', component: LogsTab },
 ];
 

@@ -52,6 +52,7 @@ No public-facing functionality.
   - **Autosave on change** (no "Save" button) with a **status indicator** (Saving… / Saved / Error).
   - Filter/search: by role, capability, user, and capability prefix.
   - Capability type filtering: All, Core, External, Custom.
+  - **Sortable table columns:** Role Name and Capability columns with toggle sort direction (↑/↓) and alphabetical default sort.
   - **Import/Export** with two modes:
     - **Roles Only:** Export/import selected custom roles
     - **Full Backup:** Complete backup/restore of all custom roles, capabilities, and role assignments
@@ -151,19 +152,23 @@ No public-facing functionality.
   - `wpe_rm_disabled_caps` (array of cap keys by role: `role => [cap, cap, ...]`)
   - `wpe_rm_settings` (plugin settings: `allow_core_cap_assignment`, `autosave_debounce`)
   - `wpe_rm_created_caps` (array of capability slugs created by this plugin)
+  - `wpe_rm_created_roles` (array of role slugs created by this plugin)
   - `wpe_rm_managed_role_caps` (capability assignments managed by this plugin: `role => [cap, ...]`)
 - Effective capabilities visualisation is computed on demand (union across roles minus disabled caps).
+- **Revision Snapshots:** Complete state snapshots include all roles, capabilities, and plugin metadata (created_roles, created_caps, managed_role_caps, disabled_roles, disabled_caps). This ensures proper restoration of plugin-created items and their classifications.
 - **Full Backup Format:** JSON with `backup_type: "full"`, `version`, `timestamp`, `roles`, `capabilities`, `role_capabilities`
 
 ### Admin Pages
 - Top-level menu: **WP Easy → Role Manager**
-  - Tabs: **Roles**, **Capabilities**, **Users**, **Import/Export**, **Settings**, **Logs**
+  - Tabs: **Roles**, **Capabilities**, **Users**, **Import/Export**, **Settings**, **Tools**, **Revisions**, **Logs**
 - **Roles Tab**
   - Create role (slug/name, copy from role optional).
+  - Sortable Role Name column with alphabetical default sort and toggle direction.
   - Disable/Enable role (custom roles only).
   - Delete role (custom only) with user migration wizard.
 - **Capabilities Tab**
   - Matrix: Roles × Capabilities with search, filter, bulk add/remove (non-core only).
+  - Sortable Capability column with alphabetical default sort and toggle direction.
   - Radio filters: All, Core, External, Custom capability types.
   - Disable capability per-role without deleting.
 - **Users Tab**
@@ -171,6 +176,7 @@ No public-facing functionality.
   - View effective capabilities (computed list).
   - Test capability feature: check if a user has a capability and generate code snippets (Shortcode, PHP, Fetch, REST URL).
   - Bulk operations with progress UI.
+  - Default WordPress role selector hidden on user-new.php to avoid confusion with plugin's multi-role selector.
 - **Import/Export**
   - Export modes: Roles Only or Full Backup
   - Roles Only: select specific custom roles or export all
@@ -181,6 +187,12 @@ No public-facing functionality.
   - Security: Toggle dangerous capability protection (disabled by default)
   - Performance: Autosave debounce interval (100-5000ms)
   - Access Control: Information about administrator-only access
+- **Tools**
+  - Administrative utilities and maintenance functions.
+- **Revisions**
+  - Complete revision history with snapshots of all changes.
+  - Restore to any previous state with full plugin metadata preservation.
+  - All role and capability changes automatically tracked (create, modify, delete, toggle, enable, disable operations).
 - **Logs**
   - Activity logging for all role/capability/user changes.
   - Stores up to 500 log entries with action, details, user, and timestamp.
@@ -190,13 +202,15 @@ No public-facing functionality.
 - Namespace: `wpe-rm/v1`
 - Endpoints (nonce + capability check required):
   - `GET /roles`, `POST /roles`, `PATCH /roles/{role}`, `DELETE /roles/{role}`
-  - `POST /roles/{role}/caps`, `DELETE /roles/{role}/caps/{cap}`, `PATCH /roles/{role}/caps/{cap}` (toggle)
+  - `POST /roles/{role}/caps`, `DELETE /roles/{role}/caps/{cap}`, `PATCH /roles/{role}/caps/{cap}` (toggle - saves revision)
   - `GET /users`, `PATCH /users/{id}/roles`
   - `GET /users/{id}/effective-caps`, `GET /users/{id}/can/{capability}` (test capability)
   - `POST /import`, `GET /export?type=full` (supports full backup export)
   - `GET /settings`, `POST /settings` (plugin configuration)
+  - `GET /revisions`, `POST /revisions/{id}/restore`, `DELETE /revisions/{id}` (revision management)
   - `GET /logs`, `DELETE /logs`, `GET /logs/actions`
 - Same-origin + nonce validation enforced; no public endpoints.
+- All capability and role modification operations automatically save complete revision snapshots.
 
 ### Capability Rules & Core Protection
 - Core roles/caps: **read-only** (cannot disable/delete).

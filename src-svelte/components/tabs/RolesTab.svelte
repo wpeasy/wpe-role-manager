@@ -22,14 +22,39 @@ let newRole = $state({
   copyFrom: '',
 });
 let searchQuery = $state('');
+let sortColumn = $state('name'); // Default sort by name
+let sortDirection = $state('asc'); // 'asc' or 'desc'
 
-// Filtered roles based on search
-let filteredRoles = $derived(
-  store.roles.filter(role =>
+// Function to toggle sort
+function toggleSort(column) {
+  if (sortColumn === column) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn = column;
+    sortDirection = 'asc';
+  }
+}
+
+// Filtered and sorted roles
+let filteredRoles = $derived.by(() => {
+  const filtered = store.roles.filter(role =>
     role.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     role.slug?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-);
+  );
+
+  // Sort the filtered results
+  return filtered.sort((a, b) => {
+    let aVal, bVal;
+
+    if (sortColumn === 'name') {
+      aVal = a.name?.toLowerCase() || '';
+      bVal = b.name?.toLowerCase() || '';
+    }
+
+    const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+});
 
 // Handle role creation
 async function createRole() {
@@ -152,7 +177,12 @@ async function deleteRole() {
         <table class="wpea-table">
         <thead>
           <tr>
-            <th>Role Name</th>
+            <th class="sortable" onclick={() => toggleSort('name')} style="cursor: pointer; user-select: none;">
+              Role Name
+              {#if sortColumn === 'name'}
+                <span style="margin-left: 4px;">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+              {/if}
+            </th>
             <th>Slug</th>
             <th>Type</th>
             <th>Status</th>
@@ -190,7 +220,10 @@ async function deleteRole() {
               </td>
               <td>
                 <div class="wpea-cluster wpea-cluster--sm">
-                  {#if !role.isCore && !role.isExternal}
+                  {#if role.isCore}
+                    <span class="wpea-text-muted wpea-text-sm" style="font-style: italic;">Read-only</span>
+                  {:else if !role.isExternal}
+                    <!-- Plugin-created custom role -->
                     <button
                       type="button"
                       class="wpea-btn wpea-btn--sm"
@@ -206,10 +239,19 @@ async function deleteRole() {
                     >
                       Delete
                     </button>
-                  {:else if role.isExternal}
-                    <span class="wpea-text-muted wpea-text-sm" style="font-style: italic;">Managed externally</span>
+                  {:else if role.isExternal && store.settings?.allow_external_deletion}
+                    <!-- External role with deletion allowed -->
+                    <button
+                      type="button"
+                      class="wpea-btn wpea-btn--sm"
+                      style="--_bg: var(--wpea-color--neutral-l-7); --_fg: #d63638; --_bg-hover: color-mix(in oklab, #ef4444, transparent 85%);"
+                      onclick={() => confirmDeleteRole(role)}
+                    >
+                      Delete
+                    </button>
                   {:else}
-                    <span class="wpea-text-muted wpea-text-sm" style="font-style: italic;">Read-only</span>
+                    <!-- External role without deletion allowed -->
+                    <span class="wpea-text-muted wpea-text-sm" style="font-style: italic;">Managed externally</span>
                   {/if}
                 </div>
               </td>

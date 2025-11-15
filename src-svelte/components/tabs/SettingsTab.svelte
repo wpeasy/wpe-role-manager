@@ -11,8 +11,10 @@ let { store } = $props();
 
 let settings = $state({
   allowCoreCapAssignment: false,
+  allowExternalDeletion: false,
   autosaveDebounce: 500,
   logRetention: 500,
+  revisionRetention: 300,
   colorScheme: 'auto', // 'light', 'dark', 'auto'
   compactMode: false,
 });
@@ -27,8 +29,10 @@ async function fetchSettings() {
     const response = await store.apiRequest('/settings');
     if (response.settings) {
       settings.allowCoreCapAssignment = response.settings.allow_core_cap_assignment || false;
+      settings.allowExternalDeletion = response.settings.allow_external_deletion || false;
       settings.autosaveDebounce = response.settings.autosave_debounce || 500;
       settings.logRetention = response.settings.log_retention || 500;
+      settings.revisionRetention = response.settings.revision_retention || 300;
       settings.colorScheme = response.settings.color_scheme || 'auto';
       settings.compactMode = response.settings.compact_mode || false;
     }
@@ -44,8 +48,10 @@ async function saveSettings() {
       method: 'POST',
       body: JSON.stringify({
         allow_core_cap_assignment: settings.allowCoreCapAssignment,
+        allow_external_deletion: settings.allowExternalDeletion,
         autosave_debounce: settings.autosaveDebounce,
         log_retention: settings.logRetention,
+        revision_retention: settings.revisionRetention,
         color_scheme: settings.colorScheme,
         compact_mode: settings.compactMode,
       }),
@@ -132,6 +138,31 @@ async function saveSettings() {
           </div>
         {/if}
       </div>
+
+      <div class="wpea-stack wpea-stack--sm" style="margin-top: var(--wpea-space--md); padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
+        <label class="wpea-control">
+          <input
+            type="checkbox"
+            bind:checked={settings.allowExternalDeletion}
+            onchange={saveSettings}
+          />
+          <span>Allow deletion of external roles and capabilities</span>
+        </label>
+
+        <div class="wpea-alert wpea-alert--info">
+          <p><strong>What are external roles and capabilities?</strong></p>
+          <p>External roles and capabilities are created by other plugins or themes (not by WordPress core or this plugin).</p>
+          <p style="margin-top: var(--wpea-space--xs);"><strong>Default behavior:</strong> External roles and capabilities are read-only and cannot be deleted. This prevents accidental removal of functionality added by other plugins.</p>
+          <p style="margin-top: var(--wpea-space--xs);"><strong>When enabled:</strong> You can delete external roles and capabilities. Use this when cleaning up after uninstalled plugins or removing unwanted roles/capabilities from your system.</p>
+        </div>
+
+        {#if settings.allowExternalDeletion}
+          <div class="wpea-alert wpea-alert--warning">
+            <p><strong>⚠️ External Deletion Enabled</strong></p>
+            <p>You can now delete roles and capabilities created by other plugins. Be careful not to remove functionality that other plugins depend on. Make sure you know what you're deleting before proceeding.</p>
+          </div>
+        {/if}
+      </div>
     </div>
 
     <!-- Performance Settings -->
@@ -168,6 +199,22 @@ async function saveSettings() {
           style="max-width: 300px;"
         />
         <p class="wpea-help">Maximum number of activity log entries to retain (100-10000). Oldest entries are automatically removed when this limit is reached.</p>
+      </div>
+
+      <div class="wpea-field">
+        <label for="revision-retention" class="wpea-label">Revision Retention (number of entries):</label>
+        <input
+          type="number"
+          id="revision-retention"
+          bind:value={settings.revisionRetention}
+          min="50"
+          max="1000"
+          step="10"
+          onchange={saveSettings}
+          class="wpea-input"
+          style="max-width: 300px;"
+        />
+        <p class="wpea-help">Maximum number of revisions to retain (50-1000). Oldest revisions are automatically removed when this limit is reached. Revisions allow you to restore previous states of roles and capabilities.</p>
       </div>
     </div>
 

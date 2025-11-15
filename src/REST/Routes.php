@@ -230,6 +230,72 @@ final class Routes {
                 ],
             ]
         );
+
+        // Revisions endpoints
+        register_rest_route(
+            self::NAMESPACE,
+            '/revisions',
+            [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [self::class, 'get_revisions'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ],
+                [
+                    'methods' => WP_REST_Server::DELETABLE,
+                    'callback' => [self::class, 'delete_all_revisions'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ],
+            ]
+        );
+
+        register_rest_route(
+            self::NAMESPACE,
+            '/revisions/(?P<id>\d+)',
+            [
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [self::class, 'get_revision'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ],
+                [
+                    'methods' => WP_REST_Server::DELETABLE,
+                    'callback' => [self::class, 'delete_revision'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ],
+            ]
+        );
+
+        register_rest_route(
+            self::NAMESPACE,
+            '/revisions/(?P<id>\d+)/restore',
+            [
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => [self::class, 'restore_revision'],
+                'permission_callback' => [self::class, 'check_permissions'],
+            ]
+        );
+
+        register_rest_route(
+            self::NAMESPACE,
+            '/revisions/types',
+            [
+                'methods' => WP_REST_Server::READABLE,
+                'callback' => [self::class, 'get_revision_types'],
+                'permission_callback' => [self::class, 'check_permissions'],
+            ]
+        );
+
+        // Tools endpoints
+        register_rest_route(
+            self::NAMESPACE,
+            '/tools/reset-core-roles',
+            [
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => [self::class, 'reset_core_roles'],
+                'permission_callback' => [self::class, 'check_permissions'],
+            ]
+        );
     }
 
     /**
@@ -332,6 +398,15 @@ final class Routes {
             );
         }
 
+        // Save revision with complete snapshot before creation
+        $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+        \WP_Easy\RoleManager\Helpers\Revisions::save(
+            'role',
+            'created',
+            sprintf('Created role "%s"', $name),
+            $snapshot
+        );
+
         // Log the action
         $log_details = $copy_from
             ? sprintf('Created role "%s" (slug: %s) based on "%s"', $name, $slug, $copy_from)
@@ -361,6 +436,20 @@ final class Routes {
                 __('Role slug is required.', WPE_RM_TEXTDOMAIN),
                 ['status' => 400]
             );
+        }
+
+        // Save revision before updating with complete snapshot
+        if (isset($params['disabled'])) {
+            $role_data = RoleManager::get_role($role_slug);
+            if ($role_data) {
+                $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+                \WP_Easy\RoleManager\Helpers\Revisions::save(
+                    'role',
+                    'modified',
+                    sprintf('Role "%s" %s', $role_data['name'], $params['disabled'] ? 'disabled' : 'enabled'),
+                    $snapshot
+                );
+            }
         }
 
         $success = RoleManager::update_role($role_slug, $params);
@@ -413,6 +502,31 @@ final class Routes {
                     $user_count
                 ),
                 ['status' => 400, 'user_count' => $user_count]
+            );
+        }
+
+        // Check if it's an external role and if external deletion is allowed
+        $is_external = RoleManager::is_external_role($role_slug);
+        $settings = get_option('wpe_rm_settings', ['allow_external_deletion' => false]);
+        $allow_external_deletion = $settings['allow_external_deletion'] ?? false;
+
+        if ($is_external && !$allow_external_deletion) {
+            return new WP_Error(
+                'external_role_deletion_disabled',
+                __('Cannot delete external role. Enable "Allow deletion of external roles and capabilities" in Settings to delete roles created by other plugins.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
+            );
+        }
+
+        // Save revision before deleting with complete snapshot
+        $role_data = RoleManager::get_role($role_slug);
+        if ($role_data) {
+            $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+            \WP_Easy\RoleManager\Helpers\Revisions::save(
+                'role',
+                'deleted',
+                sprintf('Role "%s" deleted', $role_data['name']),
+                $snapshot
             );
         }
 
@@ -544,6 +658,15 @@ final class Routes {
             );
         }
 
+        // Save revision with complete snapshot before adding capability
+        $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+        \WP_Easy\RoleManager\Helpers\Revisions::save(
+            'capability',
+            'assigned',
+            sprintf('Added capability "%s" to role "%s" (%s)', $capability, $role_slug, $grant ? 'granted' : 'denied'),
+            $snapshot
+        );
+
         // Log the action
         $action_text = $grant ? 'granted' : 'denied';
         Logger::log('Capability Added', sprintf('Added capability "%s" to role "%s" (%s)', $capability, $role_slug, $action_text));
@@ -618,6 +741,15 @@ final class Routes {
             }
         }
 
+        // Save revision before toggling capability with complete snapshot
+        $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+        \WP_Easy\RoleManager\Helpers\Revisions::save(
+            'capability',
+            'modified',
+            sprintf('Toggled capability "%s" on role "%s" (%s)', $capability, $role_slug, $action),
+            $snapshot
+        );
+
         if ($action === 'unset') {
             // Remove the capability completely
             $success = CapabilityManager::remove_capability($role_slug, $capability);
@@ -673,12 +805,46 @@ final class Routes {
             );
         }
 
+        // Check if it's an external capability and if external deletion is allowed
+        $is_external = CapabilityManager::is_external_capability($capability);
+        $is_core = CapabilityManager::is_core_capability($capability);
+        $settings = get_option('wpe_rm_settings', ['allow_external_deletion' => false]);
+        $allow_external_deletion = $settings['allow_external_deletion'] ?? false;
+
+        if ($is_core) {
+            return new WP_Error(
+                'core_capability_deletion_disabled',
+                __('Cannot delete core capability. Core WordPress capabilities cannot be removed.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
+            );
+        }
+
+        if ($is_external && !$allow_external_deletion) {
+            return new WP_Error(
+                'external_capability_deletion_disabled',
+                __('Cannot delete external capability. Enable "Allow deletion of external roles and capabilities" in Settings to delete capabilities created by other plugins.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
+            );
+        }
+
+        // Save revision before removing capability with complete snapshot
+        $role = get_role($role_slug);
+        if ($role && isset($role->capabilities[$capability])) {
+            $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+            \WP_Easy\RoleManager\Helpers\Revisions::save(
+                'capability',
+                'removed',
+                sprintf('Removed capability "%s" from role "%s"', $capability, $role_slug),
+                $snapshot
+            );
+        }
+
         $success = CapabilityManager::remove_capability($role_slug, $capability);
 
         if (!$success) {
             return new WP_Error(
                 'capability_remove_failed',
-                __('Failed to remove capability. It may not have been added by this plugin.', WPE_RM_TEXTDOMAIN),
+                __('Failed to remove capability. It may not have been added by this plugin or does not exist on this role.', WPE_RM_TEXTDOMAIN),
                 ['status' => 400]
             );
         }
@@ -782,6 +948,21 @@ final class Routes {
 
         // Sanitize roles
         $roles = array_map('sanitize_key', $params['roles']);
+
+        // Save revision before updating user roles with complete snapshot
+        $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
+        $snapshot['changed_user'] = [
+            'user_id' => $user_id,
+            'username' => $target_user->user_login,
+            'old_roles' => $target_user->roles,
+            'new_roles' => $roles,
+        ];
+        \WP_Easy\RoleManager\Helpers\Revisions::save(
+            'user_roles',
+            'modified',
+            sprintf('Updated roles for user "%s"', $target_user->user_login),
+            $snapshot
+        );
 
         $success = UserManager::update_user_roles($user_id, $roles);
 
@@ -1201,8 +1382,10 @@ final class Routes {
     public static function get_settings(): WP_REST_Response {
         $settings = get_option('wpe_rm_settings', [
             'allow_core_cap_assignment' => false,
+            'allow_external_deletion' => false,
             'autosave_debounce' => 500,
             'log_retention' => 500,
+            'revision_retention' => 300,
             'color_scheme' => 'auto',
             'compact_mode' => false,
         ]);
@@ -1226,12 +1409,18 @@ final class Routes {
             'allow_core_cap_assignment' => isset($params['allow_core_cap_assignment'])
                 ? (bool) $params['allow_core_cap_assignment']
                 : false,
+            'allow_external_deletion' => isset($params['allow_external_deletion'])
+                ? (bool) $params['allow_external_deletion']
+                : false,
             'autosave_debounce' => isset($params['autosave_debounce'])
                 ? absint($params['autosave_debounce'])
                 : 500,
             'log_retention' => isset($params['log_retention'])
                 ? absint($params['log_retention'])
                 : 500,
+            'revision_retention' => isset($params['revision_retention'])
+                ? absint($params['revision_retention'])
+                : 300,
             'color_scheme' => isset($params['color_scheme'])
                 ? sanitize_text_field($params['color_scheme'])
                 : 'auto',
@@ -1250,6 +1439,11 @@ final class Routes {
             $settings['log_retention'] = 500;
         }
 
+        // Validate revision_retention range
+        if ($settings['revision_retention'] < 50 || $settings['revision_retention'] > 1000) {
+            $settings['revision_retention'] = 300;
+        }
+
         // Validate color_scheme
         if (!in_array($settings['color_scheme'], ['light', 'dark', 'auto'], true)) {
             $settings['color_scheme'] = 'auto';
@@ -1265,11 +1459,20 @@ final class Routes {
                 $settings['allow_core_cap_assignment'] ? 'enabled' : 'disabled'
             );
         }
+        if (isset($params['allow_external_deletion'])) {
+            $changes[] = sprintf(
+                'External deletion: %s',
+                $settings['allow_external_deletion'] ? 'enabled' : 'disabled'
+            );
+        }
         if (isset($params['autosave_debounce'])) {
             $changes[] = sprintf('Autosave debounce: %dms', $settings['autosave_debounce']);
         }
         if (isset($params['log_retention'])) {
             $changes[] = sprintf('Log retention: %d entries', $settings['log_retention']);
+        }
+        if (isset($params['revision_retention'])) {
+            $changes[] = sprintf('Revision retention: %d entries', $settings['revision_retention']);
         }
         if (isset($params['color_scheme'])) {
             $changes[] = sprintf('Color scheme: %s', $settings['color_scheme']);
@@ -1286,6 +1489,190 @@ final class Routes {
             'settings' => $settings,
             'success' => true,
             'message' => __('Settings saved successfully.', WPE_RM_TEXTDOMAIN),
+        ], 200);
+    }
+
+    /**
+     * Get revisions with optional filtering.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response
+     */
+    public static function get_revisions(WP_REST_Request $request): WP_REST_Response {
+        $revision_type = $request->get_param('revision_type');
+        $action = $request->get_param('action');
+        $limit = $request->get_param('per_page') ?: 100;
+        $page = $request->get_param('page') ?: 1;
+        $offset = ($page - 1) * $limit;
+
+        $args = [
+            'revision_type' => $revision_type,
+            'action' => $action,
+            'limit' => $limit,
+            'offset' => $offset,
+        ];
+
+        $revisions = \WP_Easy\RoleManager\Helpers\Revisions::get_all($args);
+
+        return new WP_REST_Response([
+            'revisions' => $revisions,
+            'success' => true,
+        ], 200);
+    }
+
+    /**
+     * Get a single revision.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_revision(WP_REST_Request $request) {
+        $revision_id = (int) $request->get_param('id');
+
+        if (empty($revision_id)) {
+            return new WP_Error(
+                'missing_revision_id',
+                __('Revision ID is required.', WPE_RM_TEXTDOMAIN),
+                ['status' => 400]
+            );
+        }
+
+        $revision = \WP_Easy\RoleManager\Helpers\Revisions::get($revision_id);
+
+        if (!$revision) {
+            return new WP_Error(
+                'revision_not_found',
+                __('Revision not found.', WPE_RM_TEXTDOMAIN),
+                ['status' => 404]
+            );
+        }
+
+        return new WP_REST_Response([
+            'revision' => $revision,
+            'success' => true,
+        ], 200);
+    }
+
+    /**
+     * Delete a revision.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function delete_revision(WP_REST_Request $request) {
+        $revision_id = (int) $request->get_param('id');
+
+        if (empty($revision_id)) {
+            return new WP_Error(
+                'missing_revision_id',
+                __('Revision ID is required.', WPE_RM_TEXTDOMAIN),
+                ['status' => 400]
+            );
+        }
+
+        $success = \WP_Easy\RoleManager\Helpers\Revisions::delete($revision_id);
+
+        if (!$success) {
+            return new WP_Error(
+                'revision_delete_failed',
+                __('Failed to delete revision.', WPE_RM_TEXTDOMAIN),
+                ['status' => 400]
+            );
+        }
+
+        Logger::log('Revision Deleted', sprintf('Deleted revision #%d', $revision_id));
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Revision deleted successfully.', WPE_RM_TEXTDOMAIN),
+        ], 200);
+    }
+
+    /**
+     * Delete all revisions.
+     *
+     * @return WP_REST_Response
+     */
+    public static function delete_all_revisions(): WP_REST_Response {
+        $success = \WP_Easy\RoleManager\Helpers\Revisions::delete_all();
+
+        Logger::log('Revisions Cleared', 'All revisions deleted');
+
+        return new WP_REST_Response([
+            'success' => $success,
+            'message' => __('All revisions deleted successfully.', WPE_RM_TEXTDOMAIN),
+        ], 200);
+    }
+
+    /**
+     * Restore a revision.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function restore_revision(WP_REST_Request $request) {
+        $revision_id = (int) $request->get_param('id');
+
+        if (empty($revision_id)) {
+            return new WP_Error(
+                'missing_revision_id',
+                __('Revision ID is required.', WPE_RM_TEXTDOMAIN),
+                ['status' => 400]
+            );
+        }
+
+        $success = \WP_Easy\RoleManager\Helpers\Revisions::restore($revision_id);
+
+        if (!$success) {
+            return new WP_Error(
+                'revision_restore_failed',
+                __('Failed to restore revision. The role, capability, or user may no longer exist.', WPE_RM_TEXTDOMAIN),
+                ['status' => 400]
+            );
+        }
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Revision restored successfully.', WPE_RM_TEXTDOMAIN),
+        ], 200);
+    }
+
+    /**
+     * Get unique revision types and actions for filtering.
+     *
+     * @return WP_REST_Response
+     */
+    public static function get_revision_types(): WP_REST_Response {
+        $types = \WP_Easy\RoleManager\Helpers\Revisions::get_revision_types();
+        $actions = \WP_Easy\RoleManager\Helpers\Revisions::get_actions();
+
+        return new WP_REST_Response([
+            'types' => $types,
+            'actions' => $actions,
+            'success' => true,
+        ], 200);
+    }
+
+    /**
+     * Reset core WordPress roles to default capabilities.
+     *
+     * @return WP_REST_Response
+     */
+    public static function reset_core_roles(): WP_REST_Response {
+        $result = RoleManager::reset_core_roles();
+
+        Logger::log(
+            'Core Roles Reset',
+            sprintf('Reset %d core roles to WordPress defaults', $result['reset_count'])
+        );
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => sprintf(
+                __('Successfully reset %d core roles to WordPress defaults.', WPE_RM_TEXTDOMAIN),
+                $result['reset_count']
+            ),
+            'result' => $result,
         ], 200);
     }
 }

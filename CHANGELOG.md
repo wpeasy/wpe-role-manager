@@ -5,6 +5,72 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.8-alpha] - 2025-01-25
+
+### Added
+
+- **Sortable Table Columns**
+  - Role Name column in Roles tab now sortable with alphabetical default (ascending)
+  - Capability column in Capabilities tab now sortable with alphabetical default (ascending)
+  - Click column headers to toggle between ascending (↑) and descending (↓)
+  - Visual indicators show current sort direction
+  - Implemented with Svelte 5 `$derived.by()` for reactive sorting
+
+- **Complete Revision Tracking**
+  - Capability toggle operations (grant/deny/unset) now save revision snapshots
+  - All 7 role/capability modification operations tracked:
+    - Role creation, modification, deletion
+    - Capability addition, removal, toggle
+    - Role enable/disable operations
+  - Comprehensive audit trail for all configuration changes
+
+- **Plugin Metadata in Revision Snapshots**
+  - Snapshots now include complete plugin metadata section
+  - Tracks: `created_roles`, `created_caps`, `managed_role_caps`, `disabled_roles`, `disabled_caps`
+  - Ensures proper restoration of plugin-created items and their classifications
+  - Plugin-created capabilities/roles maintain "Custom" classification after restoration
+  - Prevents items from incorrectly showing as "External" after restore
+
+### Changed
+
+- **Tab Navigation Reordering**
+  - Updated tab order: Roles, Capabilities, Users, Import/Export, Settings, Tools, Revisions, Logs
+  - Settings moved before Tools for better logical grouping
+  - Revisions and Logs grouped at the end for historical/audit features
+
+- **User Profile Enhancement**
+  - Default WordPress role selector now hidden on user-new.php page
+  - Prevents confusion between default dropdown and plugin's multi-role Select2
+  - Enhanced CSS selectors for comprehensive hiding across all WordPress variations
+  - Uses multiple selector patterns including `:has()` pseudo-class
+
+### Fixed
+
+- **Revision Restore Metadata Loss**
+  - Fixed plugin-created capabilities restoring as "External" instead of "Custom"
+  - Restore operation now applies metadata first, then individual roles
+  - All plugin tracking options properly restored from snapshot metadata
+  - Complete state restoration including disabled states and managed assignments
+
+### Technical
+
+- **Revisions.php Enhancements**:
+  - `get_complete_snapshot()`: Added `plugin_metadata` section with all tracking options
+  - `restore_role()`: Metadata restoration added at beginning of restore process
+  - Ensures `wpe_rm_created_roles`, `wpe_rm_created_caps`, `wpe_rm_managed_role_caps` properly restored
+
+- **Routes.php Enhancement**:
+  - `toggle_capability` endpoint (line 744-751): Added complete snapshot revision save before toggle
+
+- **UserProfile.php Update**:
+  - `hide_default_role_select()`: Enhanced CSS selectors with multiple variations
+  - Covers all WordPress markup patterns for role field hiding
+
+- **Svelte Component Updates**:
+  - RolesTab.svelte: Added `sortColumn`, `sortDirection` state and `toggleSort()` function
+  - CapabilitiesTab.svelte: Added sortable capability column with reactive filtering
+  - App.svelte: Updated tabs array order
+
 ## [0.0.7-alpha] - 2025-01-25
 
 ### Changed

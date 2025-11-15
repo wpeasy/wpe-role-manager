@@ -22,10 +22,22 @@ let newCapability = $state({
   capability: '',
   autoAddToAdmin: true,
 });
+let sortColumn = $state('capability'); // Default sort by capability
+let sortDirection = $state('asc'); // 'asc' or 'desc'
 
-// Filtered capabilities based on search query, type filter, and granted/denied toggles
-let filteredCapabilities = $derived(
-  store.capabilityMatrix.filter(cap => {
+// Function to toggle sort
+function toggleSort(column) {
+  if (sortColumn === column) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn = column;
+    sortDirection = 'asc';
+  }
+}
+
+// Filtered and sorted capabilities based on search query, type filter
+let filteredCapabilities = $derived.by(() => {
+  const filtered = store.capabilityMatrix.filter(cap => {
     // Check if capability matches search query
     if (!cap.capability?.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
@@ -45,13 +57,26 @@ let filteredCapabilities = $derived(
     }
 
     return true;
-  })
-);
+  });
 
-// Filtered roles based on selected role
+  // Sort the filtered results
+  return filtered.sort((a, b) => {
+    let aVal, bVal;
+
+    if (sortColumn === 'capability') {
+      aVal = a.capability?.toLowerCase() || '';
+      bVal = b.capability?.toLowerCase() || '';
+    }
+
+    const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+});
+
+// Filtered roles based on selected role, sorted alphabetically
 let filteredRoles = $derived(
   selectedRole === 'all'
-    ? store.roles
+    ? [...store.roles].sort((a, b) => a.name.localeCompare(b.name))
     : store.roles.filter(role => role.slug === selectedRole)
 );
 
@@ -243,7 +268,12 @@ async function deleteCapability(roleSlug, capability) {
         <table class="wpea-table" style="min-width: 800px; overflow: visible !important; border-radius: 0;">
           <thead>
             <tr>
-              <th style="position: sticky; top: 0; left: 0; background: var(--wpea-surface--muted); z-index: 4; width: 250px; min-width: 250px; max-width: 250px;">Capability</th>
+              <th class="sortable" onclick={() => toggleSort('capability')} style="cursor: pointer; user-select: none; position: sticky; top: 0; left: 0; background: var(--wpea-surface--muted); z-index: 4; width: 250px; min-width: 250px; max-width: 250px;">
+                Capability
+                {#if sortColumn === 'capability'}
+                  <span style="margin-left: 4px;">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                {/if}
+              </th>
               <th style="position: sticky; top: 0; left: 250px; background: var(--wpea-surface--muted); z-index: 4; width: 100px; min-width: 100px; max-width: 100px;">Type</th>
               {#each filteredRoles as role}
                 <th style="position: sticky; top: 0; background: var(--wpea-surface--muted); z-index: 3; text-align: center; min-width: 80px;">
@@ -278,8 +308,10 @@ async function deleteCapability(roleSlug, capability) {
 
                   {@const bgColor = isGranted ? 'var(--wpea-cap-granted-bg)' : isDenied ? 'var(--wpea-cap-denied-bg)' : 'transparent'}
                   {@const currentState = isGranted ? 'granted' : isDenied ? 'denied' : 'unset'}
+                  {@const canDeleteExternal = !isManaged && cap.isExternal && store.settings?.allow_external_deletion}
 
                   <td style="text-align: center; background: {bgColor};">
+
                     {#if isManaged}
                       <!-- Managed by plugin - show toggle button and delete button -->
                       <div style="display: flex; gap: var(--wpea-space--xs); justify-content: center; align-items: center;">
@@ -320,6 +352,24 @@ async function deleteCapability(roleSlug, capability) {
                           style="padding: var(--wpea-space--xs); font-size: var(--wpea-text--xs); background: var(--wpea-color--danger); color: white; min-width: auto;"
                           onclick={() => deleteCapability(role.slug, cap.capability)}
                           title="Delete capability from this role"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    {:else if canDeleteExternal && (isGranted || isDenied)}
+                      <!-- External capability with deletion allowed - show delete button -->
+                      <div style="display: flex; gap: var(--wpea-space--xs); justify-content: center; align-items: center;">
+                        {#if isGranted}
+                          <span style="color: var(--wpea-color--success); font-size: var(--wpea-text--sm); font-weight: 600;" title="Granted by core/external code">✓</span>
+                        {:else}
+                          <span style="color: var(--wpea-color--danger); font-size: var(--wpea-text--sm); font-weight: 600;" title="Denied by core/external code">✗</span>
+                        {/if}
+                        <button
+                          type="button"
+                          class="wpea-btn wpea-btn--sm"
+                          style="padding: var(--wpea-space--xs); font-size: var(--wpea-text--xs); background: var(--wpea-color--danger); color: white; min-width: auto;"
+                          onclick={() => deleteCapability(role.slug, cap.capability)}
+                          title="Delete external capability from this role"
                         >
                           ×
                         </button>

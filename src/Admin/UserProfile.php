@@ -234,7 +234,16 @@ final class UserProfile {
      * @return void
      */
     public static function hide_default_role_select(): void {
-        echo '<style>.user-role-wrap { display: none !important; }</style>';
+        echo '<style>
+            .user-role-wrap,
+            tr.user-role-wrap,
+            .form-field.user-role-wrap,
+            #role-wrap,
+            tr#role-wrap,
+            .form-table tr:has(select#role),
+            .form-table tr:has(label[for="role"])
+            { display: none !important; }
+        </style>';
     }
 
     /**
