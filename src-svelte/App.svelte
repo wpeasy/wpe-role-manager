@@ -160,7 +160,7 @@ $effect(() => {
 
 <div class="wpea-stack" style="max-width: 100%;">
   <!-- Tab Navigation -->
-  <nav class="wpea-cluster wpea-cluster--sm" role="tablist" style="border-bottom: 1px solid var(--wpea-surface--border); padding-bottom: var(--wpea-space--sm); justify-content: space-between; align-items: center;">
+  <nav class="wpea-cluster wpea-cluster--sm" role="tablist" style="border-bottom: 1px solid var(--wpea-surface--border); padding-bottom: var(--wpea-space--sm);">
     <div class="wpea-cluster wpea-cluster--xs" style="flex-wrap: wrap;">
       {#each tabs as tab}
         <button
@@ -175,26 +175,6 @@ $effect(() => {
         </button>
       {/each}
     </div>
-
-    <!-- Status Indicator -->
-    {#if store.status}
-      <div style="
-        padding: var(--wpea-space--xs) var(--wpea-space--sm);
-        border-radius: var(--wpea-radius--sm);
-        font-size: var(--wpea-text--sm);
-        font-weight: 500;
-        background: {store.status === 'saving' ? 'var(--wpea-color--neutral-l-9)' : store.status === 'saved' ? 'var(--wpea-color--success-l-9)' : 'var(--wpea-color--danger-l-9)'};
-        color: {store.status === 'saving' ? 'var(--wpea-color--neutral)' : store.status === 'saved' ? 'var(--wpea-color--success)' : 'var(--wpea-color--danger)'};
-      ">
-        {#if store.status === 'saving'}
-          <span>{wpData.i18n?.saving || 'Saving...'}</span>
-        {:else if store.status === 'saved'}
-          <span>{wpData.i18n?.saved || 'Saved'}</span>
-        {:else if store.status === 'error'}
-          <span>{wpData.i18n?.error || 'Error'}</span>
-        {/if}
-      </div>
-    {/if}
   </nav>
 
   <!-- Tab Content -->
@@ -208,3 +188,58 @@ $effect(() => {
     {/each}
   </div>
 </div>
+
+<!-- Toast Notification -->
+{#if store.status}
+  <div class="toast-notification" class:toast-saving={store.status === 'saving'} class:toast-saved={store.status === 'saved'} class:toast-error={store.status === 'error'}>
+    {#if store.status === 'saving'}
+      <span>{wpData.i18n?.saving || 'Saving...'}</span>
+    {:else if store.status === 'saved'}
+      <span>{wpData.i18n?.saved || 'Saved'}</span>
+    {:else if store.status === 'error'}
+      <span>{wpData.i18n?.error || 'Error'}</span>
+    {/if}
+  </div>
+{/if}
+
+<style>
+.toast-notification {
+  position: fixed;
+  top: 32px;
+  right: 20px;
+  z-index: 100001;
+  padding: var(--wpea-space--sm) var(--wpea-space--md);
+  border-radius: var(--wpea-radius--md);
+  font-size: var(--wpea-text--sm);
+  font-weight: 500;
+  box-shadow: var(--wpea-shadow--l);
+  animation: slideIn 0.2s ease-out;
+  pointer-events: none;
+}
+
+.toast-saving {
+  background: var(--wpea-color--neutral-l-9);
+  color: var(--wpea-color--neutral);
+}
+
+.toast-saved {
+  background: var(--wpea-color--success-l-9);
+  color: var(--wpea-color--success);
+}
+
+.toast-error {
+  background: var(--wpea-color--danger-l-9);
+  color: var(--wpea-color--danger);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+</style>

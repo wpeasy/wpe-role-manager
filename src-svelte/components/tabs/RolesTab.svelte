@@ -8,12 +8,14 @@
  */
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+import { sanitizeSlug, generateCapabilityName } from '../../lib/utils.js';
 
 let { store } = $props();
 
 // Local state
 let showCreateModal = $state(false);
 let showDeleteModal = $state(false);
+let showStandardCapsModal = $state(false);
 let roleToDelete = $state(null);
 let deleteConfirmation = $state('');
 let removeFromUsers = $state(false);
@@ -25,6 +27,21 @@ let newRole = $state({
 let searchQuery = $state('');
 let sortColumn = $state('name'); // Default sort by name
 let sortDirection = $state('asc'); // 'asc' or 'desc'
+
+// Standard capabilities template
+let standardCapabilities = $state({
+  read: true,
+  read_private: true,
+  edit: true,
+  edit_others: true,
+  edit_published: true,
+  edit_private: true,
+  publish: true,
+  delete: true,
+  delete_others: true,
+  delete_published: true,
+  delete_private: true,
+});
 
 // Function to toggle sort
 function toggleSort(column) {
@@ -58,6 +75,15 @@ let filteredRoles = $derived.by(() => {
 });
 
 // Handle role creation
+// Open standard capabilities modal
+function openStandardCapsModal() {
+  if (!newRole.slug) {
+    alert('Please provide a role slug first');
+    return;
+  }
+  showStandardCapsModal = true;
+}
+
 async function createRole() {
   if (!newRole.slug || !newRole.name) {
     alert('Please provide both slug and name');
@@ -66,10 +92,39 @@ async function createRole() {
 
   try {
     store.showSaving();
+
+    // Create the role first
     await store.apiRequest('/roles', {
       method: 'POST',
       body: JSON.stringify(newRole),
     });
+
+    // Add selected standard capabilities if any are enabled
+    const selectedCaps = Object.entries(standardCapabilities)
+      .filter(([_, enabled]) => enabled)
+      .map(([pattern, _]) => generateCapabilityName(pattern, newRole.slug))
+      .filter(cap => cap !== '');
+
+    if (selectedCaps.length > 0) {
+      // Add each capability to the newly created role AND administrator
+      for (const capability of selectedCaps) {
+        try {
+          // Add to the new role
+          await store.apiRequest(`/roles/${newRole.slug}/caps`, {
+            method: 'POST',
+            body: JSON.stringify({ capability }),
+          });
+
+          // Also add to administrator role
+          await store.apiRequest(`/roles/administrator/caps`, {
+            method: 'POST',
+            body: JSON.stringify({ capability }),
+          });
+        } catch (capError) {
+          console.error(`Error adding capability ${capability}:`, capError);
+        }
+      }
+    }
 
     await store.fetchRoles();
     await store.fetchCapabilityMatrix();
@@ -77,7 +132,21 @@ async function createRole() {
 
     // Reset form
     newRole = { slug: '', name: '', copyFrom: '' };
+    standardCapabilities = {
+      read: true,
+      read_private: true,
+      edit: true,
+      edit_others: true,
+      edit_published: true,
+      edit_private: true,
+      publish: true,
+      delete: true,
+      delete_others: true,
+      delete_published: true,
+      delete_private: true,
+    };
     showCreateModal = false;
+    showStandardCapsModal = false;
   } catch (error) {
     console.error('Error creating role:', error);
     store.showError();
@@ -307,6 +376,7 @@ async function deleteRole() {
               type="text"
               id="role-slug"
               bind:value={newRole.slug}
+              oninput={(e) => newRole.slug = sanitizeSlug(e.target.value)}
               placeholder="e.g., custom_editor"
               pattern="[a-z0-9_-]+"
               class="wpea-input"
@@ -338,6 +408,17 @@ async function deleteRole() {
               {/each}
             </select>
             <p class="wpea-help">Start with capabilities from an existing role.</p>
+          </div>
+
+          <div class="wpea-field">
+            <button
+              type="button"
+              class="wpea-btn"
+              onclick={openStandardCapsModal}
+            >
+              + Add Standard Capabilities
+            </button>
+            <p class="wpea-help">Generate standard WordPress-style capabilities for this role.</p>
           </div>
         </div>
 
@@ -443,6 +524,132 @@ async function deleteRole() {
             disabled={deleteConfirmation.toLowerCase() !== 'delete' || (roleToDelete.userCount > 0 && !removeFromUsers)}
           >
             Delete Role
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Standard Capabilities Modal -->
+  {#if showStandardCapsModal}
+    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showStandardCapsModal = false} onkeydown={(e) => e.key === 'Escape' && (showStandardCapsModal = false)}>
+      <div class="wpea-card" style="max-width: 500px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
+        <div class="wpea-card__header">
+          <h3 class="wpea-card__title">Select Standard Capabilities</h3>
+          <button
+            type="button"
+            style="background: none; border: none; padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl); cursor: pointer; color: var(--wpea-surface--text); line-height: 1;"
+            onclick={() => showStandardCapsModal = false}
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="wpea-stack">
+          <p class="wpea-help">
+            Select which standard capabilities to generate for the role "<strong>{newRole.slug || 'your-role'}</strong>".
+            All are selected by default.
+          </p>
+
+          <div class="wpea-stack wpea-stack--sm">
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.read} />
+              <div>
+                <div><code>read_{newRole.slug || 'slug'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Read capability for this resource</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.read_private} />
+              <div>
+                <div><code>read_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Read private resources</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.edit} />
+              <div>
+                <div><code>edit_{newRole.slug || 'slug'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Edit own resources</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.edit_others} />
+              <div>
+                <div><code>edit_others_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Edit resources created by others</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.edit_published} />
+              <div>
+                <div><code>edit_published_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Edit published resources</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.edit_private} />
+              <div>
+                <div><code>edit_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Edit private resources</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.publish} />
+              <div>
+                <div><code>publish_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Publish resources</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.delete} />
+              <div>
+                <div><code>delete_{newRole.slug || 'slug'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Delete own resources</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.delete_others} />
+              <div>
+                <div><code>delete_others_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Delete resources created by others</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.delete_published} />
+              <div>
+                <div><code>delete_published_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Delete published resources</div>
+              </div>
+            </label>
+
+            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+              <input type="checkbox" bind:checked={standardCapabilities.delete_private} />
+              <div>
+                <div><code>delete_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+                <div class="wpea-help" style="margin: 0;">Delete private resources</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end; padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
+          <button
+            type="button"
+            class="wpea-btn"
+            onclick={() => showStandardCapsModal = false}
+          >
+            Close
           </button>
         </div>
       </div>

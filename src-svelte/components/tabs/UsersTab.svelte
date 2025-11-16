@@ -20,6 +20,12 @@ let showCapabilityTestModal = $state(false);
 let capabilitySearchQuery = $state('');
 let selectedCapability = $state('');
 let testResult = $state(null);
+let showPhpMenu = $state(false);
+let phpMenuOption = $state({
+  restrictChildren: false,
+  restrictionType: 'message', // 'message' or 'redirect'
+  redirectUrl: ''
+});
 
 // Filtered users
 let filteredUsers = $derived(
@@ -110,8 +116,13 @@ async function generateShortcode() {
   }
 }
 
-// Generate PHP code and copy to clipboard
-async function generatePHP() {
+// Toggle PHP menu
+function togglePhpMenu() {
+  showPhpMenu = !showPhpMenu;
+}
+
+// Generate "Has Capability" PHP code
+async function generatePHPHasCapability() {
   if (!selectedCapability) return;
 
   const phpCode = `<?php
@@ -126,6 +137,92 @@ if ( current_user_can( '${selectedCapability}' ) ) {
   try {
     await navigator.clipboard.writeText(phpCode);
     copiedButton = 'php';
+    showPhpMenu = false;
+    setTimeout(() => { copiedButton = null; }, 2000);
+  } catch (error) {
+    console.error('Failed to copy:', error);
+  }
+}
+
+// Generate "Redirect on Login" PHP code
+async function generatePHPRedirectLogin() {
+  if (!selectedCapability) return;
+
+  const phpCode = `<?php
+/**
+ * Redirect users on login based on capability
+ * Add this to your theme's functions.php
+ */
+add_filter( 'login_redirect', function( $redirect_to, $request, $user ) {
+    // Check if user is valid and has the capability
+    if ( isset( $user->ID ) && current_user_can( '${selectedCapability}' ) ) {
+        // Redirect users with capability to custom page
+        return home_url( '/custom-dashboard/' );
+    }
+
+    // Default redirect for other users
+    return $redirect_to;
+}, 10, 3 );`;
+
+  try {
+    await navigator.clipboard.writeText(phpCode);
+    copiedButton = 'php';
+    showPhpMenu = false;
+    setTimeout(() => { copiedButton = null; }, 2000);
+  } catch (error) {
+    console.error('Failed to copy:', error);
+  }
+}
+
+// Generate "Restrict Page/Post" PHP code
+async function generatePHPRestrictPage() {
+  if (!selectedCapability) return;
+
+  const childrenCheck = phpMenuOption.restrictChildren
+    ? `
+    // Get all child pages recursively
+    $children = get_page_children( $post->ID, get_pages() );
+    $child_ids = array_column( $children, 'ID' );
+
+    // Check if current page is a child of restricted page
+    $is_child = in_array( get_the_ID(), $child_ids );
+
+    if ( $is_restricted || $is_child ) {`
+    : `
+    if ( $is_restricted ) {`;
+
+  const restrictionAction = phpMenuOption.restrictionType === 'redirect'
+    ? `
+        // Redirect to another page
+        wp_redirect( '${phpMenuOption.redirectUrl || home_url()}' );
+        exit;`
+    : `
+        // Show restricted message
+        wp_die(
+            '<h1>Restricted Content</h1><p>You do not have permission to view this page.</p>',
+            'Access Denied',
+            array( 'response' => 403, 'back_link' => true )
+        );`;
+
+  const phpCode = `<?php
+/**
+ * Restrict page/post content based on capability
+ * Add this to your theme's functions.php
+ */
+add_action( 'template_redirect', function() {
+    // Define restricted page ID(s)
+    $restricted_pages = array( 123 ); // Replace with your page ID(s)
+
+    // Check if current page is restricted
+    $is_restricted = in_array( get_the_ID(), $restricted_pages );
+    ${childrenCheck}${restrictionAction}
+    }
+} );`;
+
+  try {
+    await navigator.clipboard.writeText(phpCode);
+    copiedButton = 'php';
+    showPhpMenu = false;
     setTimeout(() => { copiedButton = null; }, 2000);
   } catch (error) {
     console.error('Failed to copy:', error);
@@ -330,7 +427,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
   <!-- Test Capability Modal -->
   {#if showCapabilityTestModal && selectedUser}
     <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showCapabilityTestModal = false} onkeydown={(e) => e.key === 'Escape' && (showCapabilityTestModal = false)}>
-      <div class="wpea-card" style="max-width: 600px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
+      <div class="wpea-card capability-test-modal" onclick={(e) => e.stopPropagation()} role="document">
         <div class="wpea-card__header">
           <h3 class="wpea-card__title">Test Capability: {selectedUser.username}</h3>
           <button
@@ -343,9 +440,10 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
           </button>
         </div>
 
-        <div class="wpea-stack">
-          <!-- Filter capabilities -->
-          <div class="wpea-field">
+        <div class="modal-content-scroll">
+          <div class="wpea-stack">
+            <!-- Filter capabilities -->
+            <div class="wpea-field">
             <label for="cap-filter" class="wpea-label">Filter Capabilities</label>
             <input
               id="cap-filter"
@@ -433,14 +531,90 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
                     {copiedButton === 'shortcode' ? 'Copied!' : 'Shortcode'}
                   </button>
 
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--sm"
-                    class:wpea-btn--success={copiedButton === 'php'}
-                    onclick={generatePHP}
-                  >
-                    {copiedButton === 'php' ? 'Copied!' : 'PHP'}
-                  </button>
+                  <div style="position: relative;">
+                    <button
+                      type="button"
+                      class="wpea-btn wpea-btn--sm"
+                      class:wpea-btn--success={copiedButton === 'php'}
+                      onclick={togglePhpMenu}
+                    >
+                      {copiedButton === 'php' ? 'Copied!' : 'PHP'} ▾
+                    </button>
+
+                    {#if showPhpMenu}
+                      <div class="php-menu">
+                        <button
+                          type="button"
+                          class="php-menu-item"
+                          onclick={generatePHPHasCapability}
+                        >
+                          Has Capability
+                        </button>
+
+                        <button
+                          type="button"
+                          class="php-menu-item"
+                          onclick={generatePHPRedirectLogin}
+                        >
+                          Redirect on Login
+                        </button>
+
+                        <div class="php-menu-separator"></div>
+
+                        <div class="php-menu-section">
+                          <div class="php-menu-header">Restrict Page/Post</div>
+
+                          <label class="php-menu-checkbox">
+                            <input
+                              type="checkbox"
+                              bind:checked={phpMenuOption.restrictChildren}
+                            />
+                            <span>Restrict all children</span>
+                          </label>
+
+                          <div class="php-menu-radio-group">
+                            <label class="php-menu-radio">
+                              <input
+                                type="radio"
+                                name="restrictionType"
+                                value="message"
+                                bind:group={phpMenuOption.restrictionType}
+                              />
+                              <span>Show restricted message</span>
+                            </label>
+
+                            <label class="php-menu-radio">
+                              <input
+                                type="radio"
+                                name="restrictionType"
+                                value="redirect"
+                                bind:group={phpMenuOption.restrictionType}
+                              />
+                              <span>Redirect to URL</span>
+                            </label>
+
+                            {#if phpMenuOption.restrictionType === 'redirect'}
+                              <input
+                                type="text"
+                                class="wpea-input php-menu-input"
+                                placeholder="Enter redirect URL"
+                                bind:value={phpMenuOption.redirectUrl}
+                              />
+                            {/if}
+                          </div>
+
+                          <button
+                            type="button"
+                            class="wpea-btn wpea-btn--sm wpea-btn--primary"
+                            style="width: 100%; margin-top: var(--wpea-space--xs);"
+                            onclick={generatePHPRestrictPage}
+                          >
+                            Generate Code
+                          </button>
+                        </div>
+                      </div>
+                    {/if}
+                  </div>
 
                   <button
                     type="button"
@@ -472,6 +646,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
               </div>
             </div>
           {/if}
+          </div>
         </div>
       </div>
     </div>
@@ -491,6 +666,21 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
   padding: var(--wpea-space--md);
 }
 
+.capability-test-modal {
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.modal-content-scroll {
+  overflow-y: auto;
+  overflow-x: visible;
+  flex: 1;
+  min-height: 0;
+}
+
 /* Success button style for "Copied" state */
 .wpea-btn--success {
   background-color: var(--wpea-color--success) !important;
@@ -501,5 +691,97 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
 .wpea-btn--success:hover {
   background-color: var(--wpea-color--success-d-2) !important;
   border-color: var(--wpea-color--success-d-2) !important;
+}
+
+/* PHP Menu Dropdown */
+.php-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  min-width: 280px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--wpea-surface--base);
+  color: var(--wpea-surface--text);
+  border: 1px solid var(--wpea-surface--border);
+  border-radius: var(--wpea-radius--md);
+  box-shadow: var(--wpea-shadow--l);
+  z-index: 10001;
+  padding: var(--wpea-space--xs);
+}
+
+.php-menu-item {
+  width: 100%;
+  padding: var(--wpea-space--sm);
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--wpea-radius--sm);
+  cursor: pointer;
+  font-size: var(--wpea-text--sm);
+  color: var(--wpea-surface--text);
+  transition: background 0.2s;
+}
+
+.php-menu-item:hover {
+  background: var(--wpea-surface--muted);
+}
+
+.php-menu-separator {
+  height: 1px;
+  background: var(--wpea-surface--border);
+  margin: var(--wpea-space--xs) 0;
+}
+
+.php-menu-section {
+  padding: var(--wpea-space--sm);
+}
+
+.php-menu-header {
+  font-weight: 600;
+  font-size: var(--wpea-text--sm);
+  color: var(--wpea-surface--text);
+  margin-bottom: var(--wpea-space--sm);
+}
+
+.php-menu-checkbox,
+.php-menu-radio {
+  display: flex;
+  align-items: center;
+  gap: var(--wpea-space--xs);
+  padding: var(--wpea-space--xs) 0;
+  cursor: pointer;
+  font-size: var(--wpea-text--sm);
+  color: var(--wpea-surface--text);
+}
+
+.php-menu-checkbox input,
+.php-menu-radio input {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--wpea-color--primary);
+}
+
+.php-menu-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wpea-space--xs);
+  margin-top: var(--wpea-space--xs);
+}
+
+.php-menu-input {
+  width: 100%;
+  margin-top: var(--wpea-space--xs);
+  font-size: var(--wpea-text--sm);
+  background: var(--wpea-surface--base);
+  color: var(--wpea-surface--text);
+  border: 1px solid var(--wpea-surface--border);
+  border-radius: var(--wpea-radius--sm);
+  padding: var(--wpea-space--xs);
+}
+
+.php-menu-input:focus {
+  outline: 2px solid var(--wpea-color--primary);
+  outline-offset: 1px;
 }
 </style>

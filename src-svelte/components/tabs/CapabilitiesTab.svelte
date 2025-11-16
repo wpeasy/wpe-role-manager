@@ -9,6 +9,7 @@
  */
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+import { sanitizeSlug } from '../../lib/utils.js';
 
 let { store } = $props();
 
@@ -440,6 +441,7 @@ async function deleteCapability(roleSlug, capability) {
               type="text"
               id="cap-name"
               bind:value={newCapability.capability}
+              oninput={(e) => newCapability.capability = sanitizeSlug(e.target.value)}
               placeholder="e.g., manage_custom_posts"
               class="wpea-input"
             />
