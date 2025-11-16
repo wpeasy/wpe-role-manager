@@ -388,6 +388,15 @@ final class Routes {
         $name = sanitize_text_field($params['name']);
         $copy_from = !empty($params['copyFrom']) ? sanitize_key($params['copyFrom']) : '';
 
+        // Validate slug length (WordPress database constraint is 20 characters)
+        if (strlen($slug) < 1 || strlen($slug) > 20) {
+            return new WP_Error(
+                'invalid_slug_length',
+                __('Role slug must be between 1 and 20 characters.', WPE_RM_TEXTDOMAIN),
+                ['status' => 400]
+            );
+        }
+
         $role = RoleManager::create_role($slug, $name, $copy_from);
 
         if (!$role) {
@@ -617,6 +626,15 @@ final class Routes {
 
         $capability = sanitize_key($params['capability']);
         $grant = isset($params['grant']) ? (bool) $params['grant'] : true;
+
+        // Validate capability length (WordPress meta key limit is 191 characters)
+        if (strlen($capability) < 1 || strlen($capability) > 191) {
+            return new WP_Error(
+                'invalid_capability_length',
+                __('Capability name must be between 1 and 191 characters.', WPE_RM_TEXTDOMAIN),
+                ['status' => 400]
+            );
+        }
 
         // Check if dangerous capability protection is enabled
         $settings = get_option('wpe_rm_settings', ['allow_core_cap_assignment' => false]);

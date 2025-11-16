@@ -8,7 +8,7 @@
  */
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
-import { sanitizeSlug, generateCapabilityName } from '../../lib/utils.js';
+import { sanitizeSlug, validateSlug, generateCapabilityName } from '../../lib/utils.js';
 
 let { store } = $props();
 
@@ -24,6 +24,7 @@ let newRole = $state({
   name: '',
   copyFrom: '',
 });
+let slugValidation = $state({ valid: true, error: null });
 let searchQuery = $state('');
 let sortColumn = $state('name'); // Default sort by name
 let sortDirection = $state('asc'); // 'asc' or 'desc'
@@ -376,12 +377,21 @@ async function deleteRole() {
               type="text"
               id="role-slug"
               bind:value={newRole.slug}
-              oninput={(e) => newRole.slug = sanitizeSlug(e.target.value)}
+              oninput={(e) => {
+                newRole.slug = sanitizeSlug(e.target.value, 'role');
+                slugValidation = validateSlug(newRole.slug, 'role');
+              }}
               placeholder="e.g., custom_editor"
               pattern="[a-z0-9_-]+"
               class="wpea-input"
+              class:wpea-input--error={!slugValidation.valid}
+              maxlength="20"
             />
-            <p class="wpea-help">Lowercase letters, numbers, underscores, and hyphens only.</p>
+            {#if !slugValidation.valid && newRole.slug}
+              <p class="wpea-help wpea-help--error">{slugValidation.error}</p>
+            {:else}
+              <p class="wpea-help">Lowercase letters, numbers, underscores, and hyphens only. Maximum 20 characters.</p>
+            {/if}
           </div>
 
           <div class="wpea-field">
@@ -434,6 +444,7 @@ async function deleteRole() {
             type="button"
             class="wpea-btn wpea-btn--primary"
             onclick={createRole}
+            disabled={!newRole.slug || !newRole.name || !slugValidation.valid}
           >
             Create Role
           </button>
@@ -668,5 +679,19 @@ async function deleteRole() {
   justify-content: center;
   z-index: 100000;
   padding: var(--wpea-space--md);
+}
+
+/* Validation states */
+.wpea-input--error {
+  border-color: #d63638;
+}
+
+.wpea-input--error:focus {
+  border-color: #d63638;
+  box-shadow: 0 0 0 1px #d63638;
+}
+
+.wpea-help--error {
+  color: #d63638;
 }
 </style>

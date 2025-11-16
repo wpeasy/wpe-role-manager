@@ -9,7 +9,7 @@
  */
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
-import { sanitizeSlug } from '../../lib/utils.js';
+import { sanitizeSlug, validateSlug } from '../../lib/utils.js';
 
 let { store } = $props();
 
@@ -23,6 +23,7 @@ let newCapability = $state({
   capability: '',
   autoAddToAdmin: true,
 });
+let capValidation = $state({ valid: true, error: null });
 let sortColumn = $state('capability'); // Default sort by capability
 let sortDirection = $state('asc'); // 'asc' or 'desc'
 
@@ -441,11 +442,20 @@ async function deleteCapability(roleSlug, capability) {
               type="text"
               id="cap-name"
               bind:value={newCapability.capability}
-              oninput={(e) => newCapability.capability = sanitizeSlug(e.target.value)}
+              oninput={(e) => {
+                newCapability.capability = sanitizeSlug(e.target.value, 'capability');
+                capValidation = validateSlug(newCapability.capability, 'capability');
+              }}
               placeholder="e.g., manage_custom_posts"
               class="wpea-input"
+              class:wpea-input--error={!capValidation.valid}
+              maxlength="191"
             />
-            <p class="wpea-help">Enter the capability slug (lowercase, underscores only).</p>
+            {#if !capValidation.valid && newCapability.capability}
+              <p class="wpea-help wpea-help--error">{capValidation.error}</p>
+            {:else}
+              <p class="wpea-help">Enter the capability slug (lowercase, underscores only). Maximum 191 characters.</p>
+            {/if}
           </div>
 
           <div class="wpea-field">
@@ -479,6 +489,7 @@ async function deleteCapability(roleSlug, capability) {
             type="button"
             class="wpea-btn wpea-btn--primary"
             onclick={addCapability}
+            disabled={!newCapability.role || !newCapability.capability || !capValidation.valid}
           >
             Add Capability
           </button>
@@ -499,5 +510,19 @@ async function deleteCapability(roleSlug, capability) {
   justify-content: center;
   z-index: 100000;
   padding: var(--wpea-space--md);
+}
+
+/* Validation states */
+.wpea-input--error {
+  border-color: #d63638;
+}
+
+.wpea-input--error:focus {
+  border-color: #d63638;
+  box-shadow: 0 0 0 1px #d63638;
+}
+
+.wpea-help--error {
+  color: #d63638;
 }
 </style>

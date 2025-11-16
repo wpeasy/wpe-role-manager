@@ -5,16 +5,70 @@
  */
 
 /**
+ * WordPress slug constraints
+ */
+const SLUG_CONSTRAINTS = {
+  ROLE_MIN_LENGTH: 1,
+  ROLE_MAX_LENGTH: 20, // WordPress database column constraint
+  CAPABILITY_MIN_LENGTH: 1,
+  CAPABILITY_MAX_LENGTH: 191, // WordPress meta key limit
+};
+
+/**
  * Sanitize a string to be a valid WordPress slug
  * Only allows lowercase letters, numbers, hyphens, and underscores
+ * Enforces maximum length based on type
  *
  * @param {string} value - The string to sanitize
+ * @param {string} type - The type of slug ('role' or 'capability')
+ * @param {number} maxLength - Optional custom max length override
  * @returns {string} The sanitized slug
  */
-export function sanitizeSlug(value) {
+export function sanitizeSlug(value, type = 'role', maxLength = null) {
+  // Determine max length based on type
+  const max = maxLength || (type === 'capability' ? SLUG_CONSTRAINTS.CAPABILITY_MAX_LENGTH : SLUG_CONSTRAINTS.ROLE_MAX_LENGTH);
+
+  // Sanitize and enforce max length
   return value
     .toLowerCase()
-    .replace(/[^a-z0-9_-]/g, '');
+    .replace(/[^a-z0-9_-]/g, '')
+    .slice(0, max);
+}
+
+/**
+ * Validate a slug meets WordPress requirements
+ *
+ * @param {string} slug - The slug to validate
+ * @param {string} type - The type of slug ('role' or 'capability')
+ * @returns {Object} { valid: boolean, error: string|null }
+ */
+export function validateSlug(slug, type = 'role') {
+  const minLength = type === 'capability' ? SLUG_CONSTRAINTS.CAPABILITY_MIN_LENGTH : SLUG_CONSTRAINTS.ROLE_MIN_LENGTH;
+  const maxLength = type === 'capability' ? SLUG_CONSTRAINTS.CAPABILITY_MAX_LENGTH : SLUG_CONSTRAINTS.ROLE_MAX_LENGTH;
+
+  if (!slug || slug.length < minLength) {
+    return {
+      valid: false,
+      error: `${type === 'role' ? 'Role' : 'Capability'} slug must be at least ${minLength} character${minLength > 1 ? 's' : ''} long.`
+    };
+  }
+
+  if (slug.length > maxLength) {
+    return {
+      valid: false,
+      error: `${type === 'role' ? 'Role' : 'Capability'} slug cannot exceed ${maxLength} characters.`
+    };
+  }
+
+  // Check if contains only valid characters
+  if (!/^[a-z0-9_-]+$/.test(slug)) {
+    return {
+      valid: false,
+      error: `${type === 'role' ? 'Role' : 'Capability'} slug can only contain lowercase letters, numbers, hyphens, and underscores.`
+    };
+  }
+
+  return { valid: true, error: null };
 }
 
 /**
