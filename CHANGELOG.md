@@ -5,6 +5,26 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2-beta] - 2025-01-17
+
+### Fixed
+
+- **Restrict Page/Post PHP Code Generation**
+  - Fixed undefined `$post` variable error in generated code
+  - Now correctly uses `$page_id` from foreach loop when checking child pages
+  - Added proper user validation with `is_user_logged_in()` check
+  - Added `wp_get_current_user()` to get user object before capability check
+  - Changed to `user_can($user, 'capability')` for reliability
+  - Added capability check to conditional logic (only restrict if user lacks capability)
+
+### Technical
+
+- **UsersTab.svelte `generatePHPRestrictPage()`**:
+  - Fixed children loop to iterate through `$restricted_pages` array properly
+  - Each page ID now correctly passed to `get_page_children($page_id, get_pages())`
+  - Capability check integrated into both restriction paths (with/without children)
+  - Code now validates user is logged in before attempting restrictions
+
 ## [0.1.1-beta] - 2025-01-17
 
 ### Fixed

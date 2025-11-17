@@ -193,16 +193,19 @@ async function generatePHPRestrictPage() {
 
   const childrenCheck = phpMenuOption.restrictChildren
     ? `
-    // Get all child pages recursively
-    $children = get_page_children( $post->ID, get_pages() );
-    $child_ids = array_column( $children, 'ID' );
+    // Get all child pages of restricted pages
+    $child_ids = array();
+    foreach ( $restricted_pages as $page_id ) {
+        $children = get_page_children( $page_id, get_pages() );
+        $child_ids = array_merge( $child_ids, array_column( $children, 'ID' ) );
+    }
 
     // Check if current page is a child of restricted page
     $is_child = in_array( get_the_ID(), $child_ids );
 
-    if ( $is_restricted || $is_child ) {`
+    if ( ( $is_restricted || $is_child ) && ! user_can( $user, '${selectedCapability}' ) ) {`
     : `
-    if ( $is_restricted ) {`;
+    if ( $is_restricted && ! user_can( $user, '${selectedCapability}' ) ) {`;
 
   const restrictionAction = phpMenuOption.restrictionType === 'redirect'
     ? `
@@ -220,9 +223,16 @@ async function generatePHPRestrictPage() {
   const phpCode = `<?php
 /**
  * Restrict page/post content based on capability
- * Add this to your theme's functions.php
+ * Add this to your theme's functions.php or use WPCodeBox (Auto-Execute or "init" hook)
  */
 add_action( 'template_redirect', function() {
+    // Only restrict for logged-in users
+    if ( ! is_user_logged_in() ) {
+        return;
+    }
+
+    $user = wp_get_current_user();
+
     // Define restricted page ID(s)
     $restricted_pages = array( 123 ); // Replace with your page ID(s)
 
