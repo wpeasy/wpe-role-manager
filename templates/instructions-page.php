@@ -174,7 +174,7 @@ defined('ABSPATH') || exit;
                         </div>
                         <div class="wpea-cluster wpea-cluster--xs">
                             <code style="background: var(--wpea-surface--muted); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm);">PHP</code>
-                            <span><?php esc_html_e('PHP code using current_user_can()', 'wp-easy-role-manager'); ?></span>
+                            <span><?php esc_html_e('PHP code with multiple templates (Has Capability, Redirect on Login, Restrict Page/Post)', 'wp-easy-role-manager'); ?></span>
                         </div>
                         <div class="wpea-cluster wpea-cluster--xs">
                             <code style="background: var(--wpea-surface--muted); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm);">Fetch</code>
@@ -188,6 +188,16 @@ defined('ABSPATH') || exit;
                             <code style="background: var(--wpea-surface--muted); padding: var(--wpea-space--2xs) var(--wpea-space--xs); border-radius: var(--wpea-radius--sm);">Bricks Token</code>
                             <span><?php esc_html_e('Bricks Builder dynamic tag token (if Bricks is active)', 'wp-easy-role-manager'); ?></span>
                         </div>
+                    </div>
+
+                    <div class="wpea-alert wpea-alert--warning" style="margin-top: var(--wpea-space--sm);">
+                        <p><strong><?php esc_html_e('Important: PHP Hook Timing', 'wp-easy-role-manager'); ?></strong></p>
+                        <p><?php esc_html_e('When using the "Redirect on Login" PHP code:', 'wp-easy-role-manager'); ?></p>
+                        <ul class="wpea-list">
+                            <li><strong><?php esc_html_e('WPCodeBox users:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Set to "Auto-Execute" or "init" hook', 'wp-easy-role-manager'); ?></li>
+                            <li><strong><?php esc_html_e('functions.php users:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Code runs automatically on file load', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('The code must run BEFORE the login_redirect hook is called', 'wp-easy-role-manager'); ?></li>
+                        </ul>
                     </div>
                 </div>
             </div>

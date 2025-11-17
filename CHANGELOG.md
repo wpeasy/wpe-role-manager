@@ -5,6 +5,36 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1-beta] - 2025-01-17
+
+### Fixed
+
+- **Login Redirect PHP Code Generation**
+  - Fixed generated code to properly validate `$user` is `WP_User` instance before use
+  - Changed from `current_user_can()` to `user_can($user, 'capability')` for better reliability
+  - Added URL validation with `url_to_postid()` to prevent redirects to non-existent pages
+  - Increased filter priority from 10 to 20 for better compatibility with other plugins
+
+### Changed
+
+- **Code Generation Documentation**
+  - Updated PHP button description to mention multiple templates available
+  - Added prominent warning about hook timing requirements for login redirect code
+  - Documented WPCodeBox hook settings (Auto-Execute or "init" hook)
+  - Added note that code must run before `login_redirect` hook is called
+
+### Technical
+
+- **UsersTab.svelte**:
+  - `generatePHPRedirectLogin()`: Complete rewrite based on tested working code
+  - Improved code comments explaining WPCodeBox hook requirements
+  - Better error handling and validation patterns
+
+- **Instructions Page**:
+  - Added warning alert box for PHP hook timing requirements
+  - Updated PHP code generation description
+  - Clearer guidance for WPCodeBox and functions.php users
+
 ## [0.1.0-beta] - 2025-01-17
 
 ### Added

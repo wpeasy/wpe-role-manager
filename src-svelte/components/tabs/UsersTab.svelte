@@ -151,18 +151,31 @@ async function generatePHPRedirectLogin() {
   const phpCode = `<?php
 /**
  * Redirect users on login based on capability
- * Add this to your theme's functions.php
+ *
+ * IMPORTANT: This code must run BEFORE the login_redirect hook is called.
+ * - For WPCodeBox: Set to "Auto-Execute" or "init" hook
+ * - For functions.php: Code runs automatically on file load
  */
 add_filter( 'login_redirect', function( $redirect_to, $request, $user ) {
-    // Check if user is valid and has the capability
-    if ( isset( $user->ID ) && current_user_can( '${selectedCapability}' ) ) {
-        // Redirect users with capability to custom page
-        return home_url( '/custom-dashboard/' );
+    // Validate $user is a WP_User instance
+    if ( ! ( $user instanceof WP_User ) ) {
+        return $redirect_to;
     }
 
-    // Default redirect for other users
+    // Check if user has the capability
+    if ( user_can( $user, '${selectedCapability}' ) ) {
+        $target = home_url( '/custom-dashboard/' );
+
+        // Only redirect if the page actually exists
+        $page = url_to_postid( $target );
+        if ( $page ) {
+            return $target;
+        }
+    }
+
+    // Return default redirect for all other users
     return $redirect_to;
-}, 10, 3 );`;
+}, 20, 3 );`;
 
   try {
     await navigator.clipboard.writeText(phpCode);
