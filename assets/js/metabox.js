@@ -15,6 +15,13 @@
             width: '100%'
         });
 
+        // Initialize Select2 for roles
+        $('#wpe_rm_roles').select2({
+            placeholder: 'Select roles...',
+            allowClear: true,
+            width: '100%'
+        });
+
         // Fix Select2 remove button position - move it to the end
         function fixSelect2RemoveButtons() {
             $('.wpe-rm-metabox .select2-selection__choice').each(function() {
@@ -30,7 +37,7 @@
         setTimeout(fixSelect2RemoveButtons, 100);
 
         // Fix whenever selection changes
-        $('#wpe_rm_capabilities').on('select2:select select2:unselect', function() {
+        $('#wpe_rm_capabilities, #wpe_rm_roles').on('select2:select select2:unselect', function() {
             setTimeout(fixSelect2RemoveButtons, 10);
         });
 
@@ -53,6 +60,19 @@
             } else if (selectedValue === 'redirect') {
                 $('.wpe-rm-message-field').slideUp(200);
                 $('.wpe-rm-redirect-field').slideDown(200);
+            }
+        });
+
+        // Toggle capability/role fields based on filter type selection
+        $('input[name="wpe_rm_filter_type"]').on('change', function () {
+            const selectedValue = $(this).val();
+
+            if (selectedValue === 'capability') {
+                $('.wpe-rm-capability-field').slideDown(200);
+                $('.wpe-rm-role-field').slideUp(200);
+            } else if (selectedValue === 'role') {
+                $('.wpe-rm-capability-field').slideUp(200);
+                $('.wpe-rm-role-field').slideDown(200);
             }
         });
     });

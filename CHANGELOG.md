@@ -5,6 +5,53 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4-beta] - 2025-01-17
+
+### Added
+
+- **Role-Based Filtering**
+  - Content restrictions now support filtering by Role OR Capability
+  - New radio buttons in metabox: "Filter by Capability" or "Filter by Role"
+  - Select2 multi-select dropdown for roles (same as capabilities)
+  - Sample code generation adapts based on filter type selection
+  - Role filtering checks `in_array($role, $user->roles)`
+
+- **Restrictions Column in Post Tables**
+  - New "Restrictions" column added to Pages, Posts, and CPT admin tables
+  - Shows at-a-glance restriction summary with badges
+  - Displays: RESTRICTED badge, +CHILDREN badge (for pages), filter type, action type, and list of roles/capabilities
+  - Shows first 2 items then "+X more" if there are additional
+  - Column appears before "Date" column
+
+### Changed
+
+- **Metabox UI Enhancement**
+  - Added filter type radio selection (Capability/Role)
+  - Conditional display of capability or role fields based on selection
+  - Smooth jQuery transitions when switching filter types
+
+- **Sample Code Generation**
+  - Updated `generatePHPRestrictPage()` to support both role and capability filtering
+  - Generated code includes proper role checking logic
+  - Example comments updated to show both filter types
+
+- **Documentation Updates**
+  - Instructions page updated with role filtering information
+  - Added step to choose filter type in setup instructions
+  - Clarified how role vs capability filtering works
+
+### Technical
+
+- **RestrictionsMetabox.php**:
+  - Added `_wpe_rm_filter_type` meta field
+  - Added `_wpe_rm_required_roles` meta field
+  - Updated `enforce_restrictions()` to handle both filter types
+  - Added `add_restrictions_column()` and `display_restrictions_column()` methods
+  - Column registration for all public post types
+- **metabox.js**: Added filter type toggle functionality for capability/role fields
+- **UsersTab.svelte**: Updated PHP code generator with role/capability filtering support
+- **instructions-page.php**: Updated documentation for role filtering
+
 ## [0.1.3-beta] - 2025-01-17
 
 ### Added

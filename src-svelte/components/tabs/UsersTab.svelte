@@ -22,6 +22,7 @@ let selectedCapability = $state('');
 let testResult = $state(null);
 let showPhpMenu = $state(false);
 let phpMenuOption = $state({
+  filterType: 'capability', // 'capability' or 'role'
   restrictChildren: false,
   restrictionType: 'message', // 'message' or 'redirect'
   redirectUrl: ''
@@ -209,13 +210,26 @@ async function generatePHPRestrictPage() {
             );`;
 
   const includeChildrenValue = phpMenuOption.restrictChildren ? 'true' : 'false';
+  const filterType = phpMenuOption.filterType;
+  const filterLabel = filterType === 'role' ? 'role' : 'capability';
+
+  const accessCheckCode = filterType === 'role'
+    ? `
+            // Check if user has the required role
+            $user = wp_get_current_user();
+            if ( ! is_user_logged_in() || ! in_array( $restriction['${filterLabel}'], $user->roles, true ) ) {${restrictionAction}
+            }`
+    : `
+            // Check if user has the required capability
+            if ( ! is_user_logged_in() || ! current_user_can( $restriction['${filterLabel}'] ) ) {${restrictionAction}
+            }`;
 
   const phpCode = `/**
- * Restrict pages/posts based on capabilities
+ * Restrict pages/posts based on ${filterType === 'role' ? 'roles' : 'capabilities'}
  * Add this to your theme's functions.php or use WPCodeBox (Auto-Execute or "init" hook)
  *
  * IMPORTANT: Non-logged-in users will be restricted by default.
- * Only users with the required capability can access restricted pages.
+ * Only users with the required ${filterLabel} can access restricted pages.
  * Administrators are always excluded from restrictions.
  */
 add_action( 'template_redirect', function() {
@@ -224,17 +238,17 @@ add_action( 'template_redirect', function() {
         return;
     }
 
-    // Define restriction rules: Each rule specifies pages, required capability, and whether to include children
+    // Define restriction rules: Each rule specifies pages, required ${filterLabel}, and whether to include children
     $restrictions = array(
         array(
             'pages' => array( 123 ), // Replace with your page ID(s)
-            'capability' => '${selectedCapability}',
+            '${filterLabel}' => '${selectedCapability}',
             'include_children' => ${includeChildrenValue}
         ),
         // Add more restriction rules as needed:
         // array(
         //     'pages' => array( 456, 789 ),
-        //     'capability' => 'another_capability',
+        //     '${filterLabel}' => '${filterType === 'role' ? 'editor' : 'edit_posts'}',
         //     'include_children' => false
         // ),
     );
@@ -264,10 +278,7 @@ add_action( 'template_redirect', function() {
         }
 
         // If page is restricted, check if user has access
-        if ( $is_restricted ) {
-            // Allow access only if user is logged in AND has the required capability
-            if ( ! is_user_logged_in() || ! current_user_can( $restriction['capability'] ) ) {${restrictionAction}
-            }
+        if ( $is_restricted ) {${accessCheckCode}
 
             // If user has access, stop checking (they passed this restriction)
             break;
@@ -619,6 +630,28 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
 
                         <div class="php-menu-section">
                           <div class="php-menu-header">Restrict Page/Post</div>
+
+                          <div class="php-menu-radio-group">
+                            <label class="php-menu-radio">
+                              <input
+                                type="radio"
+                                name="filterType"
+                                value="capability"
+                                bind:group={phpMenuOption.filterType}
+                              />
+                              <span>Filter by Capability</span>
+                            </label>
+
+                            <label class="php-menu-radio">
+                              <input
+                                type="radio"
+                                name="filterType"
+                                value="role"
+                                bind:group={phpMenuOption.filterType}
+                              />
+                              <span>Filter by Role</span>
+                            </label>
+                          </div>
 
                           <label class="php-menu-checkbox">
                             <input

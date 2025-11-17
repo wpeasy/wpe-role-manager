@@ -40,6 +40,13 @@ final class RestrictionsMetabox {
 
         // Enqueue Select2 for capability multi-select
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
+
+        // Add custom column to post list tables
+        $post_types = get_post_types(['public' => true], 'names');
+        foreach ($post_types as $post_type) {
+            add_filter("manage_{$post_type}_posts_columns", [self::class, 'add_restrictions_column']);
+            add_action("manage_{$post_type}_posts_custom_column", [self::class, 'display_restrictions_column'], 10, 2);
+        }
     }
 
     /**
@@ -118,7 +125,9 @@ final class RestrictionsMetabox {
         // Get current settings
         $enabled = get_post_meta($post->ID, '_wpe_rm_restrictions_enabled', true);
         $include_children = get_post_meta($post->ID, '_wpe_rm_include_children', true);
+        $filter_type = get_post_meta($post->ID, '_wpe_rm_filter_type', true);
         $capabilities = get_post_meta($post->ID, '_wpe_rm_required_capabilities', true);
+        $roles = get_post_meta($post->ID, '_wpe_rm_required_roles', true);
         $action_type = get_post_meta($post->ID, '_wpe_rm_action_type', true);
         $message = get_post_meta($post->ID, '_wpe_rm_message', true);
         $redirect_url = get_post_meta($post->ID, '_wpe_rm_redirect_url', true);
@@ -126,7 +135,9 @@ final class RestrictionsMetabox {
         // Defaults
         $enabled = $enabled === '1' || $enabled === 1;
         $include_children = $include_children === '1' || $include_children === 1;
+        $filter_type = $filter_type ?: 'capability';
         $capabilities = is_array($capabilities) ? $capabilities : [];
+        $roles = is_array($roles) ? $roles : [];
         $action_type = $action_type ?: 'message';
         $message = $message ?: 'Access Denied';
         $redirect_url = $redirect_url ?: home_url();
@@ -178,8 +189,34 @@ final class RestrictionsMetabox {
                     </p>
                 <?php endif; ?>
 
-                <!-- Required Capabilities -->
+                <!-- Filter Type -->
                 <p>
+                    <strong><?php esc_html_e('Filter by:', WPE_RM_TEXTDOMAIN); ?></strong>
+                </p>
+                <p>
+                    <label>
+                        <input
+                            type="radio"
+                            name="wpe_rm_filter_type"
+                            value="capability"
+                            <?php checked($filter_type, 'capability'); ?>
+                        />
+                        <?php esc_html_e('Capability', WPE_RM_TEXTDOMAIN); ?>
+                    </label>
+                    <br/>
+                    <label>
+                        <input
+                            type="radio"
+                            name="wpe_rm_filter_type"
+                            value="role"
+                            <?php checked($filter_type, 'role'); ?>
+                        />
+                        <?php esc_html_e('Role', WPE_RM_TEXTDOMAIN); ?>
+                    </label>
+                </p>
+
+                <!-- Required Capabilities -->
+                <p class="wpe-rm-capability-field" style="<?php echo $filter_type === 'capability' ? '' : 'display:none;'; ?>">
                     <label for="wpe_rm_capabilities">
                         <?php esc_html_e('Required capabilities:', WPE_RM_TEXTDOMAIN); ?>
                     </label>
@@ -200,6 +237,31 @@ final class RestrictionsMetabox {
                     </select>
                     <small style="display: block; margin-top: 4px; color: #646970;">
                         <?php esc_html_e('User must have at least one of these capabilities to view this content.', WPE_RM_TEXTDOMAIN); ?>
+                    </small>
+                </p>
+
+                <!-- Required Roles -->
+                <p class="wpe-rm-role-field" style="<?php echo $filter_type === 'role' ? '' : 'display:none;'; ?>">
+                    <label for="wpe_rm_roles">
+                        <?php esc_html_e('Required roles:', WPE_RM_TEXTDOMAIN); ?>
+                    </label>
+                    <select
+                        id="wpe_rm_roles"
+                        name="wpe_rm_roles[]"
+                        multiple="multiple"
+                        style="width: 100%;"
+                    >
+                        <?php foreach ($wp_roles->role_names as $role_slug => $role_name) : ?>
+                            <option
+                                value="<?php echo esc_attr($role_slug); ?>"
+                                <?php selected(in_array($role_slug, $roles, true)); ?>
+                            >
+                                <?php echo esc_html($role_name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="display: block; margin-top: 4px; color: #646970;">
+                        <?php esc_html_e('User must have at least one of these roles to view this content.', WPE_RM_TEXTDOMAIN); ?>
                     </small>
                 </p>
 
@@ -294,11 +356,23 @@ final class RestrictionsMetabox {
         $include_children = isset($_POST['wpe_rm_include_children']) ? '1' : '0';
         update_post_meta($post_id, '_wpe_rm_include_children', $include_children);
 
+        // Save filter type
+        $filter_type = isset($_POST['wpe_rm_filter_type'])
+            ? sanitize_text_field(wp_unslash($_POST['wpe_rm_filter_type']))
+            : 'capability';
+        update_post_meta($post_id, '_wpe_rm_filter_type', $filter_type);
+
         // Save capabilities
         $capabilities = isset($_POST['wpe_rm_capabilities']) && is_array($_POST['wpe_rm_capabilities'])
             ? array_map('sanitize_text_field', wp_unslash($_POST['wpe_rm_capabilities']))
             : [];
         update_post_meta($post_id, '_wpe_rm_required_capabilities', $capabilities);
+
+        // Save roles
+        $roles = isset($_POST['wpe_rm_roles']) && is_array($_POST['wpe_rm_roles'])
+            ? array_map('sanitize_text_field', wp_unslash($_POST['wpe_rm_roles']))
+            : [];
+        update_post_meta($post_id, '_wpe_rm_required_roles', $roles);
 
         // Save action type
         $action_type = isset($_POST['wpe_rm_action_type'])
@@ -346,20 +420,40 @@ final class RestrictionsMetabox {
             return;
         }
 
-        // Get required capabilities
-        $capabilities = $restriction['capabilities'];
-        if (!is_array($capabilities) || empty($capabilities)) {
-            return;
-        }
-
-        // Check if user has any of the required capabilities
+        $filter_type = $restriction['filter_type'] ?: 'capability';
         $has_access = false;
 
-        if (is_user_logged_in()) {
-            foreach ($capabilities as $capability) {
-                if (current_user_can($capability)) {
-                    $has_access = true;
-                    break;
+        if ($filter_type === 'role') {
+            // Filter by role
+            $roles = $restriction['roles'];
+            if (!is_array($roles) || empty($roles)) {
+                return;
+            }
+
+            // Check if user has any of the required roles
+            if (is_user_logged_in()) {
+                $user = wp_get_current_user();
+                foreach ($roles as $role) {
+                    if (in_array($role, $user->roles, true)) {
+                        $has_access = true;
+                        break;
+                    }
+                }
+            }
+        } else {
+            // Filter by capability
+            $capabilities = $restriction['capabilities'];
+            if (!is_array($capabilities) || empty($capabilities)) {
+                return;
+            }
+
+            // Check if user has any of the required capabilities
+            if (is_user_logged_in()) {
+                foreach ($capabilities as $capability) {
+                    if (current_user_can($capability)) {
+                        $has_access = true;
+                        break;
+                    }
                 }
             }
         }
@@ -408,7 +502,9 @@ final class RestrictionsMetabox {
         if ($enabled === '1' || $enabled === 1) {
             return [
                 'post_id' => $post_id,
+                'filter_type' => get_post_meta($post_id, '_wpe_rm_filter_type', true) ?: 'capability',
                 'capabilities' => get_post_meta($post_id, '_wpe_rm_required_capabilities', true),
+                'roles' => get_post_meta($post_id, '_wpe_rm_required_roles', true),
                 'action_type' => get_post_meta($post_id, '_wpe_rm_action_type', true),
                 'message' => get_post_meta($post_id, '_wpe_rm_message', true),
                 'redirect_url' => get_post_meta($post_id, '_wpe_rm_redirect_url', true),
@@ -427,7 +523,9 @@ final class RestrictionsMetabox {
                     ($include_children === '1' || $include_children === 1)) {
                     return [
                         'post_id' => $parent_id,
+                        'filter_type' => get_post_meta($parent_id, '_wpe_rm_filter_type', true) ?: 'capability',
                         'capabilities' => get_post_meta($parent_id, '_wpe_rm_required_capabilities', true),
+                        'roles' => get_post_meta($parent_id, '_wpe_rm_required_roles', true),
                         'action_type' => get_post_meta($parent_id, '_wpe_rm_action_type', true),
                         'message' => get_post_meta($parent_id, '_wpe_rm_message', true),
                         'redirect_url' => get_post_meta($parent_id, '_wpe_rm_redirect_url', true),
@@ -440,5 +538,103 @@ final class RestrictionsMetabox {
         }
 
         return false;
+    }
+
+    /**
+     * Add restrictions column to post list table.
+     *
+     * @param array $columns Existing columns.
+     * @return array Modified columns.
+     */
+    public static function add_restrictions_column(array $columns): array {
+        // Insert before 'date' column
+        $new_columns = [];
+        foreach ($columns as $key => $value) {
+            if ($key === 'date') {
+                $new_columns['wpe_rm_restrictions'] = __('Restrictions', WPE_RM_TEXTDOMAIN);
+            }
+            $new_columns[$key] = $value;
+        }
+        return $new_columns;
+    }
+
+    /**
+     * Display content in restrictions column.
+     *
+     * @param string $column_name Column name.
+     * @param int    $post_id     Post ID.
+     * @return void
+     */
+    public static function display_restrictions_column(string $column_name, int $post_id): void {
+        if ($column_name !== 'wpe_rm_restrictions') {
+            return;
+        }
+
+        $enabled = get_post_meta($post_id, '_wpe_rm_restrictions_enabled', true);
+        if ($enabled !== '1' && $enabled !== 1) {
+            echo '<span style="color: #787c82;">—</span>';
+            return;
+        }
+
+        $filter_type = get_post_meta($post_id, '_wpe_rm_filter_type', true) ?: 'capability';
+        $action_type = get_post_meta($post_id, '_wpe_rm_action_type', true) ?: 'message';
+        $include_children = get_post_meta($post_id, '_wpe_rm_include_children', true);
+
+        if ($filter_type === 'role') {
+            $roles = get_post_meta($post_id, '_wpe_rm_required_roles', true);
+            $items = is_array($roles) ? $roles : [];
+        } else {
+            $capabilities = get_post_meta($post_id, '_wpe_rm_required_capabilities', true);
+            $items = is_array($capabilities) ? $capabilities : [];
+        }
+
+        // Format display
+        echo '<div style="font-size: 12px; line-height: 1.5;">';
+
+        // Restricted badge
+        echo '<div style="margin-bottom: 4px;">';
+        echo '<span style="display: inline-block; padding: 2px 6px; background: #d63638; color: #fff; border-radius: 3px; font-weight: 600; font-size: 11px;">';
+        echo esc_html__('RESTRICTED', WPE_RM_TEXTDOMAIN);
+        echo '</span>';
+
+        // Include children indicator
+        if (($include_children === '1' || $include_children === 1) && get_post_type($post_id) === 'page') {
+            echo ' <span style="display: inline-block; padding: 2px 6px; background: #2271b1; color: #fff; border-radius: 3px; font-weight: 600; font-size: 11px;">';
+            echo esc_html__('+ CHILDREN', WPE_RM_TEXTDOMAIN);
+            echo '</span>';
+        }
+        echo '</div>';
+
+        // Filter type
+        echo '<div style="color: #50575e; margin-bottom: 2px;">';
+        echo '<strong>' . esc_html__('By:', WPE_RM_TEXTDOMAIN) . '</strong> ';
+        echo esc_html($filter_type === 'role' ? __('Role', WPE_RM_TEXTDOMAIN) : __('Capability', WPE_RM_TEXTDOMAIN));
+        echo '</div>';
+
+        // Action type
+        echo '<div style="color: #50575e; margin-bottom: 2px;">';
+        echo '<strong>' . esc_html__('Type:', WPE_RM_TEXTDOMAIN) . '</strong> ';
+        echo esc_html($action_type === 'redirect' ? __('Redirect', WPE_RM_TEXTDOMAIN) : __('Message', WPE_RM_TEXTDOMAIN));
+        echo '</div>';
+
+        // List items
+        if (!empty($items)) {
+            echo '<div style="color: #50575e;">';
+            echo '<strong>' . esc_html__('List:', WPE_RM_TEXTDOMAIN) . '</strong> ';
+
+            // Show first 2 items, then count
+            $display_items = array_slice($items, 0, 2);
+            $remaining = count($items) - 2;
+
+            echo '<span style="font-family: monospace; font-size: 11px;">';
+            echo esc_html(implode(', ', $display_items));
+            if ($remaining > 0) {
+                echo ' <span style="color: #787c82;">+' . esc_html($remaining) . ' more</span>';
+            }
+            echo '</span>';
+            echo '</div>';
+        }
+
+        echo '</div>';
     }
 }

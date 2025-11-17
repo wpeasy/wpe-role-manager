@@ -412,7 +412,8 @@ defined('ABSPATH') || exit;
                             <li><?php esc_html_e('Edit any Page, Post, or Custom Post Type', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('Find the "Content Restrictions" metabox in the sidebar', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('Check "Enable restrictions" to activate access control', 'wp-easy-role-manager'); ?></li>
-                            <li><?php esc_html_e('Select required capabilities (users must have at least one)', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Choose filter type: "Capability" or "Role"', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Select required capabilities or roles (users must have at least one)', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('For pages: optionally enable "Include child pages" to apply restrictions to all children', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('Choose action: "Show Message" or "Redirect to URL"', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('Save the post/page', 'wp-easy-role-manager'); ?></li>
@@ -423,7 +424,8 @@ defined('ABSPATH') || exit;
                         <strong><?php esc_html_e('How Restrictions Work:', 'wp-easy-role-manager'); ?></strong>
                         <ul class="wpea-list" style="margin-top: var(--wpea-space--xs);">
                             <li><?php esc_html_e('Non-logged-in users are always restricted', 'wp-easy-role-manager'); ?></li>
-                            <li><?php esc_html_e('Logged-in users must have at least one of the required capabilities', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Filter by Capability: Logged-in users must have at least one of the required capabilities', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Filter by Role: Logged-in users must have at least one of the required roles', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('Administrators (users with manage_options) always have access', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('Child page restrictions are inherited from parent when "Include children" is enabled', 'wp-easy-role-manager'); ?></li>
                             <li><?php esc_html_e('Users without access see the configured message or are redirected', 'wp-easy-role-manager'); ?></li>
