@@ -5,6 +5,95 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-beta] - 2025-01-17
+
+### Added
+
+- **Automatic Capability Cleanup on Role Deletion**
+  - When deleting a role, all capabilities belonging to that role are now automatically removed from ALL roles
+  - Prevents orphaned custom capabilities from remaining after role deletion
+  - Affects Administrator and all other roles that have the capabilities
+  - New tracking system: `wpe_rm_role_capabilities` option maps roles to their owned capabilities
+  - Comprehensive cleanup: removes from managed caps, created caps, and disabled caps lists
+  - Activity log shows number of capabilities removed during deletion
+
+- **WordPress Slug Validation**
+  - Real-time validation for role and capability slugs
+  - Role slugs: 1-20 characters (WordPress database constraint)
+  - Capability slugs: 1-191 characters (WordPress meta key limit)
+  - Visual error states with red border and error messages
+  - Create/Add buttons disabled when validation fails
+  - Both frontend and backend validation for consistency
+  - Enforces WordPress slug character set: lowercase letters, numbers, hyphens, underscores
+
+- **Standard Capabilities Toggle**
+  - "Add Standard Capabilities" now behind optional checkbox in Create Role modal
+  - Makes it clear that standard capabilities are optional, not required
+  - Button only appears when checkbox is enabled
+  - Prevents confusion about mandatory capability selection
+
+### Changed
+
+- **CapabilityManager Enhancement**
+  - `add_capability()` method now accepts `belongs_to` parameter to track capability ownership
+  - New method: `remove_role_capabilities_from_all_roles()` for comprehensive cleanup
+  - Capability ownership tracked separately from managed role-capability pairs
+
+- **Create Role Workflow**
+  - Standard capabilities now passed with `belongs_to` parameter to mark ownership
+  - Both new role and administrator capabilities tagged with owning role
+  - Enables automatic cleanup when role is deleted
+
+### Fixed
+
+- **PHP Context Menu Dark Mode**
+  - Fixed transparent background in dark mode (white text on transparent = invisible)
+  - Changed from invalid `--wpea-surface--base` to correct `--wpea-surface--panel` variable
+  - Menu and input backgrounds now properly adapt to light/dark themes
+  - All WPEA framework variables verified and corrected
+
+- **Capability Orphaning**
+  - Fixed custom capabilities remaining on Administrator after role deletion
+  - Fixed capabilities remaining on other roles after creating role is deleted
+  - All role-owned capabilities now properly cleaned up across entire system
+
+### Technical
+
+- **New Tracking System**:
+  - `wpe_rm_role_capabilities` option: Maps role slugs to array of owned capability names
+  - Tracks capability ownership separately from assignment
+  - Enables complete cleanup on role deletion
+
+- **Validation System**:
+  - `validateSlug()` function in `utils.js` for frontend validation
+  - Returns `{valid: boolean, error: string|null}` object
+  - Backend validation in `Routes.php` for both role and capability creation
+  - Consistent error messages between frontend and backend
+
+- **Frontend Updates**:
+  - RolesTab.svelte: Added `addStandardCaps` toggle, `slugValidation` state, validation UI
+  - CapabilitiesTab.svelte: Added `capValidation` state, validation UI
+  - Both components: Error state styling with `wpea-input--error` and `wpea-help--error` classes
+
+- **Backend Updates**:
+  - Routes.php `add_capability` endpoint: Accepts and passes `belongs_to` parameter
+  - Routes.php `delete_role` endpoint: Calls cleanup before role deletion
+  - Routes.php `create_role` endpoint: Validates slug length (1-20 characters)
+  - CapabilityManager: New comprehensive cleanup method with metadata removal
+
+- **Build System**:
+  - All changes compiled successfully with Vite
+  - No breaking changes to existing functionality
+  - Backward compatible with existing role/capability data
+
+### Migration Notes
+
+**Moving from Alpha to Beta**: This release marks the transition to beta status. The plugin has reached feature maturity with comprehensive role/capability management, safety mechanisms, and automatic cleanup. While still not recommended for production use without thorough testing, the beta status indicates increased stability and completeness.
+
+**Capability Cleanup**: Existing installations will begin tracking capability ownership starting with this version. Previously created capabilities will not have ownership tracking, but any capabilities created or modified after this update will be properly tracked and cleaned up on role deletion.
+
+**Slug Validation**: Existing slugs that exceed length limits will continue to work but cannot be recreated if deleted. New roles/capabilities must meet WordPress constraints (20 chars for roles, 191 for capabilities).
+
 ## [0.0.9-alpha] - 2025-01-25
 
 ### Added

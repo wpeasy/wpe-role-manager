@@ -1,17 +1,19 @@
 # WP Easy Role Manager
 
-**Version:** 0.0.1-alpha
+**Version:** 0.1.0-beta
 **Requires:** WordPress 6.4+, PHP 8.1+
 **License:** GPL v2 or later
+**Status:** Beta - Feature complete with comprehensive testing recommended before production use
 
 ## Description
 
-Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign multiple roles to users. Visualise, add, and remove capabilities on roles. Also visualise the effective capabilities a user has based on their roles.
+Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign multiple roles to users. Visualise, add, and remove capabilities on roles. Also visualise the effective capabilities a user has based on their roles. Includes automatic capability cleanup to prevent orphaned capabilities.
 
 ## Features
 
 ### Role Management
 - Create new custom roles (from scratch or based on existing roles)
+- Optional standard capabilities generator (11 WordPress-style capabilities)
 - Disable custom roles completely:
   - Users retain role assignment in admin for visibility
   - Role becomes invisible to WordPress core, plugins, and themes
@@ -19,13 +21,16 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
   - Role membership checks (e.g., Bricks Builder conditions) return false
   - Visual indicators (red badges) when assigning disabled roles
 - Delete custom roles (with user migration wizard)
+- **Automatic capability cleanup**: When deleting a role, all capabilities created for that role are automatically removed from ALL roles (including Administrator)
 - Core roles are read-only and protected
 
 ### Capability Management
 - Add/remove capabilities from roles
+- Real-time slug validation (1-20 chars for roles, 1-191 for capabilities)
 - Disable capabilities per-role without deleting
 - Visual matrix of Roles × Capabilities
 - Filter and search capabilities
+- Capability type filtering (All, Core, External, Custom)
 - Core capabilities are read-only
 
 ### User Management
@@ -63,9 +68,12 @@ Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign mu
 ### Safety Features
 - Core roles and capabilities are protected (read-only)
 - Typed confirmation required for role deletion
+- User removal confirmation when deleting roles with active users
 - Migration wizard when deleting roles assigned to users
+- **Automatic capability cleanup**: Prevents orphaned capabilities by removing them from all roles when deleting the owning role
+- WordPress slug length constraints enforced (prevents database errors)
 - Activity logging for audit trail
-- Rate limiting on bulk operations
+- Dangerous capability blacklist (configurable override)
 
 ### UX Features
 - Single-page admin UI with tabbed navigation (Roles, Capabilities, Users, Import/Export, Settings, Tools, Revisions, Logs)

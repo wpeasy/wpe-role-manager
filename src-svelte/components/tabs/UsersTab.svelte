@@ -701,7 +701,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
   min-width: 280px;
   max-height: 400px;
   overflow-y: auto;
-  background: var(--wpea-surface--base);
+  background: var(--wpea-surface--panel);
   color: var(--wpea-surface--text);
   border: 1px solid var(--wpea-surface--border);
   border-radius: var(--wpea-radius--md);
@@ -773,7 +773,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
   width: 100%;
   margin-top: var(--wpea-space--xs);
   font-size: var(--wpea-text--sm);
-  background: var(--wpea-surface--base);
+  background: var(--wpea-surface--panel);
   color: var(--wpea-surface--text);
   border: 1px solid var(--wpea-surface--border);
   border-radius: var(--wpea-radius--sm);

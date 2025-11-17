@@ -554,6 +554,9 @@ final class Routes {
             );
         }
 
+        // Remove all capabilities that belong to this role from ALL roles
+        $caps_removed = CapabilityManager::remove_role_capabilities_from_all_roles($role_slug);
+
         $success = RoleManager::delete_role($role_slug, $force || $remove_from_users);
 
         if (!$success) {
@@ -568,6 +571,11 @@ final class Routes {
         $log_details = $force && $user_count > 0
             ? sprintf('Deleted role "%s" (forced deletion with %d user(s))', $role_slug, $user_count)
             : sprintf('Deleted role "%s"', $role_slug);
+
+        if ($caps_removed > 0) {
+            $log_details .= sprintf(' and removed %d associated capability/capabilities from all roles', $caps_removed);
+        }
+
         Logger::log('Role Deleted', $log_details);
 
         return new WP_REST_Response([
@@ -626,6 +634,7 @@ final class Routes {
 
         $capability = sanitize_key($params['capability']);
         $grant = isset($params['grant']) ? (bool) $params['grant'] : true;
+        $belongs_to = isset($params['belongs_to']) ? sanitize_key($params['belongs_to']) : '';
 
         // Validate capability length (WordPress meta key limit is 191 characters)
         if (strlen($capability) < 1 || strlen($capability) > 191) {
@@ -681,7 +690,7 @@ final class Routes {
             }
         }
 
-        $success = CapabilityManager::add_capability($role_slug, $capability, $grant);
+        $success = CapabilityManager::add_capability($role_slug, $capability, $grant, $belongs_to);
 
         if (!$success) {
             return new WP_Error(

@@ -25,6 +25,7 @@ let newRole = $state({
   copyFrom: '',
 });
 let slugValidation = $state({ valid: true, error: null });
+let addStandardCaps = $state(false); // Toggle for showing standard capabilities option
 let searchQuery = $state('');
 let sortColumn = $state('name'); // Default sort by name
 let sortDirection = $state('asc'); // 'asc' or 'desc'
@@ -76,6 +77,33 @@ let filteredRoles = $derived.by(() => {
 });
 
 // Handle role creation
+// Reset create role form
+function resetCreateRoleForm() {
+  newRole = { slug: '', name: '', copyFrom: '' };
+  addStandardCaps = false;
+  standardCapabilities = {
+    read: true,
+    read_private: true,
+    edit: true,
+    edit_others: true,
+    edit_published: true,
+    edit_private: true,
+    publish: true,
+    delete: true,
+    delete_others: true,
+    delete_published: true,
+    delete_private: true,
+  };
+  slugValidation = { valid: true, error: null };
+}
+
+// Close create role modal
+function closeCreateModal() {
+  resetCreateRoleForm();
+  showCreateModal = false;
+  showStandardCapsModal = false;
+}
+
 // Open standard capabilities modal
 function openStandardCapsModal() {
   if (!newRole.slug) {
@@ -100,26 +128,28 @@ async function createRole() {
       body: JSON.stringify(newRole),
     });
 
-    // Add selected standard capabilities if any are enabled
-    const selectedCaps = Object.entries(standardCapabilities)
-      .filter(([_, enabled]) => enabled)
-      .map(([pattern, _]) => generateCapabilityName(pattern, newRole.slug))
-      .filter(cap => cap !== '');
+    // Add selected standard capabilities if the option is enabled
+    const selectedCaps = addStandardCaps
+      ? Object.entries(standardCapabilities)
+          .filter(([_, enabled]) => enabled)
+          .map(([pattern, _]) => generateCapabilityName(pattern, newRole.slug))
+          .filter(cap => cap !== '')
+      : [];
 
     if (selectedCaps.length > 0) {
       // Add each capability to the newly created role AND administrator
       for (const capability of selectedCaps) {
         try {
-          // Add to the new role
+          // Add to the new role (marking it as belonging to this role)
           await store.apiRequest(`/roles/${newRole.slug}/caps`, {
             method: 'POST',
-            body: JSON.stringify({ capability }),
+            body: JSON.stringify({ capability, belongs_to: newRole.slug }),
           });
 
-          // Also add to administrator role
+          // Also add to administrator role (marking it as belonging to the new role)
           await store.apiRequest(`/roles/administrator/caps`, {
             method: 'POST',
-            body: JSON.stringify({ capability }),
+            body: JSON.stringify({ capability, belongs_to: newRole.slug }),
           });
         } catch (capError) {
           console.error(`Error adding capability ${capability}:`, capError);
@@ -131,23 +161,8 @@ async function createRole() {
     await store.fetchCapabilityMatrix();
     store.showSaved();
 
-    // Reset form
-    newRole = { slug: '', name: '', copyFrom: '' };
-    standardCapabilities = {
-      read: true,
-      read_private: true,
-      edit: true,
-      edit_others: true,
-      edit_published: true,
-      edit_private: true,
-      publish: true,
-      delete: true,
-      delete_others: true,
-      delete_published: true,
-      delete_private: true,
-    };
-    showCreateModal = false;
-    showStandardCapsModal = false;
+    // Close modal and reset form
+    closeCreateModal();
   } catch (error) {
     console.error('Error creating role:', error);
     store.showError();
@@ -353,7 +368,7 @@ async function deleteRole() {
 
   <!-- Create Role Modal -->
   {#if showCreateModal}
-    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showCreateModal = false} onkeydown={(e) => e.key === 'Escape' && (showCreateModal = false)}>
+    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={closeCreateModal} onkeydown={(e) => e.key === 'Escape' && closeCreateModal()}>
       <div class="wpea-card" style="max-width: 500px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
         <div class="wpea-card__header">
           <h3 class="wpea-card__title">Create New Role</h3>
@@ -361,7 +376,7 @@ async function deleteRole() {
             type="button"
             class="wpea-btn wpea-btn--ghost wpea-btn--sm"
             style="padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl);"
-            onclick={() => showCreateModal = false}
+            onclick={closeCreateModal}
             aria-label="Close"
           >
             &times;
@@ -421,22 +436,35 @@ async function deleteRole() {
           </div>
 
           <div class="wpea-field">
-            <button
-              type="button"
-              class="wpea-btn"
-              onclick={openStandardCapsModal}
-            >
-              + Add Standard Capabilities
-            </button>
+            <label class="wpea-control" style="margin: 0;">
+              <input
+                type="checkbox"
+                bind:checked={addStandardCaps}
+              />
+              <span>Add Standard Capabilities (Optional)</span>
+            </label>
             <p class="wpea-help">Generate standard WordPress-style capabilities for this role.</p>
           </div>
+
+          {#if addStandardCaps}
+            <div class="wpea-field">
+              <button
+                type="button"
+                class="wpea-btn"
+                onclick={openStandardCapsModal}
+              >
+                + Select Standard Capabilities
+              </button>
+              <p class="wpea-help">Choose which capabilities to generate for this role.</p>
+            </div>
+          {/if}
         </div>
 
         <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end; padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
           <button
             type="button"
             class="wpea-btn"
-            onclick={() => showCreateModal = false}
+            onclick={closeCreateModal}
           >
             Cancel
           </button>

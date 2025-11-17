@@ -79,12 +79,13 @@ final class CapabilityManager {
     /**
      * Add capability to a role.
      *
-     * @param string $role_slug Role slug.
-     * @param string $capability Capability name.
-     * @param bool   $grant      Whether to grant (true) or deny (false).
+     * @param string $role_slug   Role slug.
+     * @param string $capability  Capability name.
+     * @param bool   $grant       Whether to grant (true) or deny (false).
+     * @param string $belongs_to  Optional role slug that this capability belongs to.
      * @return bool
      */
-    public static function add_capability(string $role_slug, string $capability, bool $grant = true): bool {
+    public static function add_capability(string $role_slug, string $capability, bool $grant = true, string $belongs_to = ''): bool {
         $role = get_role($role_slug);
 
         if (!$role) {
@@ -114,6 +115,18 @@ final class CapabilityManager {
             if (!in_array($capability, $plugin_created_caps, true)) {
                 $plugin_created_caps[] = $capability;
                 update_option('wpe_rm_created_caps', $plugin_created_caps);
+            }
+        }
+
+        // Track which role this capability belongs to
+        if (!empty($belongs_to)) {
+            $role_capabilities = get_option('wpe_rm_role_capabilities', []);
+            if (!isset($role_capabilities[$belongs_to])) {
+                $role_capabilities[$belongs_to] = [];
+            }
+            if (!in_array($capability, $role_capabilities[$belongs_to], true)) {
+                $role_capabilities[$belongs_to][] = $capability;
+                update_option('wpe_rm_role_capabilities', $role_capabilities);
             }
         }
 
@@ -344,6 +357,82 @@ final class CapabilityManager {
         }
 
         return $capabilities;
+    }
+
+    /**
+     * Remove all capabilities that belong to a specific role from ALL roles.
+     * Used when deleting a role to clean up its associated capabilities.
+     *
+     * @param string $role_slug Role slug whose capabilities should be removed.
+     * @return int Number of capabilities removed.
+     */
+    public static function remove_role_capabilities_from_all_roles(string $role_slug): int {
+        global $wp_roles;
+
+        if (!isset($wp_roles)) {
+            $wp_roles = new \WP_Roles();
+        }
+
+        // Get all capabilities that belong to this role
+        $role_capabilities = get_option('wpe_rm_role_capabilities', []);
+        $capabilities_to_remove = $role_capabilities[$role_slug] ?? [];
+
+        if (empty($capabilities_to_remove)) {
+            return 0;
+        }
+
+        $removed_count = 0;
+
+        // Remove each capability from all roles
+        foreach ($capabilities_to_remove as $capability) {
+            // Skip core capabilities
+            if (self::is_core_capability($capability)) {
+                continue;
+            }
+
+            // Remove from all roles
+            foreach ($wp_roles->roles as $other_role_slug => $role_data) {
+                $role = get_role($other_role_slug);
+                if ($role && isset($role->capabilities[$capability])) {
+                    $role->remove_cap($capability);
+                    $removed_count++;
+
+                    // Remove from managed caps tracking
+                    $plugin_managed_caps = get_option('wpe_rm_managed_role_caps', []);
+                    if (isset($plugin_managed_caps[$other_role_slug])) {
+                        $plugin_managed_caps[$other_role_slug] = array_diff(
+                            $plugin_managed_caps[$other_role_slug],
+                            [$capability]
+                        );
+                        if (empty($plugin_managed_caps[$other_role_slug])) {
+                            unset($plugin_managed_caps[$other_role_slug]);
+                        }
+                        update_option('wpe_rm_managed_role_caps', $plugin_managed_caps);
+                    }
+                }
+            }
+
+            // Remove from created caps list
+            $plugin_created_caps = get_option('wpe_rm_created_caps', []);
+            $plugin_created_caps = array_diff($plugin_created_caps, [$capability]);
+            update_option('wpe_rm_created_caps', array_values($plugin_created_caps));
+
+            // Remove from disabled caps if present
+            $disabled_caps = get_option('wpe_rm_disabled_caps', []);
+            foreach ($disabled_caps as $disabled_role_slug => $disabled_cap_list) {
+                $disabled_caps[$disabled_role_slug] = array_diff($disabled_cap_list, [$capability]);
+                if (empty($disabled_caps[$disabled_role_slug])) {
+                    unset($disabled_caps[$disabled_role_slug]);
+                }
+            }
+            update_option('wpe_rm_disabled_caps', $disabled_caps);
+        }
+
+        // Remove the role from role_capabilities tracking
+        unset($role_capabilities[$role_slug]);
+        update_option('wpe_rm_role_capabilities', $role_capabilities);
+
+        return $removed_count;
     }
 
     /**
