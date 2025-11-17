@@ -17,6 +17,7 @@ let settings = $state({
   revisionRetention: 300,
   colorScheme: 'auto', // 'light', 'dark', 'auto'
   compactMode: false,
+  enableRestrictionsMetabox: false,
 });
 
 // Load settings on mount
@@ -35,6 +36,7 @@ async function fetchSettings() {
       settings.revisionRetention = response.settings.revision_retention || 300;
       settings.colorScheme = response.settings.color_scheme || 'auto';
       settings.compactMode = response.settings.compact_mode || false;
+      settings.enableRestrictionsMetabox = response.settings.enable_restrictions_metabox || false;
     }
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -54,6 +56,7 @@ async function saveSettings() {
         revision_retention: settings.revisionRetention,
         color_scheme: settings.colorScheme,
         compact_mode: settings.compactMode,
+        enable_restrictions_metabox: settings.enableRestrictionsMetabox,
       }),
     });
     store.showSaved();
@@ -160,6 +163,41 @@ async function saveSettings() {
           <div class="wpea-alert wpea-alert--warning">
             <p><strong>⚠️ External Deletion Enabled</strong></p>
             <p>You can now delete roles and capabilities created by other plugins. Be careful not to remove functionality that other plugins depend on. Make sure you know what you're deleting before proceeding.</p>
+          </div>
+        {/if}
+      </div>
+    </div>
+
+    <!-- Content Restrictions -->
+    <div class="wpea-card">
+      <h3 class="wpea-heading wpea-heading--sm">Content Restrictions</h3>
+
+      <div class="wpea-stack wpea-stack--sm">
+        <label class="wpea-control">
+          <input
+            type="checkbox"
+            bind:checked={settings.enableRestrictionsMetabox}
+            onchange={saveSettings}
+          />
+          <span>Enable restrictions metabox on edit screens</span>
+        </label>
+
+        <div class="wpea-alert wpea-alert--info">
+          <p><strong>What does this do?</strong></p>
+          <p>When enabled, a "Content Restrictions" metabox will be added to all Pages, Posts, and Custom Post Types. This allows you to restrict access to individual content items based on user capabilities.</p>
+          <p style="margin-top: var(--wpea-space--xs);"><strong>Features:</strong></p>
+          <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
+            <li>Enable/disable restrictions per post</li>
+            <li>Include child pages in restrictions</li>
+            <li>Select which capabilities are required to view the content</li>
+            <li>Choose to show an access denied message or redirect to another URL</li>
+          </ul>
+        </div>
+
+        {#if settings.enableRestrictionsMetabox}
+          <div class="wpea-alert wpea-alert--success">
+            <p><strong>✓ Restrictions Metabox Enabled</strong></p>
+            <p>The "Content Restrictions" metabox is now available on all post edit screens. You can configure per-post restrictions directly from the edit page.</p>
           </div>
         {/if}
       </div>

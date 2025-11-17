@@ -1,0 +1,114 @@
+/**
+ * Content Restrictions Metabox Styles
+ *
+ * @package WP_Easy\RoleManager
+ */
+
+.wpe-rm-metabox {
+    font-size: 13px;
+}
+
+.wpe-rm-metabox p {
+    margin: 0 0 12px;
+}
+
+.wpe-rm-metabox label {
+    display: inline-block;
+    margin: 0;
+}
+
+.wpe-rm-metabox input[type="checkbox"],
+.wpe-rm-metabox input[type="radio"] {
+    margin: 0 4px 0 0;
+    vertical-align: middle;
+}
+
+.wpe-rm-metabox select,
+.wpe-rm-metabox textarea,
+.wpe-rm-metabox input[type="url"] {
+    font-size: 13px;
+}
+
+.wpe-rm-metabox strong {
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Select2 customization for metabox */
+.wpe-rm-metabox .select2-container {
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.wpe-rm-metabox .select2-container--default .select2-selection--multiple {
+    min-height: 32px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    padding: 0 4px;
+    background-color: #fff;
+}
+
+.wpe-rm-metabox .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+.wpe-rm-metabox .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.wpe-rm-metabox .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #2271b1;
+    border: 1px solid #2271b1;
+    border-radius: 3px;
+    color: #fff;
+    padding: 3px 8px;
+    margin: 4px 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.wpe-rm-metabox .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #fff;
+    margin: 0 0 0 6px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    line-height: 1;
+    position: static !important;
+    float: none !important;
+}
+
+.wpe-rm-metabox .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #f0f0f0;
+    background: transparent;
+}
+
+.wpe-rm-metabox .select2-container--default .select2-search--inline {
+    margin: 0;
+    padding: 0;
+}
+
+.wpe-rm-metabox .select2-container--default .select2-search--inline .select2-search__field {
+    margin: 2px 4px;
+    padding: 0;
+    min-height: 24px;
+    line-height: 24px;
+}
+
+/* Conditional fields animation */
+.wpe-rm-restrictions-fields,
+.wpe-rm-message-field,
+.wpe-rm-redirect-field {
+    overflow: hidden;
+}

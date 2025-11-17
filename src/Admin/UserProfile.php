@@ -111,6 +111,7 @@ final class UserProfile {
                 margin: 4px 0;
                 display: inline-flex;
                 align-items: center;
+                gap: 6px;
                 line-height: 1.4;
                 font-size: 13px;
             }
@@ -120,13 +121,15 @@ final class UserProfile {
             }
             .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
                 color: #fff;
-                margin-right: 6px;
+                margin: 0 0 0 6px;
                 font-weight: bold;
                 cursor: pointer;
                 border: none;
                 background: transparent;
                 font-size: 16px;
                 line-height: 1;
+                position: static !important;
+                float: none !important;
             }
             .wpe-rm-role-selector .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
                 color: #f0f0f1;
@@ -191,6 +194,17 @@ final class UserProfile {
                     }
                 });
 
+                // Fix Select2 remove button position - move it to the end
+                function fixSelect2RemoveButtons() {
+                    $(".wpe-rm-role-selector .select2-selection__choice").each(function() {
+                        var $choice = $(this);
+                        var $remove = $choice.find(".select2-selection__choice__remove");
+                        if ($remove.length) {
+                            $remove.appendTo($choice);
+                        }
+                    });
+                }
+
                 // Update badge styling and notice when selection changes
                 function updateDisabledRoleIndicators() {
                     var hasDisabled = false;
@@ -207,6 +221,9 @@ final class UserProfile {
                             $(this).addClass("role-disabled");
                         }
                     });
+
+                    // Fix remove button position
+                    fixSelect2RemoveButtons();
 
                     // Show/hide notice
                     if (hasDisabled) {

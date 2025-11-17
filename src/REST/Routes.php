@@ -1430,6 +1430,7 @@ final class Routes {
             'revision_retention' => 300,
             'color_scheme' => 'auto',
             'compact_mode' => false,
+            'enable_restrictions_metabox' => false,
         ]);
 
         return new WP_REST_Response([
@@ -1468,6 +1469,9 @@ final class Routes {
                 : 'auto',
             'compact_mode' => isset($params['compact_mode'])
                 ? (bool) $params['compact_mode']
+                : false,
+            'enable_restrictions_metabox' => isset($params['enable_restrictions_metabox'])
+                ? (bool) $params['enable_restrictions_metabox']
                 : false,
         ];
 
@@ -1521,6 +1525,9 @@ final class Routes {
         }
         if (isset($params['compact_mode'])) {
             $changes[] = sprintf('Compact mode: %s', $settings['compact_mode'] ? 'enabled' : 'disabled');
+        }
+        if (isset($params['enable_restrictions_metabox'])) {
+            $changes[] = sprintf('Restrictions metabox: %s', $settings['enable_restrictions_metabox'] ? 'enabled' : 'disabled');
         }
 
         if (!empty($changes)) {

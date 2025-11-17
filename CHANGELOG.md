@@ -5,6 +5,52 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3-beta] - 2025-01-17
+
+### Added
+
+- **Content Restrictions Metabox**
+  - New optional metabox for Pages, Posts, and CPTs to restrict content access
+  - Enable via Settings → Content Restrictions
+  - Select required capabilities (users must have at least one)
+  - Option to include child pages in restrictions
+  - Choose to show message or redirect when access denied
+  - Administrators always bypass restrictions
+  - Non-logged-in users are automatically restricted
+
+- **Settings & Documentation**
+  - New "Content Restrictions" section in Settings tab
+  - Added comprehensive metabox documentation to Instructions page
+  - Settings to enable/disable metabox feature globally
+
+### Fixed
+
+- **Select2 Styling**
+  - Fixed remove button "×" positioning on multi-select badges
+  - Remove button now appears on the right side of text (not covering it)
+  - Applied fix globally to User Roles selector and Capability selector
+  - Used `position: static` override and JavaScript DOM reordering
+
+### Changed
+
+- **Sample Code Generation**
+  - Removed `<?php` opening tag from all generated code snippets
+  - Code now ready for direct paste into WPCodeBox or functions.php
+  - All restriction code now excludes administrators from restrictions
+  - Login redirect code excludes administrators from custom redirects
+  - Updated code comments to clarify administrator exclusion
+
+### Technical
+
+- **RestrictionsMetabox.php**: New class handling metabox registration, rendering, saving, and enforcement
+- **metabox.js**: JavaScript for Select2 initialization and conditional field display
+- **metabox.css**: Styling for metabox with proper Select2 integration
+- **UsersTab.svelte**: Updated all PHP code generators to exclude administrators
+- **UserProfile.php**: Fixed Select2 badge styling with flexbox and DOM manipulation
+- **Routes.php**: Added `enable_restrictions_metabox` setting support
+- **Plugin.php**: Initialize RestrictionsMetabox on plugins_loaded
+- **SettingsTab.svelte**: Added Content Restrictions settings UI
+
 ## [0.1.2-beta] - 2025-01-17
 
 ### Fixed

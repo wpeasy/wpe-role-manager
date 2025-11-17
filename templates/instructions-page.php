@@ -378,6 +378,65 @@ defined('ABSPATH') || exit;
             </div>
         </div>
 
+        <!-- Settings & Content Restrictions -->
+        <div class="wpea-card">
+            <div class="wpea-card__header">
+                <h2 class="wpea-card__title"><?php esc_html_e('5.5. Settings & Content Restrictions', 'wp-easy-role-manager'); ?></h2>
+            </div>
+
+            <div class="wpea-stack wpea-stack--sm">
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Plugin Settings', 'wp-easy-role-manager'); ?></h3>
+                    <p><?php esc_html_e('Access plugin settings from the Settings tab to customize behavior and enable advanced features.', 'wp-easy-role-manager'); ?></p>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Available Settings:', 'wp-easy-role-manager'); ?></strong>
+                        <ul class="wpea-list" style="margin-top: var(--wpea-space--xs);">
+                            <li><strong><?php esc_html_e('Appearance:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Color scheme (Light/Dark/Auto) and compact mode for denser UI', 'wp-easy-role-manager'); ?></li>
+                            <li><strong><?php esc_html_e('Security:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Control dangerous capability protection and external role deletion', 'wp-easy-role-manager'); ?></li>
+                            <li><strong><?php esc_html_e('Performance:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Autosave delay, log retention, and revision retention limits', 'wp-easy-role-manager'); ?></li>
+                            <li><strong><?php esc_html_e('Content Restrictions:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Enable metabox on post edit screens for per-content access control', 'wp-easy-role-manager'); ?></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="wpea-heading wpea-heading--sm"><?php esc_html_e('Content Restrictions Metabox', 'wp-easy-role-manager'); ?></h3>
+                    <p><?php esc_html_e('When enabled in Settings, a "Content Restrictions" metabox appears on all Pages, Posts, and Custom Post Types, allowing you to restrict access to individual content items.', 'wp-easy-role-manager'); ?></p>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('Setting Up Restrictions:', 'wp-easy-role-manager'); ?></strong>
+                        <ol class="wpea-list wpea-list--ordered" style="margin-top: var(--wpea-space--xs);">
+                            <li><?php esc_html_e('Go to Settings → Content Restrictions', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Enable "Enable restrictions metabox on edit screens"', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Edit any Page, Post, or Custom Post Type', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Find the "Content Restrictions" metabox in the sidebar', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Check "Enable restrictions" to activate access control', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Select required capabilities (users must have at least one)', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('For pages: optionally enable "Include child pages" to apply restrictions to all children', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Choose action: "Show Message" or "Redirect to URL"', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Save the post/page', 'wp-easy-role-manager'); ?></li>
+                        </ol>
+                    </div>
+
+                    <div style="margin-top: var(--wpea-space--sm);">
+                        <strong><?php esc_html_e('How Restrictions Work:', 'wp-easy-role-manager'); ?></strong>
+                        <ul class="wpea-list" style="margin-top: var(--wpea-space--xs);">
+                            <li><?php esc_html_e('Non-logged-in users are always restricted', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Logged-in users must have at least one of the required capabilities', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Administrators (users with manage_options) always have access', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Child page restrictions are inherited from parent when "Include children" is enabled', 'wp-easy-role-manager'); ?></li>
+                            <li><?php esc_html_e('Users without access see the configured message or are redirected', 'wp-easy-role-manager'); ?></li>
+                        </ul>
+                    </div>
+
+                    <div class="wpea-alert wpea-alert--info" style="margin-top: var(--wpea-space--sm);">
+                        <p><strong><?php esc_html_e('Tip:', 'wp-easy-role-manager'); ?></strong> <?php esc_html_e('Use the "Test Capability" feature in the Users tab to generate PHP code snippets for custom page/post restrictions and login redirects. All generated code automatically excludes administrators from restrictions.', 'wp-easy-role-manager'); ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Best Practices -->
         <div class="wpea-card">
             <div class="wpea-card__header">

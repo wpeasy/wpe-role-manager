@@ -125,8 +125,7 @@ function togglePhpMenu() {
 async function generatePHPHasCapability() {
   if (!selectedCapability) return;
 
-  const phpCode = `<?php
-if ( current_user_can( '${selectedCapability}' ) ) {
+  const phpCode = `if ( current_user_can( '${selectedCapability}' ) ) {
     // User has the capability
     echo 'User has permission';
 } else {
@@ -148,17 +147,22 @@ if ( current_user_can( '${selectedCapability}' ) ) {
 async function generatePHPRedirectLogin() {
   if (!selectedCapability) return;
 
-  const phpCode = `<?php
-/**
+  const phpCode = `/**
  * Redirect users on login based on capability
  *
  * IMPORTANT: This code must run BEFORE the login_redirect hook is called.
  * - For WPCodeBox: Set to "Auto-Execute" or "init" hook
  * - For functions.php: Code runs automatically on file load
+ * Administrators are excluded from redirection.
  */
 add_filter( 'login_redirect', function( $redirect_to, $request, $user ) {
     // Validate $user is a WP_User instance
     if ( ! ( $user instanceof WP_User ) ) {
+        return $redirect_to;
+    }
+
+    // Administrators always use default redirect - skip custom redirects
+    if ( user_can( $user, 'manage_options' ) ) {
         return $redirect_to;
     }
 
@@ -191,54 +195,83 @@ add_filter( 'login_redirect', function( $redirect_to, $request, $user ) {
 async function generatePHPRestrictPage() {
   if (!selectedCapability) return;
 
-  const childrenCheck = phpMenuOption.restrictChildren
-    ? `
-    // Get all child pages of restricted pages
-    $child_ids = array();
-    foreach ( $restricted_pages as $page_id ) {
-        $children = get_page_children( $page_id, get_pages() );
-        $child_ids = array_merge( $child_ids, array_column( $children, 'ID' ) );
-    }
-
-    // Check if current page is a child of restricted page
-    $is_child = in_array( get_the_ID(), $child_ids );
-
-    if ( ( $is_restricted || $is_child ) && ! user_can( $user, '${selectedCapability}' ) ) {`
-    : `
-    if ( $is_restricted && ! user_can( $user, '${selectedCapability}' ) ) {`;
-
   const restrictionAction = phpMenuOption.restrictionType === 'redirect'
     ? `
-        // Redirect to another page
-        wp_redirect( '${phpMenuOption.redirectUrl || home_url()}' );
-        exit;`
+            // Redirect to another page
+            wp_redirect( '${phpMenuOption.redirectUrl || home_url()}' );
+            exit;`
     : `
-        // Show restricted message
-        wp_die(
-            '<h1>Restricted Content</h1><p>You do not have permission to view this page.</p>',
-            'Access Denied',
-            array( 'response' => 403, 'back_link' => true )
-        );`;
+            // Show restricted message
+            wp_die(
+                '<h1>Restricted Content</h1><p>You do not have permission to view this page.</p>',
+                'Access Denied',
+                array( 'response' => 403, 'back_link' => true )
+            );`;
 
-  const phpCode = `<?php
-/**
- * Restrict page/post content based on capability
+  const includeChildrenValue = phpMenuOption.restrictChildren ? 'true' : 'false';
+
+  const phpCode = `/**
+ * Restrict pages/posts based on capabilities
  * Add this to your theme's functions.php or use WPCodeBox (Auto-Execute or "init" hook)
+ *
+ * IMPORTANT: Non-logged-in users will be restricted by default.
+ * Only users with the required capability can access restricted pages.
+ * Administrators are always excluded from restrictions.
  */
 add_action( 'template_redirect', function() {
-    // Only restrict for logged-in users
-    if ( ! is_user_logged_in() ) {
+    // Administrators always have access - skip restrictions
+    if ( current_user_can( 'manage_options' ) ) {
         return;
     }
 
-    $user = wp_get_current_user();
+    // Define restriction rules: Each rule specifies pages, required capability, and whether to include children
+    $restrictions = array(
+        array(
+            'pages' => array( 123 ), // Replace with your page ID(s)
+            'capability' => '${selectedCapability}',
+            'include_children' => ${includeChildrenValue}
+        ),
+        // Add more restriction rules as needed:
+        // array(
+        //     'pages' => array( 456, 789 ),
+        //     'capability' => 'another_capability',
+        //     'include_children' => false
+        // ),
+    );
 
-    // Define restricted page ID(s)
-    $restricted_pages = array( 123 ); // Replace with your page ID(s)
+    $current_page_id = get_the_ID();
 
-    // Check if current page is restricted
-    $is_restricted = in_array( get_the_ID(), $restricted_pages );
-    ${childrenCheck}${restrictionAction}
+    // Check each restriction rule
+    foreach ( $restrictions as $restriction ) {
+        $is_restricted = false;
+
+        // Check if current page is directly in the restricted pages array
+        if ( in_array( $current_page_id, $restriction['pages'] ) ) {
+            $is_restricted = true;
+        }
+
+        // Check if current page is a child of any restricted page (if include_children is true)
+        if ( ! $is_restricted && $restriction['include_children'] ) {
+            foreach ( $restriction['pages'] as $page_id ) {
+                $children = get_page_children( $page_id, get_pages() );
+                $child_ids = array_column( $children, 'ID' );
+
+                if ( in_array( $current_page_id, $child_ids ) ) {
+                    $is_restricted = true;
+                    break;
+                }
+            }
+        }
+
+        // If page is restricted, check if user has access
+        if ( $is_restricted ) {
+            // Allow access only if user is logged in AND has the required capability
+            if ( ! is_user_logged_in() || ! current_user_can( $restriction['capability'] ) ) {${restrictionAction}
+            }
+
+            // If user has access, stop checking (they passed this restriction)
+            break;
+        }
     }
 } );`;
 

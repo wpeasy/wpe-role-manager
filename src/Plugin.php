@@ -36,6 +36,9 @@ final class Plugin {
         // Initialize user profile enhancements
         Admin\UserProfile::init();
 
+        // Initialize content restrictions metabox
+        Admin\RestrictionsMetabox::init();
+
         // Initialize capability filtering (enforce disabled roles/caps)
         Helpers\CapabilityFilter::init();
 
