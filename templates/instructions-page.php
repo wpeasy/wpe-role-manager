@@ -14,8 +14,18 @@ defined('ABSPATH') || exit;
     <div class="wpea-stack" style="max-width: 1200px;">
         <!-- Introduction -->
         <div class="wpea-card">
-            <div class="wpea-card__header">
+            <div class="wpea-card__header wpe-rm-header">
                 <h2 class="wpea-card__title"><?php esc_html_e('Welcome to Role Manager', 'wp-easy-role-manager'); ?></h2>
+                <img
+                    src="<?php echo esc_url(WPE_RM_PLUGIN_URL . 'assets/images/logo-light-mode.svg'); ?>"
+                    alt="<?php esc_attr_e('WP Easy Logo', WPE_RM_TEXTDOMAIN); ?>"
+                    class="wpe-rm-logo wpe-rm-logo-light"
+                />
+                <img
+                    src="<?php echo esc_url(WPE_RM_PLUGIN_URL . 'assets/images/logo-dark-mode.svg'); ?>"
+                    alt="<?php esc_attr_e('WP Easy Logo', WPE_RM_TEXTDOMAIN); ?>"
+                    class="wpe-rm-logo wpe-rm-logo-dark"
+                />
             </div>
             <p><?php esc_html_e('Role Manager provides a comprehensive interface for managing WordPress roles, capabilities, and user permissions. This guide will help you understand how to use each feature effectively.', 'wp-easy-role-manager'); ?></p>
         </div>

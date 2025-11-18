@@ -5,6 +5,34 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5-beta] - 2025-01-18
+
+### Added
+
+- **WP Easy Branding**
+  - Added WP Easy logo to Role Manager admin panel header
+  - Added WP Easy logo to Instructions page "Welcome" section
+  - Logo appears aligned to right edge of page/card headers
+
+### Changed
+
+- **Dark/Light Mode Logo Support**
+  - Automatic logo switching based on color scheme preference
+  - Dark-colored logo displays in light mode
+  - Light-colored logo displays in dark mode
+  - Respects OS preference when color scheme is set to "Auto"
+
+### Technical
+
+- **admin.css**:
+  - Added `.wpe-rm-header` flexbox styles for logo positioning
+  - Added `.wpe-rm-logo`, `.wpe-rm-logo-light`, `.wpe-rm-logo-dark` styles
+  - Implemented dark/light mode logo switching with `[data-color-scheme]` selectors
+  - Added OS preference support via `@media (prefers-color-scheme: dark)`
+- **admin-page.php**: Added logo images to page header
+- **instructions-page.php**: Added logo images to "Welcome to Role Manager" card header
+- **assets/images**: Added `logo-light-mode.svg` and `logo-dark-mode.svg`
+
 ## [0.1.4-beta] - 2025-01-17
 
 ### Added

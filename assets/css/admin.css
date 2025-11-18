@@ -67,6 +67,50 @@
     color: var(--wpea-surface--text-muted);
 }
 
+/* Header with Logo */
+.wpe-rm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--wpea-space--md);
+}
+
+.wpe-rm-logo {
+    height: 40px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+/* Light mode logo - light-colored logo for dark backgrounds */
+.wpe-rm-logo-light {
+    display: none;
+}
+
+[data-color-scheme="dark"] .wpe-rm-logo-light {
+    display: block;
+}
+
+:root:not([data-color-scheme]) .wpe-rm-logo-light {
+    @media (prefers-color-scheme: dark) {
+        display: block;
+    }
+}
+
+/* Dark mode logo - dark-colored logo for light backgrounds */
+.wpe-rm-logo-dark {
+    display: block;
+}
+
+[data-color-scheme="dark"] .wpe-rm-logo-dark {
+    display: none;
+}
+
+:root:not([data-color-scheme]) .wpe-rm-logo-dark {
+    @media (prefers-color-scheme: dark) {
+        display: none;
+    }
+}
+
 /* Badge Component (used in multiple tabs) */
 .badge {
     display: inline-block;
