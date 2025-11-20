@@ -133,7 +133,7 @@ function wpe_rm_activate(): void {
         'autosave_debounce' => 500,
         'required_capability' => 'manage_options',
         'revision_retention' => 300,
-        'enable_restrictions_metabox' => false,
+        'restrictions_enabled_post_types' => ['page'], // Default to page only
     ]);
 
     flush_rewrite_rules();

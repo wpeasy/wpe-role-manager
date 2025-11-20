@@ -21,15 +21,22 @@ final class RestrictionsMetabox {
      * @return void
      */
     public static function init(): void {
-        // Check if metabox is enabled in settings
+        // Check if any post types have restrictions enabled
         $settings = get_option('wpe_rm_settings', []);
-        $enabled = $settings['enable_restrictions_metabox'] ?? false;
+        $enabled_post_types = $settings['restrictions_enabled_post_types'] ?? [];
 
-        if (!$enabled) {
+        // Handle legacy setting migration
+        if (!isset($settings['restrictions_enabled_post_types']) && isset($settings['enable_restrictions_metabox'])) {
+            if ($settings['enable_restrictions_metabox']) {
+                $enabled_post_types = ['page', 'post'];
+            }
+        }
+
+        if (empty($enabled_post_types)) {
             return;
         }
 
-        // Register metabox for all post types
+        // Register metabox for enabled post types only
         add_action('add_meta_boxes', [self::class, 'register_metabox']);
 
         // Save metabox data
@@ -41,23 +48,31 @@ final class RestrictionsMetabox {
         // Enqueue Select2 for capability multi-select
         add_action('admin_enqueue_scripts', [self::class, 'enqueue_assets']);
 
-        // Add custom column to post list tables
-        $post_types = get_post_types(['public' => true], 'names');
-        foreach ($post_types as $post_type) {
+        // Add custom column to post list tables for enabled post types only
+        foreach ($enabled_post_types as $post_type) {
             add_filter("manage_{$post_type}_posts_columns", [self::class, 'add_restrictions_column']);
             add_action("manage_{$post_type}_posts_custom_column", [self::class, 'display_restrictions_column'], 10, 2);
         }
     }
 
     /**
-     * Register the metabox for all post types.
+     * Register the metabox for enabled post types.
      *
      * @return void
      */
     public static function register_metabox(): void {
-        $post_types = get_post_types(['public' => true], 'names');
+        // Get enabled post types from settings
+        $settings = get_option('wpe_rm_settings', []);
+        $enabled_post_types = $settings['restrictions_enabled_post_types'] ?? [];
 
-        foreach ($post_types as $post_type) {
+        // Handle legacy setting migration
+        if (!isset($settings['restrictions_enabled_post_types']) && isset($settings['enable_restrictions_metabox'])) {
+            if ($settings['enable_restrictions_metabox']) {
+                $enabled_post_types = ['page', 'post'];
+            }
+        }
+
+        foreach ($enabled_post_types as $post_type) {
             add_meta_box(
                 'wpe_rm_restrictions',
                 __('Content Restrictions', WPE_RM_TEXTDOMAIN),

@@ -1430,7 +1430,7 @@ final class Routes {
             'revision_retention' => 300,
             'color_scheme' => 'auto',
             'compact_mode' => false,
-            'enable_restrictions_metabox' => false,
+            'restrictions_enabled_post_types' => ['page'], // Default to page only
         ]);
 
         return new WP_REST_Response([
@@ -1470,9 +1470,9 @@ final class Routes {
             'compact_mode' => isset($params['compact_mode'])
                 ? (bool) $params['compact_mode']
                 : false,
-            'enable_restrictions_metabox' => isset($params['enable_restrictions_metabox'])
-                ? (bool) $params['enable_restrictions_metabox']
-                : false,
+            'restrictions_enabled_post_types' => isset($params['restrictions_enabled_post_types'])
+                ? array_map('sanitize_key', (array) $params['restrictions_enabled_post_types'])
+                : ['page'],
         ];
 
         // Validate autosave_debounce range
@@ -1526,8 +1526,9 @@ final class Routes {
         if (isset($params['compact_mode'])) {
             $changes[] = sprintf('Compact mode: %s', $settings['compact_mode'] ? 'enabled' : 'disabled');
         }
-        if (isset($params['enable_restrictions_metabox'])) {
-            $changes[] = sprintf('Restrictions metabox: %s', $settings['enable_restrictions_metabox'] ? 'enabled' : 'disabled');
+        if (isset($params['restrictions_enabled_post_types'])) {
+            $post_types = empty($settings['restrictions_enabled_post_types']) ? 'none' : implode(', ', $settings['restrictions_enabled_post_types']);
+            $changes[] = sprintf('Restrictions enabled for post types: %s', $post_types);
         }
 
         if (!empty($changes)) {
