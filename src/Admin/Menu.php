@@ -141,7 +141,7 @@ final class Menu {
      * @return void
      */
     private static function render_license_required_page(): void {
-        $license_page_url = admin_url('admin.php?page=wpe-role-manager-license');
+        $license_page_url = admin_url('admin.php?page=wpe-role-manager-manage-license');
         $get_license_url = defined('WPE_RM_LICENSE_PURCHASE_URL') ? WPE_RM_LICENSE_PURCHASE_URL : 'https://wpeasy.au/role-manager/';
         ?>
         <div class="wrap wpea">
