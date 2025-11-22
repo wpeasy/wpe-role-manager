@@ -48,6 +48,9 @@ final class Plugin {
         // Initialize shortcodes
         Helpers\Shortcodes::init();
 
+        // Initialize block visibility conditions
+        Blocks\ConditionalVisibility::init();
+
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . plugin_basename(WPE_RM_PLUGIN_FILE), [self::class, 'add_settings_link']);
     }

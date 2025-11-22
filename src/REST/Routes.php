@@ -1431,6 +1431,7 @@ final class Routes {
             'color_scheme' => 'auto',
             'compact_mode' => false,
             'restrictions_enabled_post_types' => ['page'], // Default to page only
+            'enable_block_conditions' => true, // Block visibility conditions enabled by default
         ]);
 
         return new WP_REST_Response([
@@ -1473,6 +1474,9 @@ final class Routes {
             'restrictions_enabled_post_types' => isset($params['restrictions_enabled_post_types'])
                 ? array_map('sanitize_key', (array) $params['restrictions_enabled_post_types'])
                 : ['page'],
+            'enable_block_conditions' => isset($params['enable_block_conditions'])
+                ? (bool) $params['enable_block_conditions']
+                : true,
         ];
 
         // Validate autosave_debounce range
@@ -1529,6 +1533,9 @@ final class Routes {
         if (isset($params['restrictions_enabled_post_types'])) {
             $post_types = empty($settings['restrictions_enabled_post_types']) ? 'none' : implode(', ', $settings['restrictions_enabled_post_types']);
             $changes[] = sprintf('Restrictions enabled for post types: %s', $post_types);
+        }
+        if (isset($params['enable_block_conditions'])) {
+            $changes[] = sprintf('Block visibility conditions: %s', $settings['enable_block_conditions'] ? 'enabled' : 'disabled');
         }
 
         if (!empty($changes)) {

@@ -21,6 +21,7 @@ let settings = $state({
   colorScheme: 'auto', // 'light', 'dark', 'auto'
   compactMode: false,
   restrictionsEnabledPostTypes: ['page'], // Array of post type slugs
+  enableBlockConditions: true, // Enable block visibility conditions
 });
 
 // Load settings on mount
@@ -319,6 +320,41 @@ function isPostTypeEnabled(postType) {
               <p><strong>✓ Restrictions Metabox Enabled</strong></p>
               <p>The "Content Restrictions" metabox is now available for: <strong>{settings.restrictionsEnabledPostTypes.join(', ')}</strong></p>
               <p style="margin-top: var(--wpea-space--xs);">You can configure per-post restrictions directly from the edit page.</p>
+            </div>
+          {/if}
+        </div>
+      </div>
+
+      <!-- Block Visibility Conditions -->
+      <div class="wpea-card">
+        <h3 class="wpea-heading wpea-heading--sm">Block Visibility Conditions</h3>
+
+        <div class="wpea-stack wpea-stack--sm">
+          <div class="wpea-alert wpea-alert--info">
+            <p><strong>What does this do?</strong></p>
+            <p>Adds a "Visibility Conditions" panel to every Gutenberg block, allowing you to show or hide blocks based on user roles or capabilities.</p>
+            <p style="margin-top: var(--wpea-space--xs);"><strong>Features:</strong></p>
+            <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
+              <li>Control block visibility by user roles or capabilities</li>
+              <li>Show blocks to users who have (or don't have) specific roles/caps</li>
+              <li>Blocks with conditions are marked with a "Conditional" badge in the editor</li>
+              <li>Works with all core and custom Gutenberg blocks</li>
+            </ul>
+          </div>
+
+          <label class="wpea-control">
+            <input
+              type="checkbox"
+              bind:checked={settings.enableBlockConditions}
+              onchange={saveSettings}
+            />
+            <span>Enable Block Visibility Conditions</span>
+          </label>
+
+          {#if settings.enableBlockConditions}
+            <div class="wpea-alert wpea-alert--success">
+              <p><strong>✓ Block Conditions Enabled</strong></p>
+              <p>You'll find a "Visibility Conditions" panel in the block sidebar when editing posts/pages.</p>
             </div>
           {/if}
         </div>
