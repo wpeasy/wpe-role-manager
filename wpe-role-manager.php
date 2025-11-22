@@ -36,7 +36,7 @@ define('WPE_RM_LICENSE_SETTINGS_KEY', 'wpe_rm_license_settings');
 define('WPE_RM_LICENSE_MENU_TYPE', 'submenu');
 define('WPE_RM_LICENSE_MENU_TITLE', 'License');
 define('WPE_RM_LICENSE_PAGE_TITLE', 'WP Easy Role Manager - License');
-define('WPE_RM_LICENSE_PURCHASE_URL', 'https://wpeasy.au/role-manager/');
+define('WPE_RM_LICENSE_PURCHASE_URL', 'https://alanblair.co/item/role-and-capability-manager/');
 define('WPE_RM_LICENSE_ACCOUNT_URL', 'https://alanblair.co/my-account/');
 define('WPE_RM_LICENSE_DEV_OVERRIDE_KEY', 'wpe-activate-for-dev-20112026');
 
