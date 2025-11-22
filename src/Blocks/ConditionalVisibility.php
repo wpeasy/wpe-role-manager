@@ -140,28 +140,6 @@ final class ConditionalVisibility {
             'roles' => $roles,
             'capabilities' => $capabilities,
         ]);
-
-        // Inline styles for the condition badge
-        wp_add_inline_style('wp-block-editor', '
-            .wpe-rm-condition-badge {
-                position: absolute;
-                top: -8px;
-                right: -8px;
-                background: #2271b1;
-                color: #fff;
-                font-size: 9px;
-                font-weight: 600;
-                padding: 2px 6px;
-                border-radius: 3px;
-                z-index: 100;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                pointer-events: none;
-            }
-            .wpe-rm-has-conditions {
-                position: relative;
-            }
-        ');
     }
 
     /**

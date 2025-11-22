@@ -14,6 +14,36 @@
     // Get roles and capabilities from localized data
     const { roles = [], capabilities = [] } = window.wpeRmBlockConditions || {};
 
+    // Inject styles for the condition badge
+    const styleId = 'wpe-rm-block-conditions-styles';
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+            .wpe-rm-condition-badge {
+                position: absolute;
+                top: -6px;
+                right: -6px;
+                background: #2271b1;
+                color: #fff;
+                font-size: 9px;
+                font-weight: 600;
+                padding: 2px 6px;
+                border-radius: 3px;
+                z-index: 1000;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+                pointer-events: none;
+                line-height: 1.2;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            }
+            .wpe-rm-has-conditions {
+                position: relative !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     /**
      * Add custom attributes to all blocks
      */
