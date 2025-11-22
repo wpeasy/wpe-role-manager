@@ -135,8 +135,22 @@ final class LicenseHelper {
         }
 
         // Get status from licensing system
-        $licensing = \WP_Easy\RoleManager\Licensing\FluentLicensing::getInstance();
-        return $licensing->getStatus($remote);
+        try {
+            $licensing = \WP_Easy\RoleManager\Licensing\FluentLicensing::getInstance();
+            $status = $licensing->getStatus($remote);
+
+            // Convert array to object if needed
+            if (is_array($status)) {
+                return (object) $status;
+            }
+
+            return $status;
+        } catch (\Exception $e) {
+            return (object) [
+                'status' => 'unregistered',
+                'error' => $e->getMessage(),
+            ];
+        }
     }
 
     /**
