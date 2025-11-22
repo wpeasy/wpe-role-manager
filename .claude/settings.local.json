@@ -28,7 +28,13 @@
       "Bash(git commit -m \"v0.0.4-alpha: First fully working version\")",
       "Bash(git commit:*)",
       "SlashCommand(/zip-plugin)",
-      "SlashCommand(/commit-version)"
+      "SlashCommand(/commit-version)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl:*)",
+      "Bash(LicenseSettings_temp.php)",
+      "Bash(updater/LicenseSettings_raw.php)",
+      "Bash(updater/PluginUpdater_raw.php)"
     ],
     "deny": [],
     "ask": []

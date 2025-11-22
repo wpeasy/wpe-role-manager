@@ -3,7 +3,7 @@
  * Plugin Name: WP Easy Role Manager
  * Plugin URI: https://wpeasy.au/plugins/role-manager
  * Description: Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign multiple roles to users. Visualise, add, and remove capabilities on roles. Also visualise the effective capabilities a user has based on their roles.
- * Version: 0.1.5-beta
+ * Version: 0.1.6-beta
  * Requires at least: 6.4
  * Requires PHP: 8.1
  * Author: WP Easy
@@ -20,13 +20,26 @@
 defined('ABSPATH') || exit;
 
 // Define plugin constants
-define('WPE_RM_VERSION', '0.1.5-beta');
+define('WPE_RM_VERSION', '0.1.6-beta');
 define('WPE_RM_PLUGIN_FILE', __FILE__);
 define('WPE_RM_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WPE_RM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPE_RM_TEXTDOMAIN', 'wp-easy-role-manager');
 define('WPE_RM_MIN_WP', '6.4');
 define('WPE_RM_MIN_PHP', '8.1');
+
+// Licensing Configuration Constants
+define('WPE_RM_LICENSE_ITEM_ID', '800');
+define('WPE_RM_LICENSE_API_URL', 'https://alanblair.co/');
+define('WPE_RM_LICENSE_SLUG', 'wpe-role-manager');
+define('WPE_RM_LICENSE_SETTINGS_KEY', 'wpe_rm_license_settings');
+define('WPE_RM_LICENSE_MENU_TYPE', 'submenu');
+define('WPE_RM_LICENSE_MENU_TITLE', 'License');
+define('WPE_RM_LICENSE_PAGE_TITLE', 'WP Easy Role Manager - License');
+define('WPE_RM_LICENSE_PURCHASE_URL', 'https://wpeasy.au/role-manager/');
+define('WPE_RM_LICENSE_ACCOUNT_URL', 'https://alanblair.co/my-account/');
+define('WPE_RM_LICENSE_DEV_OVERRIDE_KEY', 'wpe-activate-for-dev-20112026');
+
 
 // Autoloader
 if (file_exists(WPE_RM_PLUGIN_PATH . 'vendor/autoload.php')) {
@@ -102,9 +115,91 @@ function wpe_rm_init(): void {
 
     // Initialize the plugin
     WP_Easy\RoleManager\Plugin::init();
+
+    // Initialize licensing system
+    wpe_rm_init_licensing();
 }
 
 add_action('plugins_loaded', 'wpe_rm_init');
+
+/**
+ * Initialize licensing system.
+ */
+function wpe_rm_init_licensing(): void {
+    // Register licensing
+    add_action('init', function() {
+        // Check if licensing classes exist (PSR-4 autoloaded from src/Licensing/)
+        if (!class_exists('WP_Easy\\RoleManager\\Licensing\\FluentLicensing')) {
+            // Licensing files not installed - show admin notice
+            add_action('admin_notices', function() {
+                if (current_user_can('manage_options')) {
+                    printf(
+                        '<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+                        esc_html__('WP Easy Role Manager: Licensing files not found. The FluentCart licensing classes should be in src/Licensing/ directory.', WPE_RM_TEXTDOMAIN)
+                    );
+                }
+            });
+            return;
+        }
+
+        // Create new instance and register licensing
+        $licensing = new WP_Easy\RoleManager\Licensing\FluentLicensing();
+        $licensing->register([
+            'version' => WPE_RM_VERSION,
+            'item_id' => WPE_RM_LICENSE_ITEM_ID,
+            'basename' => plugin_basename(WPE_RM_PLUGIN_FILE),
+            'api_url' => WPE_RM_LICENSE_API_URL,
+            'slug' => WPE_RM_LICENSE_SLUG,
+            'settings_key' => WPE_RM_LICENSE_SETTINGS_KEY,
+        ]);
+
+        // Initialize settings page if LicenseSettings class exists
+        if (class_exists('WP_Easy\\RoleManager\\Licensing\\LicenseSettings')) {
+            $licenseSettings = new WP_Easy\RoleManager\Licensing\LicenseSettings();
+            $licenseSettings->register($licensing, [
+                'menu_title' => WPE_RM_LICENSE_MENU_TITLE,
+                'page_title' => WPE_RM_LICENSE_PAGE_TITLE,
+                'title' => WPE_RM_LICENSE_PAGE_TITLE,
+                'purchase_url' => WPE_RM_LICENSE_PURCHASE_URL,
+                'account_url' => WPE_RM_LICENSE_ACCOUNT_URL,
+                'plugin_name' => 'WP Easy Role Manager',
+            ]);
+
+            // Add the license page as submenu
+            $licenseSettings->addPage([
+                'type' => WPE_RM_LICENSE_MENU_TYPE,
+                'page_title' => WPE_RM_LICENSE_PAGE_TITLE,
+                'menu_title' => WPE_RM_LICENSE_MENU_TITLE,
+                'parent_slug' => 'wpe-role-manager',
+                'capability' => 'manage_options',
+            ]);
+        }
+    });
+
+    // Set up daily license check cron (skip on local/dev sites)
+    if (!WP_Easy\RoleManager\Admin\LicenseHelper::is_local_dev_site()) {
+        if (!wp_next_scheduled('wpe_rm_daily_license_check')) {
+            wp_schedule_event(time(), 'daily', 'wpe_rm_daily_license_check');
+        }
+
+        // Handle daily license check
+        add_action('wpe_rm_daily_license_check', 'wpe_rm_check_license_daily');
+    }
+}
+
+/**
+ * Daily license check via cron.
+ */
+function wpe_rm_check_license_daily(): void {
+    // Skip if local/dev or override
+    if (WP_Easy\RoleManager\Admin\LicenseHelper::is_local_dev_site() ||
+        WP_Easy\RoleManager\Admin\LicenseHelper::is_dev_override()) {
+        return;
+    }
+
+    // Perform remote license check
+    WP_Easy\RoleManager\Admin\LicenseHelper::get_license_status(true);
+}
 
 /**
  * Activation hook.
@@ -145,6 +240,12 @@ register_activation_hook(__FILE__, 'wpe_rm_activate');
  * Deactivation hook.
  */
 function wpe_rm_deactivate(): void {
+    // Clear scheduled license check
+    $timestamp = wp_next_scheduled('wpe_rm_daily_license_check');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'wpe_rm_daily_license_check');
+    }
+
     flush_rewrite_rules();
 }
 

@@ -100,6 +100,22 @@ final class Menu {
             );
         }
 
+        // Check license status (optional: can be used to restrict access)
+        // For now, only show a notice if license is invalid
+        // To fully restrict access, uncomment the code in the LICENSING.md file
+        $has_license = LicenseHelper::has_valid_license();
+        if (!$has_license && !LicenseHelper::is_local_dev_site()) {
+            add_action('admin_notices', function() {
+                $license_info = LicenseHelper::get_license_info();
+                printf(
+                    '<div class="notice notice-%s"><p><strong>%s:</strong> %s</p></div>',
+                    esc_attr($license_info['class'] ?? 'warning'),
+                    esc_html__('License Status', WPE_RM_TEXTDOMAIN),
+                    esc_html($license_info['message'] ?? __('License check unavailable', WPE_RM_TEXTDOMAIN))
+                );
+            });
+        }
+
         // Apply theme immediately to prevent flash
         self::output_theme_script();
 

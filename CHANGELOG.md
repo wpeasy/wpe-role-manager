@@ -5,6 +5,47 @@ All notable changes to WP Easy Role Manager will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.1.6-beta] - 2025-11-22
+
+### Added
+
+- **FluentCart Licensing System**
+  - Complete FluentCart licensing integration with PSR-4 autoloading
+  - License submenu page under WP Easy → Role Manager
+  - LicenseHelper class for license management utilities
+  - Local/dev site detection (`.local`, `.test`, `.dev`, private IPs, keywords)
+  - Development override license key support for testing
+  - Daily license validation via WP Cron (skipped on local/dev sites)
+  - All 11 `WPE_RM_LICENSE_*` constants for configuration
+
+- **Settings Tab Reorganization**
+  - Split into sub-tabs: Appearance, Security, Features, Performance
+  - Content Restrictions now shows individual post type toggles
+  - Per-post-type control for restrictions (Pages enabled by default)
+
+### Changed
+
+- Licensing files moved to `src/Licensing/` for PSR-4 compliance
+- Removed manual `require_once` statements (autoloader handles class loading)
+- License page now visible on all sites including local development
+
+### Fixed
+
+- Dev override key now properly bypasses FluentCart API activation
+- Missing `WPE_RM_LICENSE_DEV_OVERRIDE_KEY` constant added
+
+### Technical
+
+- **src/Licensing/** (new directory):
+  - `FluentLicensing.php` - Core licensing class with dev override support
+  - `LicenseSettings.php` - Admin UI for license management
+  - `PluginUpdater.php` - Automatic update functionality
+- **src/Admin/LicenseHelper.php** (new):
+  - Local/dev site detection (TLDs, IPs, keywords, WP_LOCAL_DEV constant)
+  - License status checking and display functions
+
 ## [0.1.5-beta] - 2025-01-18
 
 ### Added
