@@ -100,20 +100,10 @@ final class Menu {
             );
         }
 
-        // Check license status (optional: can be used to restrict access)
-        // For now, only show a notice if license is invalid
-        // To fully restrict access, uncomment the code in the LICENSING.md file
-        $has_license = LicenseHelper::has_valid_license();
-        if (!$has_license && !LicenseHelper::is_local_dev_site()) {
-            add_action('admin_notices', function() {
-                $license_info = LicenseHelper::get_license_info();
-                printf(
-                    '<div class="notice notice-%s"><p><strong>%s:</strong> %s</p></div>',
-                    esc_attr($license_info['class'] ?? 'warning'),
-                    esc_html__('License Status', WPE_RM_TEXTDOMAIN),
-                    esc_html($license_info['message'] ?? __('License check unavailable', WPE_RM_TEXTDOMAIN))
-                );
-            });
+        // Check license status - block access if no valid license on production sites
+        if (!LicenseHelper::is_local_dev_site() && !LicenseHelper::has_valid_license()) {
+            self::render_license_required_page();
+            return;
         }
 
         // Apply theme immediately to prevent flash
@@ -138,11 +128,52 @@ final class Menu {
             );
         }
 
+        // Check license status - block access if no valid license on production sites
+        if (!LicenseHelper::is_local_dev_site() && !LicenseHelper::has_valid_license()) {
+            self::render_license_required_page();
+            return;
+        }
+
         // Apply theme immediately to prevent flash
         self::output_theme_script();
 
         // Load the instructions page template
         include WPE_RM_PLUGIN_PATH . 'templates/instructions-page.php';
+    }
+
+    /**
+     * Render the license required page when no valid license is found.
+     *
+     * @return void
+     */
+    private static function render_license_required_page(): void {
+        $license_page_url = admin_url('admin.php?page=wpe-role-manager-license');
+        $purchase_url = defined('WPE_RM_LICENSE_PURCHASE_URL') ? WPE_RM_LICENSE_PURCHASE_URL : 'https://wpeasy.au/role-manager/';
+        ?>
+        <div class="wrap wpea">
+            <div class="wpea-stack wpea-stack--lg" style="max-width: 600px; margin: 50px auto; text-align: center;">
+                <div class="wpea-card wpea-card--elevated">
+                    <div class="wpea-stack wpea-stack--md">
+                        <div style="font-size: 48px;">🔐</div>
+                        <h1 class="wpea-heading wpea-heading--lg">
+                            <?php esc_html_e('License Required', WPE_RM_TEXTDOMAIN); ?>
+                        </h1>
+                        <p class="wpea-text wpea-text--muted">
+                            <?php esc_html_e('WP Easy Role Manager requires a valid license to access its features. Please activate your license to continue.', WPE_RM_TEXTDOMAIN); ?>
+                        </p>
+                        <div class="wpea-cluster wpea-cluster--center">
+                            <a href="<?php echo esc_url($license_page_url); ?>" class="wpea-btn wpea-btn--primary wpea-btn--lg">
+                                <?php esc_html_e('Activate License', WPE_RM_TEXTDOMAIN); ?>
+                            </a>
+                            <a href="<?php echo esc_url($purchase_url); ?>" class="wpea-btn wpea-btn--secondary wpea-btn--lg" target="_blank">
+                                <?php esc_html_e('Purchase License', WPE_RM_TEXTDOMAIN); ?>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 
     /**
