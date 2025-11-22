@@ -2,9 +2,25 @@
 # Creates UNIX/Linux-compatible ZIP in plugin/ subfolder
 
 $pluginFolderName = Split-Path -Leaf (Get-Location)
-$zipFileName = "$pluginFolderName.zip"
 $sourceDir = Get-Location
 $pluginSubfolder = Join-Path $sourceDir "plugin"
+
+# Extract version from main plugin file
+$mainPluginFile = Join-Path $sourceDir "$pluginFolderName.php"
+$pluginVersion = ""
+if (Test-Path $mainPluginFile) {
+    $content = Get-Content $mainPluginFile -Raw
+    if ($content -match 'Version:\s*([^\r\n]+)') {
+        $pluginVersion = $matches[1].Trim()
+    }
+}
+
+# Create ZIP filename with version
+if ($pluginVersion) {
+    $zipFileName = "$pluginFolderName-$pluginVersion.zip"
+} else {
+    $zipFileName = "$pluginFolderName.zip"
+}
 $zipPath = Join-Path $pluginSubfolder $zipFileName
 
 # Create plugin subfolder and remove old ZIPs
