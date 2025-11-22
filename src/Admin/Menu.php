@@ -128,16 +128,10 @@ final class Menu {
             );
         }
 
-        // Check license status - block access if no valid license on production sites
-        if (!LicenseHelper::is_local_dev_site() && !LicenseHelper::has_valid_license()) {
-            self::render_license_required_page();
-            return;
-        }
-
         // Apply theme immediately to prevent flash
         self::output_theme_script();
 
-        // Load the instructions page template
+        // Load the instructions page template (no license check - always accessible)
         include WPE_RM_PLUGIN_PATH . 'templates/instructions-page.php';
     }
 
@@ -148,27 +142,25 @@ final class Menu {
      */
     private static function render_license_required_page(): void {
         $license_page_url = admin_url('admin.php?page=wpe-role-manager-license');
-        $purchase_url = defined('WPE_RM_LICENSE_PURCHASE_URL') ? WPE_RM_LICENSE_PURCHASE_URL : 'https://wpeasy.au/role-manager/';
+        $get_license_url = defined('WPE_RM_LICENSE_PURCHASE_URL') ? WPE_RM_LICENSE_PURCHASE_URL : 'https://wpeasy.au/role-manager/';
         ?>
         <div class="wrap wpea">
-            <div class="wpea-stack wpea-stack--lg" style="max-width: 600px; margin: 50px auto; text-align: center;">
-                <div class="wpea-card wpea-card--elevated">
-                    <div class="wpea-stack wpea-stack--md">
-                        <div style="font-size: 48px;">🔐</div>
-                        <h1 class="wpea-heading wpea-heading--lg">
-                            <?php esc_html_e('License Required', WPE_RM_TEXTDOMAIN); ?>
-                        </h1>
-                        <p class="wpea-text wpea-text--muted">
-                            <?php esc_html_e('WP Easy Role Manager requires a valid license to access its features. Please activate your license to continue.', WPE_RM_TEXTDOMAIN); ?>
-                        </p>
-                        <div class="wpea-cluster wpea-cluster--center">
-                            <a href="<?php echo esc_url($license_page_url); ?>" class="wpea-btn wpea-btn--primary wpea-btn--lg">
-                                <?php esc_html_e('Activate License', WPE_RM_TEXTDOMAIN); ?>
-                            </a>
-                            <a href="<?php echo esc_url($purchase_url); ?>" class="wpea-btn wpea-btn--secondary wpea-btn--lg" target="_blank">
-                                <?php esc_html_e('Purchase License', WPE_RM_TEXTDOMAIN); ?>
-                            </a>
-                        </div>
+            <div style="max-width: 600px; margin: 50px auto; text-align: center;">
+                <div style="background: #fff; border: 1px solid #c3c4c7; border-radius: 8px; padding: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
+                    <h1 style="font-size: 24px; font-weight: 600; margin: 0 0 15px 0; color: #1d2327;">
+                        <?php esc_html_e('License Required', WPE_RM_TEXTDOMAIN); ?>
+                    </h1>
+                    <p style="color: #646970; font-size: 14px; margin: 0 0 25px 0; line-height: 1.6;">
+                        <?php esc_html_e('WP Easy Role Manager requires a valid license to access its features. Please activate your license to continue.', WPE_RM_TEXTDOMAIN); ?>
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <a href="<?php echo esc_url($license_page_url); ?>" class="button button-primary button-hero">
+                            <?php esc_html_e('Activate License', WPE_RM_TEXTDOMAIN); ?>
+                        </a>
+                        <a href="<?php echo esc_url($get_license_url); ?>" class="button button-secondary button-hero" target="_blank">
+                            <?php esc_html_e('Get License', WPE_RM_TEXTDOMAIN); ?>
+                        </a>
                     </div>
                 </div>
             </div>
