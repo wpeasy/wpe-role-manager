@@ -7,7 +7,7 @@
     const { createHigherOrderComponent } = wp.compose;
     const { Fragment, createElement: el } = wp.element;
     const { InspectorControls } = wp.blockEditor;
-    const { PanelBody, ToggleControl, SelectControl, RadioControl, CheckboxControl } = wp.components;
+    const { PanelBody, ToggleControl, SelectControl, RadioControl, FormTokenField } = wp.components;
     const { addFilter } = wp.hooks;
     const { __ } = wp.i18n;
 
@@ -85,19 +85,6 @@
             // Get the options based on condition type
             const options = wpeRmConditionType === 'roles' ? roles : capabilities;
 
-            // Handle checkbox change for multi-select
-            const handleValueChange = (value, checked) => {
-                let newValues = [...wpeRmConditionValues];
-                if (checked) {
-                    if (!newValues.includes(value)) {
-                        newValues.push(value);
-                    }
-                } else {
-                    newValues = newValues.filter(v => v !== value);
-                }
-                setAttributes({ wpeRmConditionValues: newValues });
-            };
-
             return el(
                 Fragment,
                 null,
@@ -144,36 +131,26 @@
                                 ],
                                 onChange: (value) => setAttributes({ wpeRmConditionMode: value }),
                             }),
-                            el(
-                                'div',
-                                {
-                                    className: 'wpe-rm-condition-values',
-                                    style: {
-                                        maxHeight: '200px',
-                                        overflowY: 'auto',
-                                        border: '1px solid #ddd',
-                                        borderRadius: '4px',
-                                        padding: '8px',
-                                        marginTop: '8px',
-                                    }
+                            el(FormTokenField, {
+                                label: wpeRmConditionType === 'roles'
+                                    ? __('Select Roles', 'wp-easy-role-manager')
+                                    : __('Select Capabilities', 'wp-easy-role-manager'),
+                                value: wpeRmConditionValues.map(val => {
+                                    const found = options.find(o => o.value === val);
+                                    return found ? found.label : val;
+                                }),
+                                suggestions: options.map(o => o.label),
+                                onChange: (tokens) => {
+                                    // Convert labels back to values
+                                    const newValues = tokens.map(token => {
+                                        const found = options.find(o => o.label === token);
+                                        return found ? found.value : token;
+                                    });
+                                    setAttributes({ wpeRmConditionValues: newValues });
                                 },
-                                el(
-                                    'p',
-                                    { style: { margin: '0 0 8px', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase' } },
-                                    wpeRmConditionType === 'roles'
-                                        ? __('Select Roles:', 'wp-easy-role-manager')
-                                        : __('Select Capabilities:', 'wp-easy-role-manager')
-                                ),
-                                options.map((option) =>
-                                    el(CheckboxControl, {
-                                        key: option.value,
-                                        label: option.label,
-                                        checked: wpeRmConditionValues.includes(option.value),
-                                        onChange: (checked) => handleValueChange(option.value, checked),
-                                        __nextHasNoMarginBottom: true,
-                                    })
-                                )
-                            ),
+                                __experimentalExpandOnFocus: true,
+                                __experimentalShowHowTo: false,
+                            }),
                             wpeRmConditionValues.length > 0 && el(
                                 'p',
                                 {
@@ -209,10 +186,33 @@
                 return el(BlockListBlock, props);
             }
 
+            const badgeStyle = {
+                position: 'absolute',
+                top: '-8px',
+                right: '-8px',
+                background: '#2271b1',
+                color: '#fff',
+                fontSize: '9px',
+                fontWeight: '600',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                zIndex: 1000,
+                textTransform: 'uppercase',
+                letterSpacing: '0.3px',
+                pointerEvents: 'none',
+                lineHeight: '1.2',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif',
+            };
+
+            const wrapperStyle = {
+                position: 'relative',
+            };
+
             return el(
                 'div',
-                { className: 'wpe-rm-has-conditions', style: { position: 'relative' } },
-                el('span', { className: 'wpe-rm-condition-badge' }, __('Conditional', 'wp-easy-role-manager')),
+                { style: wrapperStyle },
+                el('span', { style: badgeStyle }, __('Conditional', 'wp-easy-role-manager')),
                 el(BlockListBlock, props)
             );
         };
