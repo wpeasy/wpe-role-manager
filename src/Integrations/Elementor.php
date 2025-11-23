@@ -149,6 +149,8 @@ final class Elementor {
         }
 
         // Add our Capability Conditions section
+        // Note: V4 atomic controls don't support conditional visibility or multi-select like V3
+        // So we use text fields for comma-separated values
         $conditions_section = \Elementor\Modules\AtomicWidgets\Controls\Section::make()
             ->set_label(__('Capability Conditions', WPE_RM_TEXTDOMAIN))
             ->set_id('wpe_rm_capability_conditions')
@@ -170,13 +172,15 @@ final class Elementor {
                         ['value' => 'has_not', 'label' => __('User HAS NOT (hide if match)', WPE_RM_TEXTDOMAIN)],
                     ]),
 
-                \Elementor\Modules\AtomicWidgets\Controls\Types\Select_Control::bind_to('wpe_rm_condition_roles')
-                    ->set_label(__('Select Roles', WPE_RM_TEXTDOMAIN))
-                    ->set_options($roles_options),
+                // Text field for roles (comma-separated) - V4 doesn't support multi-select
+                \Elementor\Modules\AtomicWidgets\Controls\Types\Text_Control::bind_to('wpe_rm_condition_roles')
+                    ->set_label(__('Roles (comma-separated)', WPE_RM_TEXTDOMAIN))
+                    ->set_placeholder('administrator, editor, subscriber'),
 
-                \Elementor\Modules\AtomicWidgets\Controls\Types\Select_Control::bind_to('wpe_rm_condition_capabilities')
-                    ->set_label(__('Select Capabilities', WPE_RM_TEXTDOMAIN))
-                    ->set_options($caps_options),
+                // Text field for capabilities (comma-separated) - V4 doesn't support multi-select
+                \Elementor\Modules\AtomicWidgets\Controls\Types\Text_Control::bind_to('wpe_rm_condition_capabilities')
+                    ->set_label(__('Capabilities (comma-separated)', WPE_RM_TEXTDOMAIN))
+                    ->set_placeholder('edit_posts, publish_posts'),
             ]);
 
         // Add our section at the end
@@ -381,7 +385,9 @@ final class Elementor {
         }
 
         // Check if conditions are enabled
-        if (empty($settings['wpe_rm_conditions_enabled']) || $settings['wpe_rm_conditions_enabled'] !== 'yes') {
+        // V3 uses 'yes', V4 uses true/false boolean
+        $conditions_enabled = $settings['wpe_rm_conditions_enabled'] ?? false;
+        if (empty($conditions_enabled) || ($conditions_enabled !== 'yes' && $conditions_enabled !== true)) {
             return true;
         }
 
@@ -393,6 +399,12 @@ final class Elementor {
             $condition_values = $settings['wpe_rm_condition_roles'] ?? [];
         } else {
             $condition_values = $settings['wpe_rm_condition_capabilities'] ?? [];
+        }
+
+        // Handle V4 comma-separated string format
+        if (is_string($condition_values)) {
+            $condition_values = array_map('trim', explode(',', $condition_values));
+            $condition_values = array_filter($condition_values); // Remove empty values
         }
 
         // If no values selected, show element
