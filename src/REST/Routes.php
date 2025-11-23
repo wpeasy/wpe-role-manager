@@ -1432,6 +1432,7 @@ final class Routes {
             'compact_mode' => false,
             'restrictions_enabled_post_types' => ['page'], // Default to page only
             'enable_block_conditions' => true, // Block visibility conditions enabled by default
+            'enable_elementor_conditions' => true, // Elementor visibility conditions enabled by default
         ]);
 
         return new WP_REST_Response([
@@ -1476,6 +1477,9 @@ final class Routes {
                 : ['page'],
             'enable_block_conditions' => isset($params['enable_block_conditions'])
                 ? (bool) $params['enable_block_conditions']
+                : true,
+            'enable_elementor_conditions' => isset($params['enable_elementor_conditions'])
+                ? (bool) $params['enable_elementor_conditions']
                 : true,
         ];
 
@@ -1536,6 +1540,9 @@ final class Routes {
         }
         if (isset($params['enable_block_conditions'])) {
             $changes[] = sprintf('Block visibility conditions: %s', $settings['enable_block_conditions'] ? 'enabled' : 'disabled');
+        }
+        if (isset($params['enable_elementor_conditions'])) {
+            $changes[] = sprintf('Elementor visibility conditions: %s', $settings['enable_elementor_conditions'] ? 'enabled' : 'disabled');
         }
 
         if (!empty($changes)) {

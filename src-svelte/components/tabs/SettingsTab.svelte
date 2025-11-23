@@ -22,6 +22,7 @@ let settings = $state({
   compactMode: false,
   restrictionsEnabledPostTypes: ['page'], // Array of post type slugs
   enableBlockConditions: true, // Enable block visibility conditions
+  enableElementorConditions: true, // Enable Elementor visibility conditions
 });
 
 // Load settings on mount
@@ -355,6 +356,41 @@ function isPostTypeEnabled(postType) {
             <div class="wpea-alert wpea-alert--success">
               <p><strong>✓ Block Conditions Enabled</strong></p>
               <p>You'll find a "Capability Conditions" panel in the block sidebar when editing posts/pages.</p>
+            </div>
+          {/if}
+        </div>
+      </div>
+
+      <!-- Elementor Capability Conditions -->
+      <div class="wpea-card">
+        <h3 class="wpea-heading wpea-heading--sm">Elementor Capability Conditions</h3>
+
+        <div class="wpea-stack wpea-stack--sm">
+          <div class="wpea-alert wpea-alert--info">
+            <p><strong>What does this do?</strong></p>
+            <p>Adds a "Capability Conditions" section to every Elementor widget, section, container, and column.</p>
+            <p style="margin-top: var(--wpea-space--xs);"><strong>Features:</strong></p>
+            <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
+              <li>Control element visibility by user roles or capabilities</li>
+              <li>Show elements to users who have (or don't have) specific roles/caps</li>
+              <li>Available in the Advanced tab of every element</li>
+              <li>Works with Elementor Free (no Pro required)</li>
+            </ul>
+          </div>
+
+          <label class="wpea-control">
+            <input
+              type="checkbox"
+              bind:checked={settings.enableElementorConditions}
+              onchange={saveSettings}
+            />
+            <span>Enable Elementor Capability Conditions</span>
+          </label>
+
+          {#if settings.enableElementorConditions}
+            <div class="wpea-alert wpea-alert--success">
+              <p><strong>✓ Elementor Conditions Enabled</strong></p>
+              <p>You'll find a "Capability Conditions" section in the Advanced tab when editing Elementor elements.</p>
             </div>
           {/if}
         </div>

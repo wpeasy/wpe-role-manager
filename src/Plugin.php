@@ -45,6 +45,9 @@ final class Plugin {
         // Initialize Bricks Builder integration
         Integrations\BricksBuilder::init();
 
+        // Initialize Elementor integration
+        Integrations\Elementor::init();
+
         // Initialize shortcodes
         Helpers\Shortcodes::init();
 
