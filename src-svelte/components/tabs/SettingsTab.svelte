@@ -379,9 +379,9 @@ function isPostTypeEnabled(postType) {
           </div>
 
           <div class="wpea-alert wpea-alert--warning">
-            <p><strong>⚠️ Editor V4 Compatibility</strong></p>
-            <p>This feature requires the <strong>Classic Editor</strong>. If you're using Editor V4 (Alpha), the controls won't appear due to V4's new panel architecture.</p>
-            <p style="margin-top: var(--wpea-space--xs);">To use this feature: Elementor → Settings → Editor V4 tab → Deactivate</p>
+            <p><strong>ℹ️ Editor V4 Support (Beta)</strong></p>
+            <p>This feature supports both the <strong>Classic Editor (V3)</strong> and <strong>Editor V4 (Alpha)</strong>.</p>
+            <p style="margin-top: var(--wpea-space--xs);">V4 support is experimental as V4's API is still in Alpha. If controls don't appear, try deactivating V4: Elementor → Settings → Editor V4 tab → Deactivate</p>
           </div>
 
           <label class="wpea-control">

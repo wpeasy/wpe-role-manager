@@ -48,11 +48,17 @@ final class Elementor {
      * @return void
      */
     public static function register_hooks(): void {
-        // Use the generic hook that fires for ALL sections on ALL elements
-        // This is more compatible with Editor V4
+        // V3 (Classic) Editor hooks - for legacy widgets
         add_action('elementor/element/after_section_end', [self::class, 'maybe_add_controls'], 10, 3);
 
-        // Filter widget rendering on frontend
+        // V4 (Atomic) Editor hooks - for atomic widgets
+        // These hooks are only available in Elementor 3.29+ with V4 enabled
+        if (class_exists('\Elementor\Modules\AtomicWidgets\Module')) {
+            add_filter('elementor/atomic-widgets/props-schema', [self::class, 'add_v4_props_schema'], 10, 2);
+            add_filter('elementor/atomic-widgets/controls', [self::class, 'add_v4_controls'], 10, 2);
+        }
+
+        // Filter widget rendering on frontend (works for both V3 and V4)
         add_filter('elementor/frontend/widget/should_render', [self::class, 'should_render_widget'], 10, 2);
         add_filter('elementor/frontend/section/should_render', [self::class, 'should_render_element'], 10, 2);
         add_filter('elementor/frontend/container/should_render', [self::class, 'should_render_element'], 10, 2);
@@ -60,6 +66,124 @@ final class Elementor {
 
         // Add editor styles
         add_action('elementor/editor/after_enqueue_styles', [self::class, 'enqueue_editor_styles']);
+    }
+
+    /**
+     * Add props schema for V4 atomic widgets.
+     *
+     * @param array $schema The existing props schema.
+     * @param mixed $element The element instance.
+     * @return array
+     */
+    public static function add_v4_props_schema(array $schema, $element): array {
+        // Check if the required prop type classes exist
+        if (!class_exists('\Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type') ||
+            !class_exists('\Elementor\Modules\AtomicWidgets\PropTypes\Primitives\Boolean_Prop_Type')) {
+            return $schema;
+        }
+
+        // Add our custom props to the schema
+        $schema['wpe_rm_conditions_enabled'] = \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\Boolean_Prop_Type::make()
+            ->default(false);
+
+        $schema['wpe_rm_condition_type'] = \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type::make()
+            ->enum(['roles', 'capabilities'])
+            ->default('roles');
+
+        $schema['wpe_rm_condition_mode'] = \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type::make()
+            ->enum(['has', 'has_not'])
+            ->default('has');
+
+        $schema['wpe_rm_condition_roles'] = \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type::make()
+            ->default('');
+
+        $schema['wpe_rm_condition_capabilities'] = \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type::make()
+            ->default('');
+
+        return $schema;
+    }
+
+    /**
+     * Add controls for V4 atomic widgets.
+     *
+     * @param array $controls The existing controls.
+     * @param mixed $element The element instance.
+     * @return array
+     */
+    public static function add_v4_controls(array $controls, $element): array {
+        // Check if the required control classes exist
+        if (!class_exists('\Elementor\Modules\AtomicWidgets\Controls\Section') ||
+            !class_exists('\Elementor\Modules\AtomicWidgets\Controls\Types\Switch_Control') ||
+            !class_exists('\Elementor\Modules\AtomicWidgets\Controls\Types\Select_Control') ||
+            !class_exists('\Elementor\Modules\AtomicWidgets\Controls\Types\Text_Control')) {
+            return $controls;
+        }
+
+        // Build roles options for V4
+        $roles_options = [];
+        $roles_options[] = ['value' => 'guest', 'label' => __('Guest (Not Logged In)', WPE_RM_TEXTDOMAIN)];
+
+        global $wp_roles;
+        if (isset($wp_roles) && !empty($wp_roles->roles)) {
+            foreach ($wp_roles->roles as $role_slug => $role_info) {
+                $roles_options[] = [
+                    'value' => $role_slug,
+                    'label' => translate_user_role($role_info['name']),
+                ];
+            }
+        }
+
+        // Build capabilities options for V4
+        $caps_options = [];
+        if (isset($wp_roles) && !empty($wp_roles->roles)) {
+            $capabilities = [];
+            foreach ($wp_roles->roles as $role) {
+                if (isset($role['capabilities'])) {
+                    $capabilities = array_merge($capabilities, array_keys($role['capabilities']));
+                }
+            }
+            $capabilities = array_unique($capabilities);
+            sort($capabilities);
+            foreach ($capabilities as $cap) {
+                $caps_options[] = ['value' => $cap, 'label' => $cap];
+            }
+        }
+
+        // Add our Capability Conditions section
+        $conditions_section = \Elementor\Modules\AtomicWidgets\Controls\Section::make()
+            ->set_label(__('Capability Conditions', WPE_RM_TEXTDOMAIN))
+            ->set_id('wpe_rm_capability_conditions')
+            ->set_items([
+                \Elementor\Modules\AtomicWidgets\Controls\Types\Switch_Control::bind_to('wpe_rm_conditions_enabled')
+                    ->set_label(__('Enable Conditions', WPE_RM_TEXTDOMAIN)),
+
+                \Elementor\Modules\AtomicWidgets\Controls\Types\Select_Control::bind_to('wpe_rm_condition_type')
+                    ->set_label(__('Condition Type', WPE_RM_TEXTDOMAIN))
+                    ->set_options([
+                        ['value' => 'roles', 'label' => __('Roles', WPE_RM_TEXTDOMAIN)],
+                        ['value' => 'capabilities', 'label' => __('Capabilities', WPE_RM_TEXTDOMAIN)],
+                    ]),
+
+                \Elementor\Modules\AtomicWidgets\Controls\Types\Select_Control::bind_to('wpe_rm_condition_mode')
+                    ->set_label(__('Condition Mode', WPE_RM_TEXTDOMAIN))
+                    ->set_options([
+                        ['value' => 'has', 'label' => __('User HAS (show if match)', WPE_RM_TEXTDOMAIN)],
+                        ['value' => 'has_not', 'label' => __('User HAS NOT (hide if match)', WPE_RM_TEXTDOMAIN)],
+                    ]),
+
+                \Elementor\Modules\AtomicWidgets\Controls\Types\Select_Control::bind_to('wpe_rm_condition_roles')
+                    ->set_label(__('Select Roles', WPE_RM_TEXTDOMAIN))
+                    ->set_options($roles_options),
+
+                \Elementor\Modules\AtomicWidgets\Controls\Types\Select_Control::bind_to('wpe_rm_condition_capabilities')
+                    ->set_label(__('Select Capabilities', WPE_RM_TEXTDOMAIN))
+                    ->set_options($caps_options),
+            ]);
+
+        // Add our section at the end
+        $controls[] = $conditions_section;
+
+        return $controls;
     }
 
     /**
