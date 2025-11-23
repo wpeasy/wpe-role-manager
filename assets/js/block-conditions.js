@@ -207,6 +207,7 @@
 
             const wrapperStyle = {
                 position: 'relative',
+                outline: '1px dashed #6c6c6c2b',
             };
 
             return el(
