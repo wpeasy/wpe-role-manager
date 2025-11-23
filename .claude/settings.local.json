@@ -39,7 +39,8 @@
       "Bash(nul)",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\Alan.Blair\\Local Sites\\bricks-playground\\app\\public\\wp-content\\plugins\\wpe-role-manager\\create-plugin-zip.ps1\")",
       "WebSearch",
-      "WebFetch(domain:developers.elementor.com)"
+      "WebFetch(domain:developers.elementor.com)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

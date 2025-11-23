@@ -54,7 +54,7 @@ final class Elementor {
         // V4 (Atomic) Editor hooks - for atomic widgets
         // These hooks are only available in Elementor 3.29+ with V4 enabled
         if (class_exists('\Elementor\Modules\AtomicWidgets\Module')) {
-            add_filter('elementor/atomic-widgets/props-schema', [self::class, 'add_v4_props_schema'], 10, 2);
+            add_filter('elementor/atomic-widgets/props-schema', [self::class, 'add_v4_props_schema'], 10, 1);
             add_filter('elementor/atomic-widgets/controls', [self::class, 'add_v4_controls'], 10, 2);
         }
 
@@ -72,10 +72,9 @@ final class Elementor {
      * Add props schema for V4 atomic widgets.
      *
      * @param array $schema The existing props schema.
-     * @param mixed $element The element instance.
      * @return array
      */
-    public static function add_v4_props_schema(array $schema, $element): array {
+    public static function add_v4_props_schema(array $schema): array {
         // Check if the required prop type classes exist
         if (!class_exists('\Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type') ||
             !class_exists('\Elementor\Modules\AtomicWidgets\PropTypes\Primitives\Boolean_Prop_Type')) {
