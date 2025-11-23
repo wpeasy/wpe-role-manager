@@ -56,9 +56,32 @@ final class Elementor {
         if (class_exists('\Elementor\Modules\AtomicWidgets\Module')) {
             add_filter('elementor/atomic-widgets/props-schema', [self::class, 'add_v4_props_schema'], 10, 1);
             add_filter('elementor/atomic-widgets/controls', [self::class, 'add_v4_controls'], 10, 2);
+
+            // V4 atomic widgets have different element types (e-heading, e-button, etc.)
+            // Register should_render filter for each V4 atomic element type
+            $v4_element_types = [
+                'e-heading',
+                'e-paragraph',
+                'e-button',
+                'e-image',
+                'e-svg',
+                'e-divider',
+                'e-youtube',
+                'e-div-block',
+                'e-flexbox',
+                'e-tabs',
+                'e-tabs-list',
+                'e-tabs-content',
+                'e-tab',
+                'e-tab-panel',
+            ];
+
+            foreach ($v4_element_types as $element_type) {
+                add_filter("elementor/frontend/{$element_type}/should_render", [self::class, 'should_render_v4_element'], 10, 2);
+            }
         }
 
-        // Filter widget rendering on frontend (works for both V3 and V4)
+        // Filter widget rendering on frontend (V3 widgets)
         add_filter('elementor/frontend/widget/should_render', [self::class, 'should_render_widget'], 10, 2);
         add_filter('elementor/frontend/section/should_render', [self::class, 'should_render_element'], 10, 2);
         add_filter('elementor/frontend/container/should_render', [self::class, 'should_render_element'], 10, 2);
@@ -357,7 +380,18 @@ final class Elementor {
      * @return bool
      */
     public static function should_render_widget($should_render, $widget): bool {
-        return self::check_conditions($should_render, $widget->get_settings_for_display());
+        // Check if this is a V4 atomic widget
+        if ($widget instanceof \Elementor\Modules\AtomicWidgets\Elements\Atomic_Widget_Base) {
+            // V4 atomic widgets use get_atomic_settings() or direct get_settings()
+            $settings = method_exists($widget, 'get_atomic_settings')
+                ? $widget->get_atomic_settings()
+                : $widget->get_settings();
+        } else {
+            // V3 classic widgets use get_settings_for_display()
+            $settings = $widget->get_settings_for_display();
+        }
+
+        return self::check_conditions($should_render, $settings);
     }
 
     /**
@@ -368,7 +402,36 @@ final class Elementor {
      * @return bool
      */
     public static function should_render_element($should_render, $element): bool {
-        return self::check_conditions($should_render, $element->get_settings_for_display());
+        // Check if this is a V4 atomic element
+        if ($element instanceof \Elementor\Modules\AtomicWidgets\Elements\Atomic_Element_Base) {
+            // V4 atomic elements use get_atomic_settings()
+            $settings = method_exists($element, 'get_atomic_settings')
+                ? $element->get_atomic_settings()
+                : $element->get_settings();
+        } else {
+            // V3 classic elements use get_settings_for_display()
+            $settings = $element->get_settings_for_display();
+        }
+
+        return self::check_conditions($should_render, $settings);
+    }
+
+    /**
+     * Check if a V4 atomic element should render.
+     *
+     * @param bool                    $should_render Whether to render.
+     * @param \Elementor\Element_Base $element       The element.
+     * @return bool
+     */
+    public static function should_render_v4_element($should_render, $element): bool {
+        // V4 atomic elements/widgets use get_atomic_settings()
+        if (method_exists($element, 'get_atomic_settings')) {
+            $settings = $element->get_atomic_settings();
+        } else {
+            $settings = $element->get_settings();
+        }
+
+        return self::check_conditions($should_render, $settings);
     }
 
     /**

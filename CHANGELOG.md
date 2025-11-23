@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8-beta] - 2025-11-23
+
+### Added
+
+- **Elementor Capability Conditions**
+  - Role/capability-based visibility conditions for Elementor widgets and elements
+  - Full support for V3 (Classic) Editor with Advanced tab integration
+  - Limited support for V4 (Atomic) Editor - controls added but with limitations
+  - Condition type: Roles or Capabilities
+  - Condition mode: Has or Has Not (show/hide logic)
+  - "Guest" pseudo-role for logged-out users
+  - V3: Multi-select dropdowns with conditional visibility
+  - V4: Text fields with comma-separated values (V4 limitation)
+  - Frontend filtering hides/shows elements based on user roles/capabilities
+  - Documentation: `ELEMENTOR.md` with comprehensive V3/V4 integration details
+
+### Changed
+
+- **Plugin Metadata**
+  - Author changed to "Alan Blair"
+  - Author URI changed to https://alanblair.co/
+  - Plugin URI changed to https://alanblair.co/item/role-and-capability-manager/
+
+### Technical
+
+- **Elementor V4 Critical Discovery**
+  - V4 atomic widgets use unique element types (e-heading, e-button, etc.) not "widget"
+  - Must register `should_render` filters for each V4 element type individually
+  - V4 settings retrieved via `get_atomic_settings()` not `get_settings_for_display()`
+  - V4 props filter only passes 1 argument (not 2)
+  - V4 lacks conditional visibility and multi-select control support
+
+- **New Files**:
+  - `src/Integrations/Elementor.php` - Complete Elementor V3/V4 integration
+  - `ELEMENTOR.md` - Developer documentation for Elementor integration
+
 ## [0.1.7-beta] - 2025-11-23
 
 ### Added

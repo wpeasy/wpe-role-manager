@@ -192,7 +192,9 @@ Located in: `modules/atomic-widgets/prop-types/primitives/`
 
 ## Frontend Rendering Filters
 
-These work for both V3 and V4:
+### V3 Classic Widgets
+
+For V3, use the `widget` element type:
 
 ```php
 // Filter widget rendering
@@ -210,6 +212,49 @@ add_filter('elementor/frontend/container/should_render', 'callback', 10, 2);
 
 // Filter column rendering
 add_filter('elementor/frontend/column/should_render', 'callback', 10, 2);
+```
+
+### V4 Atomic Widgets - IMPORTANT!
+
+**CRITICAL:** V4 atomic widgets do NOT use the `widget` element type! Each V4 element has its own unique type (e.g., `e-heading`, `e-button`). The filter name pattern is:
+
+```
+elementor/frontend/{element_type}/should_render
+```
+
+V4 Element Types:
+- `e-heading` - Heading widget
+- `e-paragraph` - Paragraph/text widget
+- `e-button` - Button widget
+- `e-image` - Image widget
+- `e-svg` - SVG widget
+- `e-divider` - Divider widget
+- `e-youtube` - YouTube embed widget
+- `e-div-block` - Div Block container
+- `e-flexbox` - Flexbox container
+- `e-tabs`, `e-tabs-list`, `e-tabs-content`, `e-tab`, `e-tab-panel` - Tab components
+
+**You MUST register filters for EACH V4 element type:**
+
+```php
+$v4_element_types = ['e-heading', 'e-paragraph', 'e-button', 'e-image', /* etc */];
+
+foreach ($v4_element_types as $element_type) {
+    add_filter("elementor/frontend/{$element_type}/should_render", 'my_v4_callback', 10, 2);
+}
+```
+
+### V4 Settings Retrieval
+
+V4 atomic widgets use `get_atomic_settings()` instead of `get_settings_for_display()`:
+
+```php
+function my_v4_callback($should_render, $element) {
+    // Use get_atomic_settings() for V4
+    $settings = $element->get_atomic_settings();
+    // Check conditions...
+    return $should_render;
+}
 ```
 
 ---
@@ -267,12 +312,25 @@ public static function register_hooks(): void {
 
     // V4 (Atomic) - for atomic widgets
     if (class_exists('\Elementor\Modules\AtomicWidgets\Module')) {
-        add_filter('elementor/atomic-widgets/props-schema', [self::class, 'add_v4_props_schema'], 10, 2);
+        add_filter('elementor/atomic-widgets/props-schema', [self::class, 'add_v4_props_schema'], 10, 1);
         add_filter('elementor/atomic-widgets/controls', [self::class, 'add_v4_controls'], 10, 2);
+
+        // CRITICAL: V4 elements use their own element types, NOT 'widget'
+        $v4_element_types = [
+            'e-heading', 'e-paragraph', 'e-button', 'e-image', 'e-svg',
+            'e-divider', 'e-youtube', 'e-div-block', 'e-flexbox',
+            'e-tabs', 'e-tabs-list', 'e-tabs-content', 'e-tab', 'e-tab-panel',
+        ];
+
+        foreach ($v4_element_types as $element_type) {
+            add_filter("elementor/frontend/{$element_type}/should_render", [self::class, 'should_render_v4_element'], 10, 2);
+        }
     }
 
-    // Frontend filters work for both
+    // V3 frontend filters
     add_filter('elementor/frontend/widget/should_render', [self::class, 'should_render_widget'], 10, 2);
+    add_filter('elementor/frontend/section/should_render', [self::class, 'should_render_element'], 10, 2);
+    add_filter('elementor/frontend/container/should_render', [self::class, 'should_render_element'], 10, 2);
 }
 ```
 
@@ -281,8 +339,14 @@ public static function register_hooks(): void {
 - `wpe_rm_conditions_enabled` (Boolean) - Enable/disable conditions
 - `wpe_rm_condition_type` (String, enum) - 'roles' or 'capabilities'
 - `wpe_rm_condition_mode` (String, enum) - 'has' or 'has_not'
-- `wpe_rm_condition_roles` (String) - Selected roles
-- `wpe_rm_condition_capabilities` (String) - Selected capabilities
+- `wpe_rm_condition_roles` (String) - Comma-separated roles (V4 doesn't support multi-select)
+- `wpe_rm_condition_capabilities` (String) - Comma-separated capabilities
+
+### V4 Limitations
+
+- **No conditional visibility:** V4 atomic controls don't support the `condition` parameter
+- **No multi-select:** V4 Select_Control doesn't support `multiple`, so we use Text_Control with comma-separated values
+- **Settings retrieval:** Must use `get_atomic_settings()` instead of `get_settings_for_display()`
 
 ---
 
