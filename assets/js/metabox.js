@@ -55,11 +55,22 @@
             const selectedValue = $(this).val();
 
             if (selectedValue === 'message') {
-                $('.wpe-rm-message-field').slideDown(200);
+                $('.wpe-rm-message-fields').slideDown(200);
                 $('.wpe-rm-redirect-field').slideUp(200);
             } else if (selectedValue === 'redirect') {
-                $('.wpe-rm-message-field').slideUp(200);
+                $('.wpe-rm-message-fields').slideUp(200);
                 $('.wpe-rm-redirect-field').slideDown(200);
+            }
+        });
+
+        // Toggle HTTP code field based on message type selection
+        $('input[name="wpe_rm_message_type"]').on('change', function () {
+            const selectedValue = $(this).val();
+
+            if (selectedValue === 'plain_message') {
+                $('.wpe-rm-http-code-field').slideDown(200);
+            } else {
+                $('.wpe-rm-http-code-field').slideUp(200);
             }
         });
 

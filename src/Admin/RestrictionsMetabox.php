@@ -145,6 +145,8 @@ final class RestrictionsMetabox {
         $roles = get_post_meta($post->ID, '_wpe_rm_required_roles', true);
         $action_type = get_post_meta($post->ID, '_wpe_rm_action_type', true);
         $message = get_post_meta($post->ID, '_wpe_rm_message', true);
+        $message_type = get_post_meta($post->ID, '_wpe_rm_message_type', true);
+        $http_code = get_post_meta($post->ID, '_wpe_rm_http_code', true);
         $redirect_url = get_post_meta($post->ID, '_wpe_rm_redirect_url', true);
 
         // Defaults
@@ -155,6 +157,8 @@ final class RestrictionsMetabox {
         $roles = is_array($roles) ? $roles : [];
         $action_type = $action_type ?: 'message';
         $message = $message ?: 'Access Denied';
+        $message_type = $message_type ?: 'wp_die';
+        $http_code = $http_code ?: '403';
         $redirect_url = $redirect_url ?: home_url();
 
         // Get all capabilities
@@ -306,18 +310,63 @@ final class RestrictionsMetabox {
                     </label>
                 </p>
 
-                <!-- Message Field -->
-                <p class="wpe-rm-message-field" style="<?php echo $action_type === 'message' ? '' : 'display:none;'; ?>">
-                    <label for="wpe_rm_message">
-                        <?php esc_html_e('Message:', WPE_RM_TEXTDOMAIN); ?>
-                    </label>
-                    <textarea
-                        id="wpe_rm_message"
-                        name="wpe_rm_message"
-                        rows="3"
-                        style="width: 100%;"
-                    ><?php echo esc_textarea($message); ?></textarea>
-                </p>
+                <!-- Message Fields Container -->
+                <div class="wpe-rm-message-fields" style="<?php echo $action_type === 'message' ? '' : 'display:none;'; ?>">
+                    <!-- Message Type -->
+                    <p>
+                        <strong><?php esc_html_e('Message display:', WPE_RM_TEXTDOMAIN); ?></strong>
+                    </p>
+                    <p>
+                        <label>
+                            <input
+                                type="radio"
+                                name="wpe_rm_message_type"
+                                value="wp_die"
+                                <?php checked($message_type, 'wp_die'); ?>
+                            />
+                            <?php esc_html_e('wp_die (full page)', WPE_RM_TEXTDOMAIN); ?>
+                        </label>
+                        <br/>
+                        <label>
+                            <input
+                                type="radio"
+                                name="wpe_rm_message_type"
+                                value="plain_message"
+                                <?php checked($message_type, 'plain_message'); ?>
+                            />
+                            <?php esc_html_e('Plain Message (inline)', WPE_RM_TEXTDOMAIN); ?>
+                        </label>
+                    </p>
+
+                    <!-- HTTP Code (for Plain Message) -->
+                    <p class="wpe-rm-http-code-field" style="<?php echo $message_type === 'plain_message' ? '' : 'display:none;'; ?>">
+                        <label for="wpe_rm_http_code">
+                            <?php esc_html_e('HTTP Status Code:', WPE_RM_TEXTDOMAIN); ?>
+                        </label>
+                        <select id="wpe_rm_http_code" name="wpe_rm_http_code" style="width: 100%;">
+                            <option value="401" <?php selected($http_code, '401'); ?>>401 - Unauthorized</option>
+                            <option value="403" <?php selected($http_code, '403'); ?>>403 - Forbidden</option>
+                            <option value="404" <?php selected($http_code, '404'); ?>>404 - Not Found</option>
+                            <option value="410" <?php selected($http_code, '410'); ?>>410 - Gone</option>
+                        </select>
+                        <small style="display: block; margin-top: 4px; color: #646970;">
+                            <?php esc_html_e('HTTP response code sent with the message.', WPE_RM_TEXTDOMAIN); ?>
+                        </small>
+                    </p>
+
+                    <!-- Message Text -->
+                    <p class="wpe-rm-message-field">
+                        <label for="wpe_rm_message">
+                            <?php esc_html_e('Message:', WPE_RM_TEXTDOMAIN); ?>
+                        </label>
+                        <textarea
+                            id="wpe_rm_message"
+                            name="wpe_rm_message"
+                            rows="3"
+                            style="width: 100%;"
+                        ><?php echo esc_textarea($message); ?></textarea>
+                    </p>
+                </div>
 
                 <!-- Redirect URL Field -->
                 <p class="wpe-rm-redirect-field" style="<?php echo $action_type === 'redirect' ? '' : 'display:none;'; ?>">
@@ -400,6 +449,23 @@ final class RestrictionsMetabox {
             ? sanitize_textarea_field(wp_unslash($_POST['wpe_rm_message']))
             : 'Access Denied';
         update_post_meta($post_id, '_wpe_rm_message', $message);
+
+        // Save message type
+        $message_type = isset($_POST['wpe_rm_message_type'])
+            ? sanitize_text_field(wp_unslash($_POST['wpe_rm_message_type']))
+            : 'wp_die';
+        update_post_meta($post_id, '_wpe_rm_message_type', $message_type);
+
+        // Save HTTP code
+        $http_code = isset($_POST['wpe_rm_http_code'])
+            ? sanitize_text_field(wp_unslash($_POST['wpe_rm_http_code']))
+            : '403';
+        // Validate HTTP code
+        $valid_codes = ['401', '403', '404', '410'];
+        if (!in_array($http_code, $valid_codes, true)) {
+            $http_code = '403';
+        }
+        update_post_meta($post_id, '_wpe_rm_http_code', $http_code);
 
         // Save redirect URL
         $redirect_url = isset($_POST['wpe_rm_redirect_url'])
@@ -490,13 +556,33 @@ final class RestrictionsMetabox {
         } else {
             // Show message
             $message = $restriction['message'] ?: 'Access Denied';
+            $message_type = $restriction['message_type'] ?: 'wp_die';
+            $http_code = (int) ($restriction['http_code'] ?: 403);
 
-            wp_die(
-                '<h1>' . esc_html__('Restricted Content', WPE_RM_TEXTDOMAIN) . '</h1>' .
-                '<p>' . esc_html($message) . '</p>',
-                esc_html__('Access Denied', WPE_RM_TEXTDOMAIN),
-                ['response' => 403, 'back_link' => true]
-            );
+            if ($message_type === 'plain_message') {
+                // Plain message - set HTTP status and filter content
+                status_header($http_code);
+
+                // Store message for content filter
+                $GLOBALS['wpe_rm_restricted_message'] = $message;
+
+                // Filter the content to show restricted message
+                add_filter('the_content', function($content) {
+                    $message = $GLOBALS['wpe_rm_restricted_message'] ?? __('Access Denied', WPE_RM_TEXTDOMAIN);
+                    return '<div id="restricted-content-wrapper">' . esc_html($message) . '</div>';
+                }, 999);
+
+                // Also hide the title if desired (optional - keeps page structure)
+                return;
+            } else {
+                // wp_die - full page takeover
+                wp_die(
+                    '<h1>' . esc_html__('Restricted Content', WPE_RM_TEXTDOMAIN) . '</h1>' .
+                    '<p>' . esc_html($message) . '</p>',
+                    esc_html__('Access Denied', WPE_RM_TEXTDOMAIN),
+                    ['response' => 403, 'back_link' => true]
+                );
+            }
         }
     }
 
@@ -522,6 +608,8 @@ final class RestrictionsMetabox {
                 'roles' => get_post_meta($post_id, '_wpe_rm_required_roles', true),
                 'action_type' => get_post_meta($post_id, '_wpe_rm_action_type', true),
                 'message' => get_post_meta($post_id, '_wpe_rm_message', true),
+                'message_type' => get_post_meta($post_id, '_wpe_rm_message_type', true),
+                'http_code' => get_post_meta($post_id, '_wpe_rm_http_code', true),
                 'redirect_url' => get_post_meta($post_id, '_wpe_rm_redirect_url', true),
             ];
         }
@@ -543,6 +631,8 @@ final class RestrictionsMetabox {
                         'roles' => get_post_meta($parent_id, '_wpe_rm_required_roles', true),
                         'action_type' => get_post_meta($parent_id, '_wpe_rm_action_type', true),
                         'message' => get_post_meta($parent_id, '_wpe_rm_message', true),
+                        'message_type' => get_post_meta($parent_id, '_wpe_rm_message_type', true),
+                        'http_code' => get_post_meta($parent_id, '_wpe_rm_http_code', true),
                         'redirect_url' => get_post_meta($parent_id, '_wpe_rm_redirect_url', true),
                     ];
                 }
