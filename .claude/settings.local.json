@@ -37,7 +37,9 @@
       "Bash(updater/PluginUpdater_raw.php)",
       "Bash(dir /s /b *select2* 2)",
       "Bash(nul)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\Alan.Blair\\Local Sites\\bricks-playground\\app\\public\\wp-content\\plugins\\wpe-role-manager\\create-plugin-zip.ps1\")"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:\\Users\\Alan.Blair\\Local Sites\\bricks-playground\\app\\public\\wp-content\\plugins\\wpe-role-manager\\create-plugin-zip.ps1\")",
+      "WebSearch",
+      "WebFetch(domain:developers.elementor.com)"
     ],
     "deny": [],
     "ask": []

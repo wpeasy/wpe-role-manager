@@ -18,16 +18,18 @@ defined('ABSPATH') || exit;
  */
 final class Elementor {
     /**
+     * Track which elements have had controls added to prevent duplicates.
+     *
+     * @var array
+     */
+    private static array $controls_added = [];
+
+    /**
      * Initialize the integration.
      *
      * @return void
      */
     public static function init(): void {
-        // Check if Elementor is active
-        if (!did_action('elementor/loaded')) {
-            return;
-        }
-
         // Check if feature is enabled in settings
         $settings = get_option('wpe_rm_settings', []);
         $enabled = $settings['enable_elementor_conditions'] ?? true;
@@ -36,11 +38,19 @@ final class Elementor {
             return;
         }
 
-        // Add controls to elements
-        add_action('elementor/element/common/_section_style/after_section_end', [self::class, 'add_controls'], 10, 2);
-        add_action('elementor/element/section/section_advanced/after_section_end', [self::class, 'add_controls'], 10, 2);
-        add_action('elementor/element/container/section_layout/after_section_end', [self::class, 'add_controls'], 10, 2);
-        add_action('elementor/element/column/section_advanced/after_section_end', [self::class, 'add_controls'], 10, 2);
+        // Wait for Elementor to initialize
+        add_action('elementor/init', [self::class, 'register_hooks']);
+    }
+
+    /**
+     * Register Elementor hooks after Elementor is initialized.
+     *
+     * @return void
+     */
+    public static function register_hooks(): void {
+        // Use the generic hook that fires for ALL sections on ALL elements
+        // This is more compatible with Editor V4
+        add_action('elementor/element/after_section_end', [self::class, 'maybe_add_controls'], 10, 3);
 
         // Filter widget rendering on frontend
         add_filter('elementor/frontend/widget/should_render', [self::class, 'should_render_widget'], 10, 2);
@@ -50,6 +60,50 @@ final class Elementor {
 
         // Add editor styles
         add_action('elementor/editor/after_enqueue_styles', [self::class, 'enqueue_editor_styles']);
+    }
+
+    /**
+     * Maybe add controls to element (prevents duplicates).
+     *
+     * @param \Elementor\Element_Base $element    The element.
+     * @param string                  $section_id The section ID.
+     * @param array                   $args       Arguments.
+     * @return void
+     */
+    public static function maybe_add_controls($element, $section_id, $args): void {
+        // Get unique element identifier for this specific element instance
+        $element_id = $element->get_unique_name();
+
+        // Prevent duplicate controls for this element instance
+        if (isset(self::$controls_added[$element_id])) {
+            return;
+        }
+
+        // Only add after certain sections to ensure it appears at the end
+        // We track all sections and add controls after the last known "style" related section
+        $style_sections = [
+            '_section_style',           // Widgets (classic)
+            'section_advanced',         // Sections, columns
+            'section_layout',           // Containers
+            'section_effects',          // V4 editor - Effects section
+            '_section_responsive',      // Responsive section
+            'section_custom_css',       // Custom CSS section
+            '_section_transform',       // Transform section
+            'section_transform',        // Transform section (alt)
+            'section_motion_effects',   // Motion effects
+            '_section_background',      // Background section
+            'section_background',       // Background section (alt)
+        ];
+
+        // Check if this is a style/advanced section
+        if (!in_array($section_id, $style_sections, true)) {
+            return;
+        }
+
+        self::$controls_added[$element_id] = true;
+
+        // Add our controls section
+        self::add_controls($element, $args);
     }
 
     /**
