@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7-beta] - 2025-11-23
+
+### Added
+
+- **Block Capability Conditions**
+  - Add role/capability-based visibility conditions to ALL Gutenberg blocks
+  - New "Capability Conditions" panel in block inspector sidebar
+  - Toggle to enable/disable conditions per block
+  - Condition type: Roles or Capabilities
+  - Condition mode: Has or Has Not (show/hide logic)
+  - Multi-select using WordPress FormTokenField component (typeahead search)
+  - Includes "guest" pseudo-role for logged-out users
+  - "Conditional" badge displayed on blocks with conditions enabled
+  - Dashed outline around conditional blocks in editor
+  - Frontend filtering hides/shows blocks based on user roles/capabilities
+  - Global setting to enable/disable feature (Settings → Features)
+
+### Changed
+
+- **License Enforcement**
+  - Plugin now shows "License Required" page when license is not activated
+  - Blocks access to all features except Instructions page
+  - Clear call-to-action buttons: "Activate License" and "Get License"
+
+### Fixed
+
+- **License System**
+  - Fixed type error on fresh install (array returned instead of object)
+  - Fixed dev override key not working (missing constant)
+  - Fixed getInstance() called before register() error
+  - License page now visible on local/dev sites
+
+### Technical
+
+- **New Files**:
+  - `src/Blocks/ConditionalVisibility.php` - Frontend render filtering and editor asset enqueuing
+  - `assets/js/block-conditions.js` - Block editor controls using WordPress components
+- **Settings**: Added `enable_block_conditions` setting (default: true)
+- **Block Attributes**: `wpeRmConditionsEnabled`, `wpeRmConditionType`, `wpeRmConditionMode`, `wpeRmConditionValues`
+
 ## [0.1.6-beta] - 2025-11-22
 
 ### Added
