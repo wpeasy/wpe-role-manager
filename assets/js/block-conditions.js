@@ -95,7 +95,7 @@
                     el(
                         PanelBody,
                         {
-                            title: __('Visibility Conditions', 'wp-easy-role-manager'),
+                            title: __('Capability Conditions', 'wp-easy-role-manager'),
                             initialOpen: wpeRmConditionsEnabled,
                             icon: 'visibility',
                         },

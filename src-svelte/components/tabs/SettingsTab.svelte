@@ -325,14 +325,14 @@ function isPostTypeEnabled(postType) {
         </div>
       </div>
 
-      <!-- Block Visibility Conditions -->
+      <!-- Block Capability Conditions -->
       <div class="wpea-card">
-        <h3 class="wpea-heading wpea-heading--sm">Block Visibility Conditions</h3>
+        <h3 class="wpea-heading wpea-heading--sm">Block Capability Conditions</h3>
 
         <div class="wpea-stack wpea-stack--sm">
           <div class="wpea-alert wpea-alert--info">
             <p><strong>What does this do?</strong></p>
-            <p>Adds a "Visibility Conditions" panel to every Gutenberg block, allowing you to show or hide blocks based on user roles or capabilities.</p>
+            <p>Adds a "Capability Conditions" panel to every Gutenberg block, allowing you to show or hide blocks based on user roles or capabilities.</p>
             <p style="margin-top: var(--wpea-space--xs);"><strong>Features:</strong></p>
             <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
               <li>Control block visibility by user roles or capabilities</li>
@@ -348,13 +348,13 @@ function isPostTypeEnabled(postType) {
               bind:checked={settings.enableBlockConditions}
               onchange={saveSettings}
             />
-            <span>Enable Block Visibility Conditions</span>
+            <span>Enable Block Capability Conditions</span>
           </label>
 
           {#if settings.enableBlockConditions}
             <div class="wpea-alert wpea-alert--success">
               <p><strong>✓ Block Conditions Enabled</strong></p>
-              <p>You'll find a "Visibility Conditions" panel in the block sidebar when editing posts/pages.</p>
+              <p>You'll find a "Capability Conditions" panel in the block sidebar when editing posts/pages.</p>
             </div>
           {/if}
         </div>
