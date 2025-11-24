@@ -23,6 +23,12 @@ let settings = $state({
   restrictionsEnabledPostTypes: ['page'], // Array of post type slugs
   enableBlockConditions: true, // Enable block visibility conditions
   enableElementorConditions: true, // Enable Elementor visibility conditions
+  enableBricksConditions: true, // Enable Bricks Builder conditions
+});
+
+let pluginStatus = $state({
+  elementorActive: false,
+  bricksActive: false,
 });
 
 // Load settings on mount
@@ -67,6 +73,10 @@ async function fetchSettings() {
       settings.revisionRetention = response.settings.revision_retention || 300;
       settings.colorScheme = response.settings.color_scheme || 'auto';
       settings.compactMode = response.settings.compact_mode || false;
+      // Feature toggles - default to true if not set
+      settings.enableBlockConditions = response.settings.enable_block_conditions ?? true;
+      settings.enableElementorConditions = response.settings.enable_elementor_conditions ?? true;
+      settings.enableBricksConditions = response.settings.enable_bricks_conditions ?? true;
 
       // Handle both old and new format
       if (response.settings.restrictions_enabled_post_types) {
@@ -77,6 +87,11 @@ async function fetchSettings() {
       } else {
         settings.restrictionsEnabledPostTypes = ['page']; // Default to page only
       }
+    }
+    // Plugin status
+    if (response.plugin_status) {
+      pluginStatus.elementorActive = response.plugin_status.elementor_active || false;
+      pluginStatus.bricksActive = response.plugin_status.bricks_active || false;
     }
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -97,6 +112,9 @@ async function saveSettings() {
         color_scheme: settings.colorScheme,
         compact_mode: settings.compactMode,
         restrictions_enabled_post_types: settings.restrictionsEnabledPostTypes,
+        enable_block_conditions: settings.enableBlockConditions,
+        enable_elementor_conditions: settings.enableElementorConditions,
+        enable_bricks_conditions: settings.enableBricksConditions,
       }),
     });
     store.showSaved();
@@ -197,14 +215,17 @@ function isPostTypeEnabled(postType) {
         </div>
 
         <div class="wpea-field">
-          <label class="wpea-control">
-            <input
-              type="checkbox"
-              bind:checked={settings.compactMode}
-              onchange={saveSettings}
-            />
+          <div class="wpea-cluster wpea-cluster--xs" style="align-items: center;">
+            <label class="wpea-switch wpea-switch--sm">
+              <input
+                type="checkbox"
+                bind:checked={settings.compactMode}
+                onchange={saveSettings}
+              />
+              <span class="wpea-switch__slider"></span>
+            </label>
             <span>Compact Mode</span>
-          </label>
+          </div>
           <p class="wpea-help">Reduces font sizes, spacing, and padding throughout the interface, especially in tables. Useful for viewing more data on screen.</p>
         </div>
       </div>
@@ -218,14 +239,17 @@ function isPostTypeEnabled(postType) {
         <h3 class="wpea-heading wpea-heading--sm">Security Settings</h3>
 
         <div class="wpea-stack wpea-stack--sm">
-          <label class="wpea-control">
-            <input
-              type="checkbox"
-              bind:checked={settings.allowCoreCapAssignment}
-              onchange={saveSettings}
-            />
+          <div class="wpea-cluster" style="justify-content: space-between; align-items: center;">
             <span>Allow assigning dangerous capabilities to roles</span>
-          </label>
+            <label class="wpea-switch">
+              <input
+                type="checkbox"
+                bind:checked={settings.allowCoreCapAssignment}
+                onchange={saveSettings}
+              />
+              <span class="wpea-switch__slider"></span>
+            </label>
+          </div>
 
           <div class="wpea-alert wpea-alert--warning">
             <p><strong>Security Warning:</strong> Enabling this option allows you to assign dangerous WordPress capabilities to roles. This includes capabilities that can lead to code execution, privilege escalation, or complete site takeover:</p>
@@ -248,14 +272,17 @@ function isPostTypeEnabled(postType) {
         </div>
 
         <div class="wpea-stack wpea-stack--sm" style="margin-top: var(--wpea-space--md); padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
-          <label class="wpea-control">
-            <input
-              type="checkbox"
-              bind:checked={settings.allowExternalDeletion}
-              onchange={saveSettings}
-            />
+          <div class="wpea-cluster" style="justify-content: space-between; align-items: center;">
             <span>Allow deletion of external roles and capabilities</span>
-          </label>
+            <label class="wpea-switch">
+              <input
+                type="checkbox"
+                bind:checked={settings.allowExternalDeletion}
+                onchange={saveSettings}
+              />
+              <span class="wpea-switch__slider"></span>
+            </label>
+          </div>
 
           <div class="wpea-alert wpea-alert--info">
             <p><strong>What are external roles and capabilities?</strong></p>
@@ -280,126 +307,95 @@ function isPostTypeEnabled(postType) {
     <div class="wpea-stack">
       <div class="wpea-card">
         <h3 class="wpea-heading wpea-heading--sm">Content Restrictions</h3>
+        <p class="wpea-help">Enable the Content Restrictions metabox for post types. See <strong>Instructions</strong> tab for details.</p>
 
-        <div class="wpea-stack wpea-stack--sm">
-          <div class="wpea-alert wpea-alert--info">
-            <p><strong>What does this do?</strong></p>
-            <p>Enable the "Content Restrictions" metabox for specific post types. This allows you to restrict access to individual content items based on user capabilities or roles.</p>
-            <p style="margin-top: var(--wpea-space--xs);"><strong>Features:</strong></p>
-            <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
-              <li>Enable/disable restrictions per post</li>
-              <li>Filter by capabilities or roles</li>
-              <li>Include child pages in restrictions</li>
-              <li>Choose to show an access denied message or redirect to another URL</li>
-            </ul>
-          </div>
-
-          <div style="margin-top: var(--wpea-space--md);">
-            <h4 class="wpea-heading wpea-heading--sm">Enable Restrictions for Post Types:</h4>
-            <p class="wpea-help" style="margin-bottom: var(--wpea-space--sm);">Toggle which post types should have the Content Restrictions metabox available on their edit screens.</p>
-
-            <div class="wpea-stack wpea-stack--xs">
-              {#each postTypes as postType}
-                <label class="wpea-control">
-                  <input
-                    type="checkbox"
-                    checked={isPostTypeEnabled(postType.name)}
-                    onchange={() => togglePostTypeRestriction(postType.name)}
-                  />
-                  <span>{postType.label}</span>
-                </label>
-              {/each}
-
-              {#if postTypes.length === 0}
-                <p class="wpea-text-muted">Loading post types...</p>
-              {/if}
+        <div class="wpea-stack wpea-stack--xs" style="margin-top: var(--wpea-space--sm);">
+          {#each postTypes as postType}
+            <div class="wpea-cluster wpea-cluster--xs" style="align-items: center;">
+              <label class="wpea-switch wpea-switch--sm">
+                <input
+                  type="checkbox"
+                  checked={isPostTypeEnabled(postType.name)}
+                  onchange={() => togglePostTypeRestriction(postType.name)}
+                />
+                <span class="wpea-switch__slider"></span>
+              </label>
+              <span>{postType.label}</span>
             </div>
-          </div>
+          {/each}
 
-          {#if settings.restrictionsEnabledPostTypes.length > 0}
-            <div class="wpea-alert wpea-alert--success" style="margin-top: var(--wpea-space--md);">
-              <p><strong>✓ Restrictions Metabox Enabled</strong></p>
-              <p>The "Content Restrictions" metabox is now available for: <strong>{settings.restrictionsEnabledPostTypes.join(', ')}</strong></p>
-              <p style="margin-top: var(--wpea-space--xs);">You can configure per-post restrictions directly from the edit page.</p>
-            </div>
+          {#if postTypes.length === 0}
+            <p class="wpea-text-muted">Loading post types...</p>
           {/if}
         </div>
       </div>
 
       <!-- Block Capability Conditions -->
       <div class="wpea-card">
-        <h3 class="wpea-heading wpea-heading--sm">Block Capability Conditions</h3>
-
-        <div class="wpea-stack wpea-stack--sm">
-          <div class="wpea-alert wpea-alert--info">
-            <p><strong>What does this do?</strong></p>
-            <p>Adds a "Capability Conditions" panel to every Gutenberg block, allowing you to show or hide blocks based on user roles or capabilities.</p>
-            <p style="margin-top: var(--wpea-space--xs);"><strong>Features:</strong></p>
-            <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
-              <li>Control block visibility by user roles or capabilities</li>
-              <li>Show blocks to users who have (or don't have) specific roles/caps</li>
-              <li>Blocks with conditions are marked with a "Conditional" badge in the editor</li>
-              <li>Works with all core and custom Gutenberg blocks</li>
-            </ul>
-          </div>
-
-          <label class="wpea-control">
+        <div class="wpea-cluster" style="justify-content: space-between; align-items: center;">
+          <h3 class="wpea-heading wpea-heading--sm" style="margin: 0;">Block Editor (Gutenberg) Integration</h3>
+          <label class="wpea-switch">
             <input
               type="checkbox"
               bind:checked={settings.enableBlockConditions}
               onchange={saveSettings}
             />
-            <span>Enable Block Capability Conditions</span>
+            <span class="wpea-switch__slider"></span>
           </label>
-
-          {#if settings.enableBlockConditions}
-            <div class="wpea-alert wpea-alert--success">
-              <p><strong>✓ Block Conditions Enabled</strong></p>
-              <p>You'll find a "Capability Conditions" panel in the block sidebar when editing posts/pages.</p>
-            </div>
-          {/if}
         </div>
+        <p class="wpea-help" style="margin-top: var(--wpea-space--xs);">Add capability conditions to Gutenberg blocks. See <strong>Instructions</strong> tab for details.</p>
       </div>
 
-      <!-- Elementor Capability Conditions -->
+      <!-- Elementor Integration -->
       <div class="wpea-card">
-        <h3 class="wpea-heading wpea-heading--sm">Elementor Capability Conditions</h3>
-
-        <div class="wpea-stack wpea-stack--sm">
-          <div class="wpea-alert wpea-alert--info">
-            <p><strong>What does this do?</strong></p>
-            <p>Adds a "Capability Conditions" section to every Elementor widget, section, container, and column.</p>
-            <p style="margin-top: var(--wpea-space--xs);"><strong>Features:</strong></p>
-            <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
-              <li>Control element visibility by user roles or capabilities</li>
-              <li>Show elements to users who have (or don't have) specific roles/caps</li>
-              <li>Available in the Advanced tab of every element</li>
-              <li>Works with Elementor Free (no Pro required)</li>
-            </ul>
-          </div>
-
-          <div class="wpea-alert wpea-alert--warning">
-            <p><strong>ℹ️ Editor V4 Support (Beta)</strong></p>
-            <p>This feature supports both the <strong>Classic Editor (V3)</strong> and <strong>Editor V4 (Alpha)</strong>.</p>
-            <p style="margin-top: var(--wpea-space--xs);">V4 support is experimental as V4's API is still in Alpha. If controls don't appear, try deactivating V4: Elementor → Settings → Editor V4 tab → Deactivate</p>
-          </div>
-
-          <label class="wpea-control">
-            <input
-              type="checkbox"
-              bind:checked={settings.enableElementorConditions}
-              onchange={saveSettings}
-            />
-            <span>Enable Elementor Capability Conditions</span>
-          </label>
-
-          {#if settings.enableElementorConditions}
-            <div class="wpea-alert wpea-alert--success">
-              <p><strong>✓ Elementor Conditions Enabled</strong></p>
-              <p>You'll find a "Capability Conditions" section in the Advanced tab when editing Elementor elements.</p>
-            </div>
+        <div class="wpea-cluster" style="justify-content: space-between; align-items: center;">
+          <h3 class="wpea-heading wpea-heading--sm" style="margin: 0;">Elementor Integration</h3>
+          {#if pluginStatus.elementorActive}
+            <label class="wpea-switch">
+              <input
+                type="checkbox"
+                bind:checked={settings.enableElementorConditions}
+                onchange={saveSettings}
+              />
+              <span class="wpea-switch__slider"></span>
+            </label>
+          {:else}
+            <span class="wpea-badge wpea-badge--muted">Not Installed</span>
           {/if}
         </div>
+        {#if pluginStatus.elementorActive}
+          <p class="wpea-help" style="margin-top: var(--wpea-space--xs);">Add capability conditions to Elementor elements. See <strong>Instructions</strong> tab for details.</p>
+          <div class="wpea-alert wpea-alert--warning" style="margin-top: var(--wpea-space--sm);">
+            <p><strong>ℹ️ Editor V4 Support (Beta)</strong></p>
+            <p>Supports both <strong>Classic Editor (V3)</strong> and <strong>Editor V4 (Alpha)</strong>. V4 support is experimental.</p>
+          </div>
+        {:else}
+          <p class="wpea-help wpea-help--muted" style="margin-top: var(--wpea-space--xs);">Elementor is not active. Install and activate Elementor to use this feature.</p>
+        {/if}
+      </div>
+
+      <!-- Bricks Builder Integration -->
+      <div class="wpea-card">
+        <div class="wpea-cluster" style="justify-content: space-between; align-items: center;">
+          <h3 class="wpea-heading wpea-heading--sm" style="margin: 0;">Bricks Builder Integration</h3>
+          {#if pluginStatus.bricksActive}
+            <label class="wpea-switch">
+              <input
+                type="checkbox"
+                bind:checked={settings.enableBricksConditions}
+                onchange={saveSettings}
+              />
+              <span class="wpea-switch__slider"></span>
+            </label>
+          {:else}
+            <span class="wpea-badge wpea-badge--muted">Not Installed</span>
+          {/if}
+        </div>
+        {#if pluginStatus.bricksActive}
+          <p class="wpea-help" style="margin-top: var(--wpea-space--xs);">Add capability conditions to Bricks Builder elements. See <strong>Instructions</strong> tab for details.</p>
+        {:else}
+          <p class="wpea-help wpea-help--muted" style="margin-top: var(--wpea-space--xs);">Bricks Builder is not active. Install and activate Bricks to use this feature.</p>
+        {/if}
       </div>
     </div>
   {/if}

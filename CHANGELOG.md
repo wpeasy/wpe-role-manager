@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9-beta] - 2025-11-24
+
+### Added
+
+- **Bricks Builder Canvas Indicator**
+  - Elements with Role Manager conditions now show 🔒 icon in Structure panel
+  - Visual indicator for capability-based visibility conditions
+  - Icon positioned top-right of element with pointer-events disabled
+  - Automatic detection of `wpe_rm_` prefixed conditions
+
+### Changed
+
+- **Settings UI Improvements**
+  - All settings now use switch components instead of checkboxes
+  - Content Restrictions post types use small switches (1/3 size) on left of label
+  - Compact Mode setting uses small switch on left of label
+  - Fixed switch CSS conflicts between div-based and checkbox-based implementations
+
+### Fixed
+
+- **Settings Switch Styling**
+  - Fixed switches showing weird outline around circle
+  - Fixed switches not working (checkbox-based switches now properly styled)
+  - Integrations now enabled by default
+  - Added `wpea-switch--sm` variant for compact switch display
+
 ## [0.1.8-beta] - 2025-11-23
 
 ### Added

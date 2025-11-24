@@ -87,8 +87,9 @@ final class Elementor {
         add_filter('elementor/frontend/container/should_render', [self::class, 'should_render_element'], 10, 2);
         add_filter('elementor/frontend/column/should_render', [self::class, 'should_render_element'], 10, 2);
 
-        // Add editor styles
+        // Add editor styles and scripts
         add_action('elementor/editor/after_enqueue_styles', [self::class, 'enqueue_editor_styles']);
+        add_action('elementor/editor/before_enqueue_scripts', [self::class, 'enqueue_editor_scripts']);
     }
 
     /**
@@ -571,6 +572,114 @@ final class Elementor {
             .elementor-control-wpe_rm_condition_info {
                 margin-top: -10px;
             }
+            /* Navigator indicator for capability conditions */
+            .elementor-navigator__element__indicator--wpe-rm-conditions {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 16px;
+                height: 16px;
+                border-radius: 3px;
+                background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+                color: #fff;
+                font-size: 10px;
+                font-weight: bold;
+                cursor: help;
+            }
+            .elementor-navigator__element__indicator--wpe-rm-conditions:hover {
+                background: linear-gradient(135deg, #a569bd 0%, #9b59b6 100%);
+            }
+        ');
+    }
+
+    /**
+     * Enqueue editor scripts for canvas preview indicators.
+     *
+     * @return void
+     */
+    public static function enqueue_editor_scripts(): void {
+        add_action('elementor/editor/after_enqueue_scripts', [self::class, 'enqueue_canvas_indicator_script']);
+    }
+
+    /**
+     * Enqueue canvas indicator script with inline styles.
+     *
+     * @return void
+     */
+    public static function enqueue_canvas_indicator_script(): void {
+        wp_add_inline_script('elementor-editor', '
+            jQuery(window).on("elementor:init", function() {
+                var stylesInjected = false;
+
+                function injectStyles(doc) {
+                    if (!doc) return;
+                    if (doc.getElementById("wpe-rm-conditions-styles")) return;
+
+                    var style = doc.createElement("style");
+                    style.id = "wpe-rm-conditions-styles";
+                    style.textContent = ".wpe-rm-has-conditions { position: relative; outline: 2px dashed rgba(155, 89, 182, 0.5) !important; outline-offset: 2px; transition: outline-color 0.2s ease; }" +
+                        ".wpe-rm-has-conditions:hover { outline-color: rgba(155, 89, 182, 1) !important; }" +
+                        ".wpe-rm-has-conditions::after { content: attr(data-wpe-rm-badge); position: absolute; top: 0; right: 0; background: linear-gradient(135deg, rgba(155, 89, 182, 0.5) 0%, rgba(142, 68, 173, 0.5) 100%); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 0 0 0 8px; z-index: 9999; pointer-events: none; font-family: sans-serif; transition: background 0.2s ease; }" +
+                        ".wpe-rm-has-conditions:hover::after { background: linear-gradient(135deg, rgba(155, 89, 182, 1) 0%, rgba(142, 68, 173, 1) 100%); }";
+                    doc.head.appendChild(style);
+                }
+
+                function hasConditionsEnabled(model) {
+                    if (!model || !model.get) return false;
+                    var settings = model.get("settings");
+                    if (!settings || !settings.get) return false;
+                    var enabled = settings.get("wpe_rm_conditions_enabled");
+                    return enabled === "yes" || enabled === true;
+                }
+
+                function updateCanvasIndicators() {
+                    if (!elementor.elements) return;
+
+                    var iframe = document.getElementById("elementor-preview-iframe");
+                    if (!iframe || !iframe.contentDocument) return;
+
+                    injectStyles(iframe.contentDocument);
+
+                    function processModel(model) {
+                        var id = model.get("id");
+                        if (!id) return;
+
+                        var el = iframe.contentDocument.querySelector("[data-id=\"" + id + "\"]");
+                        if (!el) return;
+
+                        if (hasConditionsEnabled(model)) {
+                            el.classList.add("wpe-rm-has-conditions");
+                            el.setAttribute("data-wpe-rm-badge", "🔒 Conditional");
+                        } else {
+                            el.classList.remove("wpe-rm-has-conditions");
+                            el.removeAttribute("data-wpe-rm-badge");
+                        }
+
+                        var children = model.get("elements");
+                        if (children && children.models) {
+                            children.models.forEach(processModel);
+                        }
+                    }
+
+                    elementor.elements.models.forEach(processModel);
+                }
+
+                // Listen for settings changes
+                elementor.channels.editor.on("change", function(changedModel) {
+                    if (changedModel && changedModel.changed && "wpe_rm_conditions_enabled" in changedModel.changed) {
+                        setTimeout(updateCanvasIndicators, 100);
+                    }
+                });
+
+                // Update after preview loads
+                elementor.on("preview:loaded", function() {
+                    setTimeout(updateCanvasIndicators, 500);
+                    setTimeout(updateCanvasIndicators, 1500);
+                });
+
+                // Update periodically as fallback
+                setInterval(updateCanvasIndicators, 2000);
+            });
         ');
     }
 }

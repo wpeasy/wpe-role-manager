@@ -36,6 +36,14 @@ final class BricksBuilder {
             return;
         }
 
+        // Check if feature is enabled
+        $settings = get_option('wpe_rm_settings', []);
+        $enabled = $settings['enable_bricks_conditions'] ?? true;
+
+        if (!$enabled) {
+            return;
+        }
+
         // Register custom condition group
         add_filter('bricks/conditions/groups', [self::class, 'register_condition_group'], 10, 1);
 
@@ -49,6 +57,72 @@ final class BricksBuilder {
         add_filter('bricks/dynamic_tags_list', [self::class, 'register_dynamic_tags']);
         add_filter('bricks/dynamic_data/render_tag', [self::class, 'render_dynamic_tag'], 10, 3);
         add_filter('bricks/dynamic_data/render_content', [self::class, 'render_dynamic_content'], 10, 3);
+
+        // Add editor canvas indicators - output script in footer when in builder
+        add_action('wp_footer', [self::class, 'output_builder_scripts'], 100);
+    }
+
+    /**
+     * Output builder scripts for conditional indicators.
+     *
+     * @return void
+     */
+    public static function output_builder_scripts(): void {
+        // Only load in the Bricks builder context
+        if (!function_exists('bricks_is_builder') || !bricks_is_builder()) {
+            return;
+        }
+
+        // Output script directly
+        echo '<script>
+            (function() {
+                // CSS for conditional indicators
+                var style = document.createElement("style");
+                style.textContent = ".wpe-rm-has-condition { position: relative; } .wpe-rm-condition-badge { position: absolute; top: 0; right: 0; transform: translateY(-50%); background: linear-gradient(135deg, rgba(155, 89, 182, 0.8) 0%, rgba(142, 68, 173, 0.8) 100%); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; z-index: 9999; pointer-events: none; }";
+                document.head.appendChild(style);
+
+                function updateConditionIndicators() {
+                    document.querySelectorAll(".wpe-rm-condition-badge").forEach(function(el) { el.remove(); });
+                    document.querySelectorAll(".wpe-rm-has-condition").forEach(function(el) { el.classList.remove("wpe-rm-has-condition"); });
+
+                    if (typeof ADMINBRXC === "undefined" || !ADMINBRXC.vueState?.content) return;
+
+                    var pageElements = ADMINBRXC.vueState.content;
+                    if (!Array.isArray(pageElements)) return;
+
+                    pageElements.forEach(function(element) {
+                        if (!element?.settings?._conditions) return;
+
+                        var conditions = element.settings._conditions;
+                        if (!Array.isArray(conditions)) return;
+
+                        var hasOurCondition = conditions.some(function(group) {
+                            if (!Array.isArray(group)) return false;
+                            return group.some(function(cond) {
+                                return cond.key && cond.key.indexOf("wpe_rm") === 0;
+                            });
+                        });
+
+                        if (hasOurCondition) {
+                            var domEl = document.querySelector("[data-id=\"" + element.id + "\"]");
+                            if (domEl) {
+                                domEl.classList.add("wpe-rm-has-condition");
+                                if (!domEl.querySelector(".wpe-rm-condition-badge")) {
+                                    var badge = document.createElement("span");
+                                    badge.className = "wpe-rm-condition-badge";
+                                    badge.textContent = "🔒";
+                                    domEl.appendChild(badge);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Run after delay and periodically to catch changes
+                setTimeout(updateConditionIndicators, 2000);
+                setInterval(updateConditionIndicators, 3000);
+            })();
+        </script>';
     }
 
     /**

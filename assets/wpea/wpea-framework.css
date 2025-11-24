@@ -610,7 +610,82 @@
     background: var(--wpea-color--primary-t-60); border-color: var(--wpea-color--primary);
   }
   .wpea-switch[aria-checked="true"]::after { transform: translateX(calc(var(--_w) - var(--_h))); }
-  
+
+  /* Switch with checkbox input */
+  label.wpea-switch {
+    display: inline-block;
+    position: relative;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+    flex-shrink: 0;
+    /* Reset inherited div-based switch styles */
+    --_h: auto; --_w: auto;
+    inline-size: 40px;
+    block-size: 22px;
+    background: transparent;
+    border: none;
+  }
+  label.wpea-switch::after {
+    /* Disable the div-based switch knob */
+    content: none;
+  }
+  label.wpea-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  label.wpea-switch .wpea-switch__slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 11px;
+    background: var(--wpea-color--neutral-t-40);
+    border: 1px solid var(--wpea-surface--border);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  label.wpea-switch .wpea-switch__slider::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+  label.wpea-switch input:checked + .wpea-switch__slider {
+    background: var(--wpea-color--primary);
+    border-color: var(--wpea-color--primary);
+  }
+  label.wpea-switch input:checked + .wpea-switch__slider::before {
+    transform: translateX(18px);
+  }
+  label.wpea-switch input:focus + .wpea-switch__slider {
+    box-shadow: 0 0 0 2px var(--wpea-color--primary-t-80);
+  }
+  /* Small switch variant */
+  label.wpea-switch.wpea-switch--sm {
+    width: 28px;
+    height: 16px;
+    inline-size: 28px;
+    block-size: 16px;
+  }
+  label.wpea-switch.wpea-switch--sm .wpea-switch__slider {
+    border-radius: 8px;
+  }
+  label.wpea-switch.wpea-switch--sm .wpea-switch__slider::before {
+    width: 10px;
+    height: 10px;
+    top: 2px;
+    left: 2px;
+  }
+  label.wpea-switch.wpea-switch--sm input:checked + .wpea-switch__slider::before {
+    transform: translateX(12px);
+  }
+
   /* Buttons */
   .wpea-btn {
     --_bg: var(--wpea-color--neutral);

@@ -1433,10 +1433,15 @@ final class Routes {
             'restrictions_enabled_post_types' => ['page'], // Default to page only
             'enable_block_conditions' => true, // Block visibility conditions enabled by default
             'enable_elementor_conditions' => true, // Elementor visibility conditions enabled by default
+            'enable_bricks_conditions' => true, // Bricks Builder conditions enabled by default
         ]);
 
         return new WP_REST_Response([
             'settings' => $settings,
+            'plugin_status' => [
+                'elementor_active' => defined('ELEMENTOR_VERSION'),
+                'bricks_active' => defined('BRICKS_VERSION'),
+            ],
             'success' => true,
         ], 200);
     }
@@ -1480,6 +1485,9 @@ final class Routes {
                 : true,
             'enable_elementor_conditions' => isset($params['enable_elementor_conditions'])
                 ? (bool) $params['enable_elementor_conditions']
+                : true,
+            'enable_bricks_conditions' => isset($params['enable_bricks_conditions'])
+                ? (bool) $params['enable_bricks_conditions']
                 : true,
         ];
 
@@ -1543,6 +1551,9 @@ final class Routes {
         }
         if (isset($params['enable_elementor_conditions'])) {
             $changes[] = sprintf('Elementor visibility conditions: %s', $settings['enable_elementor_conditions'] ? 'enabled' : 'disabled');
+        }
+        if (isset($params['enable_bricks_conditions'])) {
+            $changes[] = sprintf('Bricks Builder conditions: %s', $settings['enable_bricks_conditions'] ? 'enabled' : 'disabled');
         }
 
         if (!empty($changes)) {

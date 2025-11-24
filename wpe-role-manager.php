@@ -3,7 +3,7 @@
  * Plugin Name: WP Easy Role Manager
  * Plugin URI: https://alanblair.co/item/role-and-capability-manager/
  * Description: Easy UI to add, remove, enable, disable WordPress roles. Visualise and assign multiple roles to users. Visualise, add, and remove capabilities on roles. Also visualise the effective capabilities a user has based on their roles.
- * Version: 0.1.8-beta
+ * Version: 0.1.9-beta
  * Requires at least: 6.4
  * Requires PHP: 8.1
  * Author: Alan Blair
@@ -20,7 +20,7 @@
 defined('ABSPATH') || exit;
 
 // Define plugin constants
-define('WPE_RM_VERSION', '0.1.8-beta');
+define('WPE_RM_VERSION', '0.1.9-beta');
 define('WPE_RM_PLUGIN_FILE', __FILE__);
 define('WPE_RM_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WPE_RM_PLUGIN_URL', plugin_dir_url(__FILE__));

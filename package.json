@@ -1,6 +1,6 @@
 {
   "name": "wpe-role-manager",
-  "version": "0.1.8-beta",
+  "version": "0.1.9-beta",
   "description": "WP Easy Role Manager - Svelte 5 Admin SPA",
   "type": "module",
   "scripts": {
