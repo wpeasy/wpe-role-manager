@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-11-29
+
+### 🎉 First Stable Release
+
+This marks the first production-ready release of WP Easy Role Manager. The plugin has reached feature maturity with comprehensive role/capability management, security features, third-party integrations, and extensive documentation.
+
+### Added
+
+- **Production-Ready Status**
+  - Complete feature set for WordPress role and capability management
+  - Stable API for third-party integrations
+  - Comprehensive security features and safeguards
+  - Enterprise-level licensing system with FluentCart integration
+
+### Changed
+
+- **Version Classification**
+  - Transitioned from beta to stable v1.0.0
+  - All core features tested and production-ready
+  - Documentation complete and comprehensive
+
+### Highlights
+
+- Full role and capability management (create, edit, disable, delete)
+- Multi-role assignment for users
+- Content restrictions metabox for pages/posts/CPTs
+- Complete Block Editor (Gutenberg) integration with conditional visibility
+- Bricks Builder integration (conditions, dynamic tags, canvas indicators)
+- Elementor integration (V3 full support, V4 limited support)
+- Import/Export with full backup and restore
+- Complete revision history with rollback functionality
+- Activity logging with filtering and search
+- FluentCart licensing with automatic updates
+- Light/Dark/Auto theme switcher
+- Compact mode for denser UI
+
+### Migration Notes
+
+**Beta to v1.0.0**: This release is fully compatible with all beta versions. No breaking changes. Simply update and continue using the plugin as before.
+
 ## [0.1.9-beta] - 2025-11-24
 
 ### Added
