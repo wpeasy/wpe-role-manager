@@ -5,7 +5,7 @@
 **Namespace:** `WP_Easy\RoleManager`  
 **Constants Prefix:** `WPE_RM_` (e.g., `WPE_RM_PLUGIN_PATH`, `WPE_RM_PLUGIN_URL`, `WPE_RM_VERSION`)  
 **Text Domain (derived):** `wp-easy-role-manager`  
-**Requires:** PHP 8.1+, WordPress 6.4+  
+**Requires:** PHP 8.0+, WordPress 6.0+  
 **Multisite:** Fully compatible; all role/cap operations must respect network context.
 
 ---
