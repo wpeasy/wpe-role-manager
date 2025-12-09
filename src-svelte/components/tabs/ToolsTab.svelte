@@ -7,6 +7,8 @@
  * @package WP_Easy\RoleManager
  */
 
+import { Card, Button, Alert } from '../../lib/index.ts';
+
 let { store } = $props();
 
 // Double opt-in state for reset core roles
@@ -67,15 +69,17 @@ async function confirmResetCoreRoles() {
   </div>
 
   <!-- Reset Core Roles Tool -->
-  <div class="wpea-card">
+  <Card>
+    {#snippet children()}
     <div class="wpea-stack">
       <div>
         <h3 class="wpea-heading wpea-heading--sm">Reset Core Roles</h3>
         <p class="wpea-text-muted">Reset all WordPress core roles (Administrator, Editor, Author, Contributor, Subscriber) to their default capabilities.</p>
       </div>
 
-      <div class="wpea-alert wpea-alert--warning">
-        <p><strong>⚠️ Warning:</strong> This action will reset all core roles to their WordPress default capabilities.</p>
+      <Alert variant="warning">
+        {#snippet children()}
+        <p><strong>Warning:</strong> This action will reset all core roles to their WordPress default capabilities.</p>
         <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
           <li>All core roles will be restored to their default state</li>
           <li>Any custom capabilities added to core roles will be removed</li>
@@ -83,25 +87,18 @@ async function confirmResetCoreRoles() {
           <li>A revision will be saved before resetting, allowing you to restore if needed</li>
         </ul>
         <p style="margin-top: var(--wpea-space--xs);"><strong>Note:</strong> After resetting, you will need to reassign any custom capabilities to core roles that you had previously added.</p>
-      </div>
+        {/snippet}
+      </Alert>
 
       <div>
         {#if pendingReset}
-          <button
-            type="button"
-            class="wpea-btn wpea-btn--danger"
-            onclick={confirmResetCoreRoles}
-          >
-            ✓ Confirm Reset Core Roles
-          </button>
+          <Button variant="danger" onclick={confirmResetCoreRoles}>
+            Confirm Reset Core Roles
+          </Button>
         {:else}
-          <button
-            type="button"
-            class="wpea-btn wpea-btn--danger-outline"
-            onclick={initiateResetCoreRoles}
-          >
+          <Button variant="danger-outline" onclick={initiateResetCoreRoles}>
             Reset Core Roles to Defaults
-          </button>
+          </Button>
         {/if}
 
         {#if pendingReset}
@@ -111,12 +108,15 @@ async function confirmResetCoreRoles() {
         {/if}
       </div>
     </div>
-  </div>
+    {/snippet}
+  </Card>
 
   <!-- Future tools can be added here -->
-  <div class="wpea-card" style="background: var(--wpea-surface--muted); border-style: dashed;">
+  <Card style="background: var(--wpea-surface--muted); border-style: dashed;">
+    {#snippet children()}
     <div style="text-align: center; padding: var(--wpea-space--md);">
       <p class="wpea-text-muted">More tools coming soon...</p>
     </div>
-  </div>
+    {/snippet}
+  </Card>
 </div>

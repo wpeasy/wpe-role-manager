@@ -7,6 +7,9 @@
  * @package WP_Easy\RoleManager
  */
 
+import { onMount } from 'svelte';
+import { Card, Button, Badge, Input, Select } from '../../lib/index.ts';
+
 let { store } = $props();
 
 let revisions = $state([]);
@@ -20,24 +23,21 @@ let searchQuery = $state('');
 let pendingAction = $state(null); // { id, type: 'delete'|'restore', timeout }
 
 // Load revisions on mount
-$effect(() => {
+onMount(() => {
   fetchRevisions();
   fetchFilterOptions();
 });
 
 async function fetchRevisions() {
   try {
-    store.showSaving();
     const params = new URLSearchParams();
     if (filterType) params.append('revision_type', filterType);
     if (filterAction) params.append('action', filterAction);
 
     const response = await store.apiRequest(`/revisions?${params.toString()}`);
     revisions = response.revisions || [];
-    store.showSaved();
   } catch (error) {
     console.error('Error fetching revisions:', error);
-    store.showError();
   }
 }
 
@@ -199,25 +199,23 @@ function getActionBadgeColor(action) {
         <h2 class="wpea-heading wpea-heading--md">Revisions</h2>
         <p class="wpea-text-muted">View and restore previous states of roles, capabilities, and user assignments.</p>
       </div>
-      <button
-        type="button"
-        class="wpea-btn wpea-btn--danger-outline"
+      <Button
+        variant="danger-outline"
         onclick={deleteAllRevisions}
         disabled={revisions.length === 0}
       >
         Clear All Revisions
-      </button>
+      </Button>
     </div>
   </div>
 
   <!-- Filters -->
   <div class="wpea-cluster wpea-cluster--sm" style="justify-content: space-between; flex-wrap: wrap; align-items: center;">
     <div class="wpea-cluster wpea-cluster--sm" style="align-items: center;">
-      <input
+      <Input
         type="search"
         bind:value={searchQuery}
         placeholder="Search revisions..."
-        class="wpea-input"
         style="width: 250px;"
       />
 
@@ -243,18 +241,21 @@ function getActionBadgeColor(action) {
 
   <!-- Revisions List -->
   {#if filteredRevisions.length === 0}
-    <div class="wpea-card" style="text-align: center; padding: var(--wpea-space--xl);">
+    <Card style="text-align: center; padding: var(--wpea-space--xl);">
+      {#snippet children()}
       <p class="wpea-text-muted">No revisions found.</p>
-    </div>
+      {/snippet}
+    </Card>
   {:else}
     <div class="wpea-stack wpea-stack--sm">
       {#each filteredRevisions as revision}
-        <div class="wpea-card">
+        <Card>
+          {#snippet children()}
           <div class="wpea-cluster wpea-cluster--sm" style="justify-content: space-between; align-items: start;">
             <div class="wpea-stack wpea-stack--xs" style="flex: 1;">
               <div class="wpea-cluster wpea-cluster--xs" style="align-items: center;">
-                <span class="wpea-badge wpea-badge--{getTypeBadgeColor(revision.revision_type)}">{revision.revision_type}</span>
-                <span class="wpea-badge wpea-badge--{getActionBadgeColor(revision.action)}">{revision.action}</span>
+                <Badge variant={getTypeBadgeColor(revision.revision_type)}>{revision.revision_type}</Badge>
+                <Badge variant={getActionBadgeColor(revision.action)}>{revision.action}</Badge>
                 <span class="wpea-text-muted" style="font-size: var(--wpea-text--sm);">
                   {formatDateTime(revision.created_at)}
                 </span>
@@ -270,48 +271,45 @@ function getActionBadgeColor(action) {
             <div class="wpea-cluster wpea-cluster--xs">
               <!-- Restore Button -->
               {#if pendingAction?.id === revision.id && pendingAction?.type === 'restore'}
-                <button
-                  type="button"
-                  class="wpea-btn wpea-btn--success"
+                <Button
+                  variant="success"
                   onclick={() => confirmRestore(revision.id)}
                   title="Click again to confirm restore"
                 >
-                  ✓ Confirm Restore
-                </button>
+                  Confirm Restore
+                </Button>
               {:else}
-                <button
-                  type="button"
-                  class="wpea-btn wpea-btn--primary-outline"
+                <Button
+                  variant="primary-outline"
                   onclick={() => initiateRestore(revision.id)}
                   title="Restore this revision"
                 >
-                  ↺ Restore
-                </button>
+                  Restore
+                </Button>
               {/if}
 
               <!-- Delete Button -->
               {#if pendingAction?.id === revision.id && pendingAction?.type === 'delete'}
-                <button
-                  type="button"
-                  class="wpea-btn wpea-btn--danger"
+                <Button
+                  variant="danger"
                   onclick={() => confirmDelete(revision.id)}
                   title="Click again to confirm deletion"
                 >
-                  ✓ Confirm Delete
-                </button>
+                  Confirm Delete
+                </Button>
               {:else}
-                <button
-                  type="button"
-                  class="wpea-btn wpea-btn--danger-outline"
+                <Button
+                  variant="danger-outline"
                   onclick={() => initiateDelete(revision.id)}
                   title="Delete this revision"
                 >
-                  × Delete
-                </button>
+                  Delete
+                </Button>
               {/if}
             </div>
           </div>
-        </div>
+          {/snippet}
+        </Card>
       {/each}
     </div>
   {/if}

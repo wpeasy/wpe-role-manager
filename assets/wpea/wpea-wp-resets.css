@@ -4,7 +4,9 @@
    Wrapped in .wpea for scoped application
    ========================= */
 
+/* Inherit color-scheme from html element and apply background */
 body:has(.wpea){
+  color-scheme: inherit;
   background: var(--wpea-surface--bg);
 }
 

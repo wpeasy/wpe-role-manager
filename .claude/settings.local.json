@@ -42,7 +42,12 @@
       "WebFetch(domain:developers.elementor.com)",
       "Bash(git add:*)",
       "WebFetch(domain:forum.bricksbuilder.io)",
-      "WebFetch(domain:brickslabs.com)"
+      "WebFetch(domain:brickslabs.com)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(for file in Accordion.svelte AdvancedSelect.svelte Alert.svelte Badge.svelte Button.svelte Card.svelte Cluster.svelte DoubleOptInButton.svelte Input.svelte Modal.svelte MultiSelect.svelte Panel.svelte Popover.svelte Radio.svelte Range.svelte Select.svelte Stack.svelte Switch.svelte Table.svelte Tabs.svelte Textarea.svelte Toast.svelte Toggle3State.svelte VerticalTabs.svelte icons.svelte.ts index.ts transitions.ts types.ts)",
+      "Bash(do)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

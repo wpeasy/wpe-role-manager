@@ -10,13 +10,14 @@
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
 import { sanitizeSlug, validateSlug } from '../../lib/utils.js';
+import { Modal, Button, Card, Input, Select, Alert, Badge } from '../../lib/index.ts';
 
 let { store } = $props();
 
 // Local state
 let searchQuery = $state('');
 let selectedRole = $state('all');
-let capabilityTypeFilter = $state('all'); // all, core, external, custom
+let capabilityTypeFilter = $state('all');
 let showAddCapModal = $state(false);
 let newCapability = $state({
   role: '',
@@ -24,8 +25,8 @@ let newCapability = $state({
   autoAddToAdmin: true,
 });
 let capValidation = $state({ valid: true, error: null });
-let sortColumn = $state('capability'); // Default sort by capability
-let sortDirection = $state('asc'); // 'asc' or 'desc'
+let sortColumn = $state('capability');
+let sortDirection = $state('asc');
 
 // Function to toggle sort
 function toggleSort(column) {
@@ -40,12 +41,10 @@ function toggleSort(column) {
 // Filtered and sorted capabilities based on search query, type filter
 let filteredCapabilities = $derived.by(() => {
   const filtered = store.capabilityMatrix.filter(cap => {
-    // Check if capability matches search query
     if (!cap.capability?.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
 
-    // Filter by capability type
     if (capabilityTypeFilter !== 'all') {
       if (capabilityTypeFilter === 'core' && !cap.isCore) {
         return false;
@@ -61,7 +60,6 @@ let filteredCapabilities = $derived.by(() => {
     return true;
   });
 
-  // Sort the filtered results
   return filtered.sort((a, b) => {
     let aVal, bVal;
 
@@ -92,7 +90,6 @@ async function addCapability() {
   try {
     store.showSaving();
 
-    // Add capability to selected role
     await store.apiRequest(`/roles/${newCapability.role}/caps`, {
       method: 'POST',
       body: JSON.stringify({
@@ -100,7 +97,6 @@ async function addCapability() {
       }),
     });
 
-    // If auto-add to admin is enabled and selected role is not administrator, add to administrator too
     if (newCapability.autoAddToAdmin && newCapability.role !== 'administrator') {
       await store.apiRequest(`/roles/administrator/caps`, {
         method: 'POST',
@@ -182,11 +178,10 @@ async function deleteCapability(roleSlug, capability) {
   <!-- Actions Bar -->
   <div class="wpea-cluster wpea-cluster--sm" style="justify-content: space-between; flex-wrap: wrap; align-items: center;">
     <div class="wpea-cluster wpea-cluster--sm" style="align-items: center;">
-      <input
+      <Input
         type="search"
         bind:value={searchQuery}
         placeholder="Search capabilities..."
-        class="wpea-input"
         style="width: 250px;"
       />
 
@@ -239,17 +234,13 @@ async function deleteCapability(roleSlug, capability) {
       </div>
     </div>
 
-    <button
-      type="button"
-      class="wpea-btn wpea-btn--primary"
-      onclick={() => showAddCapModal = true}
-    >
+    <Button variant="primary" onclick={() => showAddCapModal = true}>
       + Add Capability
-    </button>
+    </Button>
   </div>
 
   <!-- Info Alert -->
-  <div class="wpea-alert wpea-alert--success">
+  <Alert variant="success">
     <p>
       <strong>How it works:</strong> Capabilities you manage show colored buttons - click to toggle between
       <strong style="color: var(--wpea-color--success);">Granted</strong> (green) →
@@ -257,10 +248,10 @@ async function deleteCapability(roleSlug, capability) {
       <strong>Unset</strong> (grey) → back to Granted.
       Capabilities from core/external code show ✓ or ✗ (read-only). Click <strong>+</strong> on empty cells to grant new capabilities.
     </p>
-  </div>
+  </Alert>
 
   <!-- Capabilities Matrix -->
-  <div class="wpea-card">
+  <Card>
     {#if filteredCapabilities.length === 0}
       <div style="padding: var(--wpea-space--lg); text-align: center;">
         <p class="wpea-text-muted">No capabilities found.</p>
@@ -294,11 +285,11 @@ async function deleteCapability(roleSlug, capability) {
                 </td>
                 <td style="position: sticky; left: 250px; background: var(--wpea-surface--panel); z-index: 1; width: 100px; min-width: 100px; max-width: 100px;">
                   {#if cap.isCore}
-                    <span class="badge core" style="font-size: var(--wpea-text--2xs);">Core</span>
+                    <Badge class="core" style="font-size: var(--wpea-text--2xs);">Core</Badge>
                   {:else if cap.isExternal}
-                    <span class="badge external" style="font-size: var(--wpea-text--2xs);">External</span>
+                    <Badge class="external" style="font-size: var(--wpea-text--2xs);">External</Badge>
                   {:else}
-                    <span class="badge badge--primary" style="font-size: var(--wpea-text--2xs);">Custom</span>
+                    <Badge variant="primary" style="font-size: var(--wpea-text--2xs);">Custom</Badge>
                   {/if}
                 </td>
                 {#each filteredRoles as role}
@@ -318,45 +309,38 @@ async function deleteCapability(roleSlug, capability) {
                       <!-- Managed by plugin - show toggle button and delete button -->
                       <div style="display: flex; gap: var(--wpea-space--xs); justify-content: center; align-items: center;">
                         {#if isGranted}
-                          <button
-                            type="button"
-                            class="wpea-btn wpea-btn--sm"
+                          <Button
+                            size="sm"
                             style="padding: var(--wpea-space--xs) var(--wpea-space--sm); font-size: var(--wpea-text--xs); min-width: 65px; background: var(--wpea-color--success); color: white;"
                             onclick={() => toggleCapability(role.slug, cap.capability, currentState)}
-                            title="Click to deny"
                           >
                             Granted
-                          </button>
+                          </Button>
                         {:else if isDenied}
-                          <button
-                            type="button"
-                            class="wpea-btn wpea-btn--sm"
+                          <Button
+                            size="sm"
                             style="padding: var(--wpea-space--xs) var(--wpea-space--sm); font-size: var(--wpea-text--xs); min-width: 65px; background: var(--wpea-color--danger); color: white;"
                             onclick={() => toggleCapability(role.slug, cap.capability, currentState)}
-                            title="Click to unset"
                           >
                             Denied
-                          </button>
+                          </Button>
                         {:else}
-                          <button
-                            type="button"
-                            class="wpea-btn wpea-btn--sm"
+                          <Button
+                            size="sm"
                             style="padding: var(--wpea-space--xs) var(--wpea-space--sm); font-size: var(--wpea-text--xs); min-width: 65px; background: var(--wpea-color--neutral-l-6); color: white;"
                             onclick={() => toggleCapability(role.slug, cap.capability, currentState)}
-                            title="Click to grant"
                           >
                             Unset
-                          </button>
+                          </Button>
                         {/if}
-                        <button
-                          type="button"
-                          class="wpea-btn wpea-btn--sm"
-                          style="padding: var(--wpea-space--xs); font-size: var(--wpea-text--xs); background: var(--wpea-color--danger); color: white; min-width: auto;"
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          style="padding: var(--wpea-space--xs); font-size: var(--wpea-text--xs); min-width: auto;"
                           onclick={() => deleteCapability(role.slug, cap.capability)}
-                          title="Delete capability from this role"
                         >
                           ×
-                        </button>
+                        </Button>
                       </div>
                     {:else if canDeleteExternal && (isGranted || isDenied)}
                       <!-- External capability with deletion allowed - show delete button -->
@@ -366,15 +350,14 @@ async function deleteCapability(roleSlug, capability) {
                         {:else}
                           <span style="color: var(--wpea-color--danger); font-size: var(--wpea-text--sm); font-weight: 600;" title="Denied by core/external code">✗</span>
                         {/if}
-                        <button
-                          type="button"
-                          class="wpea-btn wpea-btn--sm"
-                          style="padding: var(--wpea-space--xs); font-size: var(--wpea-text--xs); background: var(--wpea-color--danger); color: white; min-width: auto;"
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          style="padding: var(--wpea-space--xs); font-size: var(--wpea-text--xs); min-width: auto;"
                           onclick={() => deleteCapability(role.slug, cap.capability)}
-                          title="Delete external capability from this role"
                         >
                           ×
-                        </button>
+                        </Button>
                       </div>
                     {:else}
                       <!-- Not managed - read-only or add new -->
@@ -383,15 +366,14 @@ async function deleteCapability(roleSlug, capability) {
                       {:else if isDenied}
                         <span style="color: var(--wpea-color--danger); font-size: var(--wpea-text--sm); font-weight: 600;" title="Denied by core/external code">✗</span>
                       {:else}
-                        <button
-                          type="button"
-                          class="wpea-btn wpea-btn--ghost wpea-btn--sm"
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           style="padding: var(--wpea-space--xs) var(--wpea-space--sm); font-size: var(--wpea-text--xs); min-width: 65px; opacity: 0.4;"
                           onclick={() => toggleCapability(role.slug, cap.capability, currentState)}
-                          title="Click to grant"
                         >
                           +
-                        </button>
+                        </Button>
                       {/if}
                     {/if}
                   </td>
@@ -402,127 +384,92 @@ async function deleteCapability(roleSlug, capability) {
         </table>
       </div>
     {/if}
-  </div>
-
-  <!-- Add Capability Modal -->
-  {#if showAddCapModal}
-    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showAddCapModal = false} onkeydown={(e) => e.key === 'Escape' && (showAddCapModal = false)}>
-      <div class="wpea-card" style="max-width: 500px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
-        <div class="wpea-card__header">
-          <h3 class="wpea-card__title">Add Capability to Role</h3>
-          <button
-            type="button"
-            style="background: none; border: none; padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl); cursor: pointer; color: var(--wpea-surface--text); line-height: 1;"
-            onclick={() => showAddCapModal = false}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div class="wpea-stack">
-          <div class="wpea-field">
-            <label for="cap-role" class="wpea-label">
-              Select Role <span style="color: #d63638;">*</span>
-            </label>
-            <select id="cap-role" bind:value={newCapability.role} class="wpea-select">
-              <option value="">Choose a role...</option>
-              {#each store.roles as role}
-                <option value={role.slug}>{role.name}</option>
-              {/each}
-            </select>
-            <p class="wpea-help">Select any role to add the capability to.</p>
-          </div>
-
-          <div class="wpea-field">
-            <label for="cap-name" class="wpea-label">
-              Capability Name <span style="color: #d63638;">*</span>
-            </label>
-            <input
-              type="text"
-              id="cap-name"
-              bind:value={newCapability.capability}
-              oninput={(e) => {
-                newCapability.capability = sanitizeSlug(e.target.value, 'capability');
-                capValidation = validateSlug(newCapability.capability, 'capability');
-              }}
-              placeholder="e.g., manage_custom_posts"
-              class="wpea-input"
-              class:wpea-input--error={!capValidation.valid}
-              maxlength="191"
-            />
-            {#if !capValidation.valid && newCapability.capability}
-              <p class="wpea-help wpea-help--error">{capValidation.error}</p>
-            {:else}
-              <p class="wpea-help">Enter the capability slug (lowercase, underscores only). Maximum 191 characters.</p>
-            {/if}
-          </div>
-
-          <div class="wpea-field">
-            <label class="wpea-control" style="margin: 0;">
-              <input
-                type="checkbox"
-                bind:checked={newCapability.autoAddToAdmin}
-              />
-              <span>Also add to Administrator role</span>
-            </label>
-            <p class="wpea-help">Automatically grant this capability to the Administrator role as well.</p>
-          </div>
-
-          <div class="wpea-alert wpea-alert--warning">
-            <p>
-              <strong>Note:</strong> You can add capabilities to any role. However, you can only remove
-              capabilities that were created by this plugin. Core and external capabilities cannot be removed.
-            </p>
-          </div>
-        </div>
-
-        <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end; padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
-          <button
-            type="button"
-            class="wpea-btn"
-            onclick={() => showAddCapModal = false}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="wpea-btn wpea-btn--primary"
-            onclick={addCapability}
-            disabled={!newCapability.role || !newCapability.capability || !capValidation.valid}
-          >
-            Add Capability
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
+  </Card>
 </div>
 
-<style>
-/* Modal overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in oklab, var(--wpea-color--black), transparent 40%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100000;
-  padding: var(--wpea-space--md);
-}
+<!-- Add Capability Modal -->
+<Modal bind:open={showAddCapModal} title="Add Capability to Role" onClose={() => showAddCapModal = false}>
+  {#snippet children()}
+    <div class="wpea-stack">
+      <div class="wpea-field">
+        <label for="cap-role" class="wpea-label">
+          Select Role <span style="color: var(--wpea-color--danger);">*</span>
+        </label>
+        <select id="cap-role" bind:value={newCapability.role} class="wpea-select">
+          <option value="">Choose a role...</option>
+          {#each store.roles as role}
+            <option value={role.slug}>{role.name}</option>
+          {/each}
+        </select>
+        <p class="wpea-help">Select any role to add the capability to.</p>
+      </div>
 
+      <div class="wpea-field">
+        <label for="cap-name" class="wpea-label">
+          Capability Name <span style="color: var(--wpea-color--danger);">*</span>
+        </label>
+        <input
+          type="text"
+          id="cap-name"
+          bind:value={newCapability.capability}
+          oninput={(e) => {
+            newCapability.capability = sanitizeSlug(e.target.value, 'capability');
+            capValidation = validateSlug(newCapability.capability, 'capability');
+          }}
+          placeholder="e.g., manage_custom_posts"
+          class="wpea-input"
+          class:wpea-input--error={!capValidation.valid}
+          maxlength="191"
+        />
+        {#if !capValidation.valid && newCapability.capability}
+          <p class="wpea-help wpea-help--error">{capValidation.error}</p>
+        {:else}
+          <p class="wpea-help">Enter the capability slug (lowercase, underscores only). Maximum 191 characters.</p>
+        {/if}
+      </div>
+
+      <div class="wpea-field">
+        <label class="wpea-control" style="margin: 0;">
+          <input
+            type="checkbox"
+            bind:checked={newCapability.autoAddToAdmin}
+          />
+          <span>Also add to Administrator role</span>
+        </label>
+        <p class="wpea-help">Automatically grant this capability to the Administrator role as well.</p>
+      </div>
+
+      <Alert variant="warning">
+        <p>
+          <strong>Note:</strong> You can add capabilities to any role. However, you can only remove
+          capabilities that were created by this plugin. Core and external capabilities cannot be removed.
+        </p>
+      </Alert>
+    </div>
+  {/snippet}
+
+  {#snippet footer()}
+    <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end;">
+      <Button onclick={() => showAddCapModal = false}>Cancel</Button>
+      <Button variant="primary" onclick={addCapability} disabled={!newCapability.role || !newCapability.capability || !capValidation.valid}>
+        Add Capability
+      </Button>
+    </div>
+  {/snippet}
+</Modal>
+
+<style>
 /* Validation states */
 .wpea-input--error {
-  border-color: #d63638;
+  border-color: var(--wpea-color--danger);
 }
 
 .wpea-input--error:focus {
-  border-color: #d63638;
-  box-shadow: 0 0 0 1px #d63638;
+  border-color: var(--wpea-color--danger);
+  box-shadow: 0 0 0 1px var(--wpea-color--danger);
 }
 
 .wpea-help--error {
-  color: #d63638;
+  color: var(--wpea-color--danger);
 }
 </style>

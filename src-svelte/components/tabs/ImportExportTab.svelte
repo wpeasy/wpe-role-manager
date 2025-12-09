@@ -8,6 +8,8 @@
  * @package WP_Easy\RoleManager
  */
 
+import { Card, Button, Alert, Input, Textarea } from '../../lib/index.ts';
+
 let { store } = $props();
 
 let importData = $state('');
@@ -144,14 +146,15 @@ function downloadExport() {
 
   <div class="wpea-grid-2">
     <!-- Export Section -->
-    <div class="wpea-card">
+    <Card>
+      {#snippet children()}
       <h3 class="wpea-heading wpea-heading--sm">Export</h3>
       <p class="wpea-text-muted">Export custom roles or create a complete backup of all custom data.</p>
 
       <div class="wpea-stack">
         <!-- Export Type Selection -->
         <div class="wpea-field">
-          <label class="wpea-label">Export Type:</label>
+          <span class="wpea-label">Export Type:</span>
           <div class="wpea-stack wpea-stack--xs">
             <label class="wpea-control" style="margin: 0;">
               <input
@@ -175,7 +178,8 @@ function downloadExport() {
         </div>
 
         {#if exportType === 'full-backup'}
-          <div class="wpea-alert wpea-alert--info">
+          <Alert variant="info">
+            {#snippet children()}
             <p><strong>Full Backup includes:</strong></p>
             <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
               <li>All custom roles and their configurations</li>
@@ -184,7 +188,8 @@ function downloadExport() {
               <li>Metadata for proper restoration</li>
             </ul>
             <p style="margin-top: var(--wpea-space--xs);"><strong>Core and external data are excluded.</strong></p>
-          </div>
+            {/snippet}
+          </Alert>
         {:else}
           <div class="wpea-field">
             <label class="wpea-control" style="margin: 0;">
@@ -241,50 +246,45 @@ function downloadExport() {
         {/if}
       </div>
 
-      <button
-        type="button"
-        class="wpea-btn wpea-btn--primary"
+      <Button
+        variant="primary"
         onclick={exportRoles}
         disabled={exportType === 'roles' && !exportAllRoles && selectedRoles.length === 0}
       >
         {exportType === 'full-backup' ? 'Create Full Backup' : 'Export Roles'}
-      </button>
+      </Button>
 
       {#if exportData}
         <div class="wpea-stack wpea-stack--sm">
           <div class="wpea-cluster wpea-cluster--sm" style="justify-content: space-between; align-items: center;">
-            <label class="wpea-label">Exported Data:</label>
-            <button
-              type="button"
-              class="wpea-btn wpea-btn--sm"
-              onclick={downloadExport}
-            >
+            <span class="wpea-label">Exported Data:</span>
+            <Button size="sm" onclick={downloadExport}>
               Download JSON
-            </button>
+            </Button>
           </div>
-          <textarea
+          <Textarea
             readonly
             value={exportData}
-            rows="10"
-            class="wpea-textarea"
+            rows={10}
             style="font-family: monospace; font-size: var(--wpea-text--sm);"
-          ></textarea>
+          />
         </div>
       {/if}
-    </div>
+      {/snippet}
+    </Card>
 
     <!-- Import Section -->
-    <div class="wpea-card">
+    <Card>
+      {#snippet children()}
       <h3 class="wpea-heading wpea-heading--sm">Import / Restore</h3>
       <p class="wpea-text-muted">Upload a JSON file or paste JSON data to import custom roles or restore from a full backup.</p>
 
       <div class="wpea-field">
         <label for="import-file" class="wpea-label">Upload JSON file:</label>
-        <input
+        <Input
           id="import-file"
           type="file"
           accept=".json,application/json"
-          class="wpea-input"
           onchange={handleFileUpload}
         />
         <p class="wpea-help">Choose a JSON file exported from this plugin.</p>
@@ -296,36 +296,39 @@ function downloadExport() {
 
       <div class="wpea-field">
         <label for="import-data" class="wpea-label">Paste JSON data:</label>
-        <textarea
+        <Textarea
           id="import-data"
           bind:value={importData}
           placeholder="Paste your JSON data here..."
-          rows="10"
-          class="wpea-textarea"
+          rows={10}
           style="font-family: monospace; font-size: var(--wpea-text--sm);"
-        ></textarea>
+        />
       </div>
 
-      <button
-        type="button"
-        class="wpea-btn wpea-btn--primary"
+      <Button
+        variant="primary"
         onclick={importRoles}
         disabled={!importData.trim()}
       >
         Import / Restore
-      </button>
+      </Button>
 
-      <div class="wpea-alert wpea-alert--success">
+      <Alert variant="success">
+        {#snippet children()}
         <p><strong>Smart Import:</strong> This plugin automatically detects whether you're importing roles only or restoring from a full backup, and handles each appropriately.</p>
-      </div>
+        {/snippet}
+      </Alert>
 
-      <div class="wpea-alert wpea-alert--warning">
+      <Alert variant="warning">
+        {#snippet children()}
         <p>
           <strong>Warning:</strong> Importing will create new custom roles and capabilities.
           Existing roles will not be modified. Full backups will restore all custom data.
           Always backup your data before importing.
         </p>
-      </div>
-    </div>
+        {/snippet}
+      </Alert>
+      {/snippet}
+    </Card>
   </div>
 </div>

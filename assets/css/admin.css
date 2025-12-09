@@ -1,36 +1,19 @@
 /**
  * WP Easy Role Manager - Admin Styles
  *
- * Uses WPEA Framework tokens and classes
+ * Uses WPEA Framework tokens and light-dark() CSS function
  *
  * @package WP_Easy\RoleManager
- * @version 0.0.1-alpha
+ * @version 1.0.0
  */
 
 /* Main Admin Wrapper */
 .wpe-rm-admin {
     margin: var(--wpea-space--lg) var(--wpea-space--lg) 0 0;
-    background: var(--wpea-color--neutral-l-9);
+    background: light-dark(var(--wpea-color--neutral-l-9), var(--wpea-color--neutral-d-9));
     padding: var(--wpea-space--lg);
     border-radius: var(--wpea-radius--md);
     min-height: calc(100vh - 100px);
-}
-
-/* Dark mode app background */
-[data-color-scheme="dark"] .wpe-rm-admin,
-:root:not([data-color-scheme]) .wpe-rm-admin {
-    @media (prefers-color-scheme: dark) {
-        background: var(--wpea-color--neutral-d-9);
-    }
-}
-
-[data-color-scheme="dark"] .wpe-rm-admin {
-    background: var(--wpea-color--neutral-d-9);
-}
-
-/* Legacy support */
-.wpea-dark .wpe-rm-admin {
-    background: var(--wpea-color--neutral-d-9);
 }
 
 /* App Container - minimal WordPress admin compatibility */
@@ -39,25 +22,8 @@
 }
 
 /* Card backgrounds - elevated from app background */
-.wpea-card {
-    background: var(--wpea-color--white);
-}
-
-/* Dark mode card background */
-[data-color-scheme="dark"] .wpea-card,
-:root:not([data-color-scheme]) .wpea-card {
-    @media (prefers-color-scheme: dark) {
-        background: var(--wpea-color--neutral-d-8);
-    }
-}
-
-[data-color-scheme="dark"] .wpea-card {
-    background: var(--wpea-color--neutral-d-8);
-}
-
-/* Legacy support */
-.wpea-dark .wpea-card {
-    background: var(--wpea-color--neutral-d-8);
+.wpe-rm-admin .wpea-card {
+    background: light-dark(var(--wpea-color--white), var(--wpea-color--neutral-d-8));
 }
 
 /* Loading State */
@@ -81,35 +47,24 @@
     flex-shrink: 0;
 }
 
-/* Light mode logo - light-colored logo for dark backgrounds */
-.wpe-rm-logo-light {
-    display: none;
+/* Logo visibility - light logo for dark mode, dark logo for light mode */
+@media (prefers-color-scheme: light) {
+    :root:not([style*="dark"]) .wpe-rm-logo-light { display: none; }
+    :root:not([style*="dark"]) .wpe-rm-logo-dark { display: block; }
 }
 
-[data-color-scheme="dark"] .wpe-rm-logo-light {
-    display: block;
+@media (prefers-color-scheme: dark) {
+    :root:not([style*="light only"]) .wpe-rm-logo-light { display: block; }
+    :root:not([style*="light only"]) .wpe-rm-logo-dark { display: none; }
 }
 
-:root:not([data-color-scheme]) .wpe-rm-logo-light {
-    @media (prefers-color-scheme: dark) {
-        display: block;
-    }
-}
+/* Forced light mode */
+:root[style*="light only"] .wpe-rm-logo-light { display: none !important; }
+:root[style*="light only"] .wpe-rm-logo-dark { display: block !important; }
 
-/* Dark mode logo - dark-colored logo for light backgrounds */
-.wpe-rm-logo-dark {
-    display: block;
-}
-
-[data-color-scheme="dark"] .wpe-rm-logo-dark {
-    display: none;
-}
-
-:root:not([data-color-scheme]) .wpe-rm-logo-dark {
-    @media (prefers-color-scheme: dark) {
-        display: none;
-    }
-}
+/* Forced dark mode */
+:root[style*="dark only"] .wpe-rm-logo-light { display: block !important; }
+:root[style*="dark only"] .wpe-rm-logo-dark { display: none !important; }
 
 /* Badge Component (used in multiple tabs) */
 .badge {
@@ -138,46 +93,32 @@
     opacity: 0.7;
 }
 
-/* Capability cell backgrounds */
+/* Capability cell backgrounds and badge tokens using light-dark() */
 :root {
-    --wpea-cap-granted-bg: var(--wpea-color--success-l-9);
-    --wpea-cap-denied-bg: var(--wpea-color--danger-l-9);
-    --wpea-badge-core-bg: var(--wpea-color--neutral-l-8);
-    --wpea-badge-core-text: var(--wpea-surface--text);
-    --wpea-badge-external-bg: var(--wpea-color--warning-l-9);
-    --wpea-badge-external-text: var(--wpea-color--warning-d-2);
-}
-
-/* Dark mode overrides for capability backgrounds and badges */
-[data-color-scheme="dark"],
-:root:not([data-color-scheme]) {
-    @media (prefers-color-scheme: dark) {
-        --wpea-cap-granted-bg: color-mix(in oklab, var(--wpea-color--success), transparent 75%);
-        --wpea-cap-denied-bg: color-mix(in oklab, var(--wpea-color--danger), transparent 75%);
-        --wpea-badge-core-bg: var(--wpea-color--neutral-d-6);
-        --wpea-badge-core-text: var(--wpea-color--white);
-        --wpea-badge-external-bg: color-mix(in oklab, var(--wpea-color--warning), transparent 65%);
-        --wpea-badge-external-text: var(--wpea-color--warning-l-3);
-    }
-}
-
-[data-color-scheme="dark"] {
-    --wpea-cap-granted-bg: color-mix(in oklab, var(--wpea-color--success), transparent 75%);
-    --wpea-cap-denied-bg: color-mix(in oklab, var(--wpea-color--danger), transparent 75%);
-    --wpea-badge-core-bg: var(--wpea-color--neutral-d-6);
-    --wpea-badge-core-text: var(--wpea-color--white);
-    --wpea-badge-external-bg: color-mix(in oklab, var(--wpea-color--warning), transparent 65%);
-    --wpea-badge-external-text: var(--wpea-color--warning-l-3);
-}
-
-/* Legacy support */
-.wpea-dark {
-    --wpea-cap-granted-bg: color-mix(in oklab, var(--wpea-color--success), transparent 75%);
-    --wpea-cap-denied-bg: color-mix(in oklab, var(--wpea-color--danger), transparent 75%);
-    --wpea-badge-core-bg: var(--wpea-color--neutral-d-6);
-    --wpea-badge-core-text: var(--wpea-color--white);
-    --wpea-badge-external-bg: color-mix(in oklab, var(--wpea-color--warning), transparent 65%);
-    --wpea-badge-external-text: var(--wpea-color--warning-l-3);
+    --wpea-cap-granted-bg: light-dark(
+        var(--wpea-color--success-l-9),
+        color-mix(in oklab, var(--wpea-color--success), transparent 75%)
+    );
+    --wpea-cap-denied-bg: light-dark(
+        var(--wpea-color--danger-l-9),
+        color-mix(in oklab, var(--wpea-color--danger), transparent 75%)
+    );
+    --wpea-badge-core-bg: light-dark(
+        var(--wpea-color--neutral-l-8),
+        var(--wpea-color--neutral-d-6)
+    );
+    --wpea-badge-core-text: light-dark(
+        var(--wpea-surface--text),
+        var(--wpea-color--white)
+    );
+    --wpea-badge-external-bg: light-dark(
+        var(--wpea-color--warning-l-9),
+        color-mix(in oklab, var(--wpea-color--warning), transparent 65%)
+    );
+    --wpea-badge-external-text: light-dark(
+        var(--wpea-color--warning-d-2),
+        var(--wpea-color--warning-l-3)
+    );
 }
 
 /* Compact Mode */
@@ -239,6 +180,39 @@
 
 [data-compact-mode="true"] code {
     font-size: 12px;
+}
+
+[data-compact-mode="true"] .wpea-tabs__tab {
+    padding-block: calc(var(--wpea-space--xs) * 0.7);
+    padding-inline: var(--wpea-space--sm);
+    font-size: var(--wpea-text--sm);
+}
+
+[data-compact-mode="true"] .wpea-tabs__list {
+    gap: var(--wpea-space--xs);
+}
+
+[data-compact-mode="true"] .wpea-tabs__panel {
+    padding-block: var(--wpea-space--sm);
+}
+
+/* Compact mode for Vertical Tabs (Settings sub-tabs) */
+[data-compact-mode="true"] .wpea-vtabs__tab {
+    padding-block: calc(var(--wpea-space--xs) * 0.7);
+    padding-inline: var(--wpea-space--sm);
+    font-size: var(--wpea-text--sm);
+}
+
+[data-compact-mode="true"] .wpea-vtabs__list {
+    gap: var(--wpea-space--xs);
+}
+
+[data-compact-mode="true"] .wpea-vtabs__panel {
+    padding: var(--wpea-space--sm);
+}
+
+[data-compact-mode="true"] .wpea-vtabs__content {
+    padding-inline-start: var(--wpea-space--sm);
 }
 
 /* Table Wrapper with Overflow */
@@ -310,34 +284,20 @@
     background: var(--wpea-scrollbar-thumb-hover);
 }
 
-/* Scrollbar color tokens */
+/* Scrollbar color tokens using light-dark() */
 :root {
-    --wpea-scrollbar-track: var(--wpea-color--neutral-l-9);
-    --wpea-scrollbar-thumb: var(--wpea-color--neutral-l-6);
-    --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-l-5);
-}
-
-/* Dark mode scrollbar colors */
-[data-color-scheme="dark"],
-:root:not([data-color-scheme]) {
-    @media (prefers-color-scheme: dark) {
-        --wpea-scrollbar-track: var(--wpea-color--neutral-d-9);
-        --wpea-scrollbar-thumb: var(--wpea-color--neutral-d-5);
-        --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-d-4);
-    }
-}
-
-[data-color-scheme="dark"] {
-    --wpea-scrollbar-track: var(--wpea-color--neutral-d-9);
-    --wpea-scrollbar-thumb: var(--wpea-color--neutral-d-5);
-    --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-d-4);
-}
-
-/* Legacy support */
-.wpea-dark {
-    --wpea-scrollbar-track: var(--wpea-color--neutral-d-9);
-    --wpea-scrollbar-thumb: var(--wpea-color--neutral-d-5);
-    --wpea-scrollbar-thumb-hover: var(--wpea-color--neutral-d-4);
+    --wpea-scrollbar-track: light-dark(
+        var(--wpea-color--neutral-l-9),
+        var(--wpea-color--neutral-d-9)
+    );
+    --wpea-scrollbar-thumb: light-dark(
+        var(--wpea-color--neutral-l-6),
+        var(--wpea-color--neutral-d-5)
+    );
+    --wpea-scrollbar-thumb-hover: light-dark(
+        var(--wpea-color--neutral-l-5),
+        var(--wpea-color--neutral-d-4)
+    );
 }
 
 /* WordPress Admin Compatibility */

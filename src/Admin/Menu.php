@@ -212,10 +212,14 @@ final class Menu {
             var scheme = <?php echo json_encode($color_scheme); ?>;
             var compact = <?php echo json_encode($compact_mode); ?>;
 
+            // Apply color-scheme CSS property for light-dark() function
             if (scheme === 'light') {
-                document.documentElement.setAttribute('data-color-scheme', 'light');
+                document.documentElement.style.setProperty('color-scheme', 'light only');
             } else if (scheme === 'dark') {
-                document.documentElement.setAttribute('data-color-scheme', 'dark');
+                document.documentElement.style.setProperty('color-scheme', 'dark only');
+            } else {
+                // Auto - respect OS setting
+                document.documentElement.style.setProperty('color-scheme', 'light dark');
             }
 
             if (compact) {

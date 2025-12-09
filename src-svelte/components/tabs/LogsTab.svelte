@@ -7,7 +7,9 @@
  * @package WP_Easy\RoleManager
  */
 
+import { onMount } from 'svelte';
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+import { Card, Button, Alert, Input } from '../../lib/index.ts';
 
 let { store } = $props();
 
@@ -88,17 +90,26 @@ function applyFilters() {
   }, 300);
 }
 
-// Initialize
-$effect(() => {
+// Track if initial load is done
+let initialized = false;
+
+// Initialize on mount
+onMount(() => {
   fetchLogs();
   fetchActionTypes();
+  // Mark as initialized after a tick
+  setTimeout(() => { initialized = true; }, 100);
 });
 
-// Watch filters
+// Watch filters - only after initialization
 $effect(() => {
-  actionFilter;
-  detailsFilter;
-  applyFilters();
+  // Track these values explicitly
+  const currentActionFilter = actionFilter;
+  const currentDetailsFilter = detailsFilter;
+  // Only run applyFilters after initial mount is complete
+  if (initialized) {
+    applyFilters();
+  }
 });
 </script>
 
@@ -128,27 +139,22 @@ $effect(() => {
 
       <div class="wpea-field" style="flex: 1; max-width: 300px;">
         <label for="details-filter" class="wpea-label">Filter by Details</label>
-        <input
+        <Input
           id="details-filter"
           type="search"
           bind:value={detailsFilter}
           placeholder="Search details, user, or action..."
-          class="wpea-input"
         />
       </div>
     </div>
 
-    <button
-      type="button"
-      class="wpea-btn"
-      onclick={clearLogs}
-      disabled={logs.length === 0}
-    >
+    <Button onclick={clearLogs} disabled={logs.length === 0}>
       Clear All Logs
-    </button>
+    </Button>
   </div>
 
-  <div class="wpea-card">
+  <Card>
+    {#snippet children()}
     {#if loading}
       <div style="padding: var(--wpea-space--lg); text-align: center;">
         <p class="wpea-text-muted">Loading logs...</p>
@@ -195,12 +201,15 @@ $effect(() => {
         </table>
       </div>
     {/if}
-  </div>
+    {/snippet}
+  </Card>
 
-  <div class="wpea-alert wpea-alert--info">
+  <Alert variant="info">
+    {#snippet children()}
     <p>
       <strong>Note:</strong> Activity logs track all changes made to roles, capabilities, and user assignments.
       Up to 500 log entries are stored. Logs are cleared when the plugin is uninstalled.
     </p>
-  </div>
+    {/snippet}
+  </Alert>
 </div>

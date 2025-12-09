@@ -9,6 +9,7 @@
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
 import { sanitizeSlug, validateSlug, generateCapabilityName } from '../../lib/utils.js';
+import { Modal, Button, Card, Input, Select, Alert, Badge } from '../../lib/index.ts';
 
 let { store } = $props();
 
@@ -25,10 +26,10 @@ let newRole = $state({
   copyFrom: '',
 });
 let slugValidation = $state({ valid: true, error: null });
-let addStandardCaps = $state(false); // Toggle for showing standard capabilities option
+let addStandardCaps = $state(false);
 let searchQuery = $state('');
-let sortColumn = $state('name'); // Default sort by name
-let sortDirection = $state('asc'); // 'asc' or 'desc'
+let sortColumn = $state('name');
+let sortDirection = $state('asc');
 
 // Standard capabilities template
 let standardCapabilities = $state({
@@ -62,7 +63,6 @@ let filteredRoles = $derived.by(() => {
     role.slug?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Sort the filtered results
   return filtered.sort((a, b) => {
     let aVal, bVal;
 
@@ -76,7 +76,6 @@ let filteredRoles = $derived.by(() => {
   });
 });
 
-// Handle role creation
 // Reset create role form
 function resetCreateRoleForm() {
   newRole = { slug: '', name: '', copyFrom: '' };
@@ -122,13 +121,11 @@ async function createRole() {
   try {
     store.showSaving();
 
-    // Create the role first
     await store.apiRequest('/roles', {
       method: 'POST',
       body: JSON.stringify(newRole),
     });
 
-    // Add selected standard capabilities if the option is enabled
     const selectedCaps = addStandardCaps
       ? Object.entries(standardCapabilities)
           .filter(([_, enabled]) => enabled)
@@ -137,16 +134,13 @@ async function createRole() {
       : [];
 
     if (selectedCaps.length > 0) {
-      // Add each capability to the newly created role AND administrator
       for (const capability of selectedCaps) {
         try {
-          // Add to the new role (marking it as belonging to this role)
           await store.apiRequest(`/roles/${newRole.slug}/caps`, {
             method: 'POST',
             body: JSON.stringify({ capability, belongs_to: newRole.slug }),
           });
 
-          // Also add to administrator role (marking it as belonging to the new role)
           await store.apiRequest(`/roles/administrator/caps`, {
             method: 'POST',
             body: JSON.stringify({ capability, belongs_to: newRole.slug }),
@@ -160,8 +154,6 @@ async function createRole() {
     await store.fetchRoles();
     await store.fetchCapabilityMatrix();
     store.showSaved();
-
-    // Close modal and reset form
     closeCreateModal();
   } catch (error) {
     console.error('Error creating role:', error);
@@ -201,13 +193,11 @@ function confirmDeleteRole(role) {
 async function deleteRole() {
   if (!roleToDelete) return;
 
-  // Verify confirmation text
   if (deleteConfirmation.toLowerCase() !== 'delete') {
     alert('Please type "delete" to confirm');
     return;
   }
 
-  // If role has users and checkbox not checked, show error
   if (roleToDelete.userCount > 0 && !removeFromUsers) {
     alert('Please check the box to confirm removal from users');
     return;
@@ -216,7 +206,6 @@ async function deleteRole() {
   try {
     store.showSaving();
 
-    // Build query parameters
     const params = new URLSearchParams();
     if (removeFromUsers) {
       params.append('remove_from_users', 'true');
@@ -252,25 +241,20 @@ async function deleteRole() {
   <!-- Actions Bar -->
   <div class="wpea-cluster wpea-cluster--md" style="justify-content: space-between;">
     <div style="flex: 1; max-width: 300px;">
-      <input
+      <Input
         type="search"
         bind:value={searchQuery}
         placeholder="Search roles..."
-        class="wpea-input"
       />
     </div>
 
-    <button
-      type="button"
-      class="wpea-btn wpea-btn--primary"
-      onclick={() => showCreateModal = true}
-    >
+    <Button variant="primary" onclick={() => showCreateModal = true}>
       + Create New Role
-    </button>
+    </Button>
   </div>
 
   <!-- Roles Table -->
-  <div class="wpea-card">
+  <Card>
     {#if filteredRoles.length === 0}
       <div style="padding: var(--wpea-space--lg); text-align: center;">
         <p class="wpea-text-muted">No roles found. {searchQuery ? 'Try a different search term.' : 'Create your first role!'}</p>
@@ -304,18 +288,18 @@ async function deleteRole() {
               </td>
               <td>
                 {#if role.isCore}
-                  <span class="badge core">Core</span>
+                  <Badge class="core">Core</Badge>
                 {:else if role.isExternal}
-                  <span class="badge external">External</span>
+                  <Badge class="external">External</Badge>
                 {:else}
-                  <span class="badge badge--primary">Custom</span>
+                  <Badge variant="primary">Custom</Badge>
                 {/if}
               </td>
               <td>
                 {#if role.disabled}
-                  <span class="badge badge--warning">Disabled</span>
+                  <Badge variant="warning">Disabled</Badge>
                 {:else}
-                  <span class="badge badge--success">Active</span>
+                  <Badge variant="success">Active</Badge>
                 {/if}
               </td>
               <td>
@@ -326,34 +310,17 @@ async function deleteRole() {
                   {#if role.isCore}
                     <span class="wpea-text-muted wpea-text-sm" style="font-style: italic;">Read-only</span>
                   {:else if !role.isExternal}
-                    <!-- Plugin-created custom role -->
-                    <button
-                      type="button"
-                      class="wpea-btn wpea-btn--sm"
-                      onclick={() => toggleRoleStatus(role)}
-                    >
+                    <Button size="sm" onclick={() => toggleRoleStatus(role)}>
                       {role.disabled ? 'Enable' : 'Disable'}
-                    </button>
-                    <button
-                      type="button"
-                      class="wpea-btn wpea-btn--sm"
-                      style="--_bg: var(--wpea-color--neutral-l-7); --_fg: #d63638; --_bg-hover: color-mix(in oklab, #ef4444, transparent 85%);"
-                      onclick={() => confirmDeleteRole(role)}
-                    >
+                    </Button>
+                    <Button size="sm" variant="danger" onclick={() => confirmDeleteRole(role)}>
                       Delete
-                    </button>
+                    </Button>
                   {:else if role.isExternal && store.settings?.allow_external_deletion}
-                    <!-- External role with deletion allowed -->
-                    <button
-                      type="button"
-                      class="wpea-btn wpea-btn--sm"
-                      style="--_bg: var(--wpea-color--neutral-l-7); --_fg: #d63638; --_bg-hover: color-mix(in oklab, #ef4444, transparent 85%);"
-                      onclick={() => confirmDeleteRole(role)}
-                    >
+                    <Button size="sm" variant="danger" onclick={() => confirmDeleteRole(role)}>
                       Delete
-                    </button>
+                    </Button>
                   {:else}
-                    <!-- External role without deletion allowed -->
                     <span class="wpea-text-muted wpea-text-sm" style="font-style: italic;">Managed externally</span>
                   {/if}
                 </div>
@@ -364,362 +331,282 @@ async function deleteRole() {
       </table>
       </div>
     {/if}
-  </div>
-
-  <!-- Create Role Modal -->
-  {#if showCreateModal}
-    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={closeCreateModal} onkeydown={(e) => e.key === 'Escape' && closeCreateModal()}>
-      <div class="wpea-card" style="max-width: 500px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
-        <div class="wpea-card__header">
-          <h3 class="wpea-card__title">Create New Role</h3>
-          <button
-            type="button"
-            class="wpea-btn wpea-btn--ghost wpea-btn--sm"
-            style="padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl);"
-            onclick={closeCreateModal}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div class="wpea-stack">
-          <div class="wpea-field">
-            <label for="role-slug" class="wpea-label">
-              Role Slug <span style="color: #d63638;">*</span>
-            </label>
-            <input
-              type="text"
-              id="role-slug"
-              bind:value={newRole.slug}
-              oninput={(e) => {
-                newRole.slug = sanitizeSlug(e.target.value, 'role');
-                slugValidation = validateSlug(newRole.slug, 'role');
-              }}
-              placeholder="e.g., custom_editor"
-              pattern="[a-z0-9_-]+"
-              class="wpea-input"
-              class:wpea-input--error={!slugValidation.valid}
-              maxlength="20"
-            />
-            {#if !slugValidation.valid && newRole.slug}
-              <p class="wpea-help wpea-help--error">{slugValidation.error}</p>
-            {:else}
-              <p class="wpea-help">Lowercase letters, numbers, underscores, and hyphens only. Maximum 20 characters.</p>
-            {/if}
-          </div>
-
-          <div class="wpea-field">
-            <label for="role-name" class="wpea-label">
-              Role Name <span style="color: #d63638;">*</span>
-            </label>
-            <input
-              type="text"
-              id="role-name"
-              bind:value={newRole.name}
-              placeholder="e.g., Custom Editor"
-              class="wpea-input"
-            />
-          </div>
-
-          <div class="wpea-field">
-            <label for="role-copy-from" class="wpea-label">
-              Copy Capabilities From (Optional)
-            </label>
-            <select id="role-copy-from" bind:value={newRole.copyFrom} class="wpea-select">
-              <option value="">None (empty role)</option>
-              {#each store.roles as role}
-                <option value={role.slug}>{role.name}</option>
-              {/each}
-            </select>
-            <p class="wpea-help">Start with capabilities from an existing role.</p>
-          </div>
-
-          <div class="wpea-field">
-            <label class="wpea-control" style="margin: 0;">
-              <input
-                type="checkbox"
-                bind:checked={addStandardCaps}
-              />
-              <span>Add Standard Capabilities (Optional)</span>
-            </label>
-            <p class="wpea-help">Generate standard WordPress-style capabilities for this role.</p>
-          </div>
-
-          {#if addStandardCaps}
-            <div class="wpea-field">
-              <button
-                type="button"
-                class="wpea-btn"
-                onclick={openStandardCapsModal}
-              >
-                + Select Standard Capabilities
-              </button>
-              <p class="wpea-help">Choose which capabilities to generate for this role.</p>
-            </div>
-          {/if}
-        </div>
-
-        <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end; padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
-          <button
-            type="button"
-            class="wpea-btn"
-            onclick={closeCreateModal}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="wpea-btn wpea-btn--primary"
-            onclick={createRole}
-            disabled={!newRole.slug || !newRole.name || !slugValidation.valid}
-          >
-            Create Role
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
-
-  <!-- Delete Role Confirmation Modal -->
-  {#if showDeleteModal && roleToDelete}
-    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showDeleteModal = false} onkeydown={(e) => e.key === 'Escape' && (showDeleteModal = false)}>
-      <div class="wpea-card" style="max-width: 500px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
-        <div class="wpea-card__header">
-          <h3 class="wpea-card__title">Delete Role: {roleToDelete.name}</h3>
-          <button
-            type="button"
-            style="background: none; border: none; padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl); cursor: pointer; color: var(--wpea-surface--text); line-height: 1;"
-            onclick={() => showDeleteModal = false}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div class="wpea-stack">
-          <div class="wpea-alert wpea-alert--danger">
-            <p>
-              <strong>Warning:</strong> This action cannot be undone. Deleting this role will permanently remove it from your system.
-            </p>
-          </div>
-
-          <p>
-            You are about to delete the role <strong>{roleToDelete.name}</strong> (slug: <code>{roleToDelete.slug}</code>).
-          </p>
-
-          {#if roleToDelete.userCount > 0}
-            <div class="wpea-alert wpea-alert--warning">
-              <p>
-                <strong>This role is assigned to {roleToDelete.userCount} user{roleToDelete.userCount === 1 ? '' : 's'}.</strong><br>
-                Roles assigned to users cannot be deleted unless you remove the role from all users first.
-              </p>
-            </div>
-
-            <div class="wpea-field">
-              <label style="display: flex; align-items: center; gap: var(--wpea-space--sm); cursor: pointer;">
-                <input
-                  type="checkbox"
-                  bind:checked={removeFromUsers}
-                  style="margin: 0; cursor: pointer;"
-                />
-                <span>
-                  I understand that this will remove the role from all {roleToDelete.userCount} user{roleToDelete.userCount === 1 ? '' : 's'} before deleting it
-                  <span style="color: #d63638;">*</span>
-                </span>
-              </label>
-            </div>
-          {/if}
-
-          <div class="wpea-field">
-            <label for="delete-confirm" class="wpea-label">
-              Type <strong>delete</strong> to confirm <span style="color: #d63638;">*</span>
-            </label>
-            <input
-              id="delete-confirm"
-              type="text"
-              bind:value={deleteConfirmation}
-              placeholder="Type 'delete' to confirm"
-              class="wpea-input"
-              autocomplete="off"
-            />
-            <p class="wpea-help">This confirmation is case-insensitive.</p>
-          </div>
-        </div>
-
-        <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end; padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
-          <button
-            type="button"
-            class="wpea-btn"
-            onclick={() => showDeleteModal = false}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="wpea-btn"
-            style="background: var(--wpea-color--danger); color: white;"
-            onclick={deleteRole}
-            disabled={deleteConfirmation.toLowerCase() !== 'delete' || (roleToDelete.userCount > 0 && !removeFromUsers)}
-          >
-            Delete Role
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
-
-  <!-- Standard Capabilities Modal -->
-  {#if showStandardCapsModal}
-    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showStandardCapsModal = false} onkeydown={(e) => e.key === 'Escape' && (showStandardCapsModal = false)}>
-      <div class="wpea-card" style="max-width: 500px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
-        <div class="wpea-card__header">
-          <h3 class="wpea-card__title">Select Standard Capabilities</h3>
-          <button
-            type="button"
-            style="background: none; border: none; padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl); cursor: pointer; color: var(--wpea-surface--text); line-height: 1;"
-            onclick={() => showStandardCapsModal = false}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div class="wpea-stack">
-          <p class="wpea-help">
-            Select which standard capabilities to generate for the role "<strong>{newRole.slug || 'your-role'}</strong>".
-            All are selected by default.
-          </p>
-
-          <div class="wpea-stack wpea-stack--sm">
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.read} />
-              <div>
-                <div><code>read_{newRole.slug || 'slug'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Read capability for this resource</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.read_private} />
-              <div>
-                <div><code>read_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Read private resources</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.edit} />
-              <div>
-                <div><code>edit_{newRole.slug || 'slug'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Edit own resources</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.edit_others} />
-              <div>
-                <div><code>edit_others_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Edit resources created by others</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.edit_published} />
-              <div>
-                <div><code>edit_published_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Edit published resources</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.edit_private} />
-              <div>
-                <div><code>edit_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Edit private resources</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.publish} />
-              <div>
-                <div><code>publish_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Publish resources</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.delete} />
-              <div>
-                <div><code>delete_{newRole.slug || 'slug'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Delete own resources</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.delete_others} />
-              <div>
-                <div><code>delete_others_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Delete resources created by others</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.delete_published} />
-              <div>
-                <div><code>delete_published_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Delete published resources</div>
-              </div>
-            </label>
-
-            <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
-              <input type="checkbox" bind:checked={standardCapabilities.delete_private} />
-              <div>
-                <div><code>delete_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
-                <div class="wpea-help" style="margin: 0;">Delete private resources</div>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end; padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
-          <button
-            type="button"
-            class="wpea-btn"
-            onclick={() => showStandardCapsModal = false}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
+  </Card>
 </div>
 
-<style>
-/* Modal overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in oklab, var(--wpea-color--black), transparent 40%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100000;
-  padding: var(--wpea-space--md);
-}
+<!-- Create Role Modal -->
+<Modal bind:open={showCreateModal} title="Create New Role" onClose={closeCreateModal}>
+  {#snippet children()}
+    <div class="wpea-stack">
+      <div class="wpea-field">
+        <label for="role-slug" class="wpea-label">
+          Role Slug <span style="color: var(--wpea-color--danger);">*</span>
+        </label>
+        <input
+          type="text"
+          id="role-slug"
+          bind:value={newRole.slug}
+          oninput={(e) => {
+            newRole.slug = sanitizeSlug(e.target.value, 'role');
+            slugValidation = validateSlug(newRole.slug, 'role');
+          }}
+          placeholder="e.g., custom_editor"
+          pattern="[a-z0-9_-]+"
+          class="wpea-input"
+          class:wpea-input--error={!slugValidation.valid}
+          maxlength="20"
+        />
+        {#if !slugValidation.valid && newRole.slug}
+          <p class="wpea-help wpea-help--error">{slugValidation.error}</p>
+        {:else}
+          <p class="wpea-help">Lowercase letters, numbers, underscores, and hyphens only. Maximum 20 characters.</p>
+        {/if}
+      </div>
 
+      <div class="wpea-field">
+        <label for="role-name" class="wpea-label">
+          Role Name <span style="color: var(--wpea-color--danger);">*</span>
+        </label>
+        <input
+          type="text"
+          id="role-name"
+          bind:value={newRole.name}
+          placeholder="e.g., Custom Editor"
+          class="wpea-input"
+        />
+      </div>
+
+      <div class="wpea-field">
+        <label for="role-copy-from" class="wpea-label">
+          Copy Capabilities From (Optional)
+        </label>
+        <select id="role-copy-from" bind:value={newRole.copyFrom} class="wpea-select">
+          <option value="">None (empty role)</option>
+          {#each store.roles as role}
+            <option value={role.slug}>{role.name}</option>
+          {/each}
+        </select>
+        <p class="wpea-help">Start with capabilities from an existing role.</p>
+      </div>
+
+      <div class="wpea-field">
+        <label class="wpea-control" style="margin: 0;">
+          <input
+            type="checkbox"
+            bind:checked={addStandardCaps}
+          />
+          <span>Add Standard Capabilities (Optional)</span>
+        </label>
+        <p class="wpea-help">Generate standard WordPress-style capabilities for this role.</p>
+      </div>
+
+      {#if addStandardCaps}
+        <div class="wpea-field">
+          <Button onclick={openStandardCapsModal}>
+            + Select Standard Capabilities
+          </Button>
+          <p class="wpea-help">Choose which capabilities to generate for this role.</p>
+        </div>
+      {/if}
+    </div>
+  {/snippet}
+
+  {#snippet footer()}
+    <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end;">
+      <Button onclick={closeCreateModal}>Cancel</Button>
+      <Button variant="primary" onclick={createRole} disabled={!newRole.slug || !newRole.name || !slugValidation.valid}>
+        Create Role
+      </Button>
+    </div>
+  {/snippet}
+</Modal>
+
+<!-- Delete Role Confirmation Modal -->
+<Modal bind:open={showDeleteModal} title={roleToDelete ? `Delete Role: ${roleToDelete.name}` : 'Delete Role'} onClose={() => showDeleteModal = false}>
+  {#snippet children()}
+    {#if roleToDelete}
+      <div class="wpea-stack">
+        <Alert variant="danger">
+          <p>
+            <strong>Warning:</strong> This action cannot be undone. Deleting this role will permanently remove it from your system.
+          </p>
+        </Alert>
+
+        <p>
+          You are about to delete the role <strong>{roleToDelete.name}</strong> (slug: <code>{roleToDelete.slug}</code>).
+        </p>
+
+        {#if roleToDelete.userCount > 0}
+          <Alert variant="warning">
+            <p>
+              <strong>This role is assigned to {roleToDelete.userCount} user{roleToDelete.userCount === 1 ? '' : 's'}.</strong><br>
+              Roles assigned to users cannot be deleted unless you remove the role from all users first.
+            </p>
+          </Alert>
+
+          <div class="wpea-field">
+            <label style="display: flex; align-items: center; gap: var(--wpea-space--sm); cursor: pointer;">
+              <input
+                type="checkbox"
+                bind:checked={removeFromUsers}
+                style="margin: 0; cursor: pointer;"
+              />
+              <span>
+                I understand that this will remove the role from all {roleToDelete.userCount} user{roleToDelete.userCount === 1 ? '' : 's'} before deleting it
+                <span style="color: var(--wpea-color--danger);">*</span>
+              </span>
+            </label>
+          </div>
+        {/if}
+
+        <div class="wpea-field">
+          <label for="delete-confirm" class="wpea-label">
+            Type <strong>delete</strong> to confirm <span style="color: var(--wpea-color--danger);">*</span>
+          </label>
+          <input
+            id="delete-confirm"
+            type="text"
+            bind:value={deleteConfirmation}
+            placeholder="Type 'delete' to confirm"
+            class="wpea-input"
+            autocomplete="off"
+          />
+          <p class="wpea-help">This confirmation is case-insensitive.</p>
+        </div>
+      </div>
+    {/if}
+  {/snippet}
+
+  {#snippet footer()}
+    <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end;">
+      <Button onclick={() => showDeleteModal = false}>Cancel</Button>
+      <Button variant="danger" onclick={deleteRole} disabled={deleteConfirmation.toLowerCase() !== 'delete' || (roleToDelete?.userCount > 0 && !removeFromUsers)}>
+        Delete Role
+      </Button>
+    </div>
+  {/snippet}
+</Modal>
+
+<!-- Standard Capabilities Modal -->
+<Modal bind:open={showStandardCapsModal} title="Select Standard Capabilities" onClose={() => showStandardCapsModal = false}>
+  {#snippet children()}
+    <div class="wpea-stack">
+      <p class="wpea-help">
+        Select which standard capabilities to generate for the role "<strong>{newRole.slug || 'your-role'}</strong>".
+        All are selected by default.
+      </p>
+
+      <div class="wpea-stack wpea-stack--sm">
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.read} />
+          <div>
+            <div><code>read_{newRole.slug || 'slug'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Read capability for this resource</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.read_private} />
+          <div>
+            <div><code>read_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Read private resources</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.edit} />
+          <div>
+            <div><code>edit_{newRole.slug || 'slug'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Edit own resources</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.edit_others} />
+          <div>
+            <div><code>edit_others_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Edit resources created by others</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.edit_published} />
+          <div>
+            <div><code>edit_published_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Edit published resources</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.edit_private} />
+          <div>
+            <div><code>edit_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Edit private resources</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.publish} />
+          <div>
+            <div><code>publish_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Publish resources</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.delete} />
+          <div>
+            <div><code>delete_{newRole.slug || 'slug'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Delete own resources</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.delete_others} />
+          <div>
+            <div><code>delete_others_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Delete resources created by others</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.delete_published} />
+          <div>
+            <div><code>delete_published_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Delete published resources</div>
+          </div>
+        </label>
+
+        <label class="wpea-control" style="display: flex; align-items: center; gap: var(--wpea-space--sm);">
+          <input type="checkbox" bind:checked={standardCapabilities.delete_private} />
+          <div>
+            <div><code>delete_private_{newRole.slug ? (newRole.slug.endsWith('s') ? newRole.slug : newRole.slug + 's') : 'slugs'}</code></div>
+            <div class="wpea-help" style="margin: 0;">Delete private resources</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  {/snippet}
+
+  {#snippet footer()}
+    <div class="wpea-cluster wpea-cluster--md" style="justify-content: flex-end;">
+      <Button onclick={() => showStandardCapsModal = false}>Close</Button>
+    </div>
+  {/snippet}
+</Modal>
+
+<style>
 /* Validation states */
 .wpea-input--error {
-  border-color: #d63638;
+  border-color: var(--wpea-color--danger);
 }
 
 .wpea-input--error:focus {
-  border-color: #d63638;
-  box-shadow: 0 0 0 1px #d63638;
+  border-color: var(--wpea-color--danger);
+  box-shadow: 0 0 0 1px var(--wpea-color--danger);
 }
 
 .wpea-help--error {
-  color: #d63638;
+  color: var(--wpea-color--danger);
 }
 </style>

@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-12-09
+
+### Changed
+
+- **WPEA Framework Update**
+  - Updated to new WPEA Admin Framework with `light-dark()` CSS function
+  - All Svelte components updated to use new framework components (Modal, Button, Card, Alert, Badge, Tabs, VerticalTabs, Input, Switch, Textarea)
+  - Replaced old `data-color-scheme` attribute approach with CSS `color-scheme` property
+  - All custom CSS now uses `light-dark()` for automatic theme switching
+
+- **UI Components**
+  - Main tabs now use `variant="primary"` for better visual distinction
+  - Settings sub-tabs use new VerticalTabs component
+  - All modals, buttons, cards, alerts, and badges use new framework components
+  - Snippets pattern used for component slots (Svelte 5)
+
+- **Color Scheme Handling**
+  - Color scheme now set on `document.documentElement` (`:root`) for proper inheritance
+  - PHP and JavaScript both use `color-scheme` CSS property
+  - Instant theme switching without page reload
+
+### Fixed
+
+- **Infinite Loop on Dashboard Load**
+  - Fixed `$effect` loops in SettingsTab, LogsTab, and RevisionsTab by using `onMount` for initialization
+  - Fixed Toast component effect causing loops
+  - Fixed settings polling effect causing loops
+
+- **"Saved" Toast on Dashboard Visit**
+  - Removed incorrect `showSaving()`/`showSaved()` calls from `fetchRevisions()` function
+  - Toast notifications now only appear for actual save operations
+
+- **Color Scheme Not Applying**
+  - Fixed mixed color states where parts of UI showed different themes
+  - Updated `admin.css` to use `light-dark()` function instead of `[data-color-scheme]` selectors
+  - Updated PHP theme script to use `color-scheme` CSS property
+
+- **Logo Visibility**
+  - Fixed both logos showing simultaneously
+  - Logo visibility now uses CSS media queries and `[style*=""]` attribute selectors
+
+### Added
+
+- **Compact Mode for Tabs**
+  - Added compact mode styles for horizontal tabs (`.wpea-tabs__tab`, `.wpea-tabs__list`, `.wpea-tabs__panel`)
+  - Added compact mode styles for vertical tabs (`.wpea-vtabs__tab`, `.wpea-vtabs__list`, `.wpea-vtabs__panel`, `.wpea-vtabs__content`)
+
 ## [1.0.0] - 2025-11-29
 
 ### 🎉 First Stable Release

@@ -9,6 +9,7 @@
  */
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
+import { Modal, Button, Card, Input, Alert, Badge } from '../../lib/index.ts';
 
 let { store } = $props();
 
@@ -22,9 +23,9 @@ let selectedCapability = $state('');
 let testResult = $state(null);
 let showPhpMenu = $state(false);
 let phpMenuOption = $state({
-  filterType: 'capability', // 'capability' or 'role'
+  filterType: 'capability',
   restrictChildren: false,
-  restrictionType: 'message', // 'message' or 'redirect'
+  restrictionType: 'message',
   redirectUrl: ''
 });
 
@@ -86,7 +87,7 @@ async function testUserCan() {
   try {
     store.showSaving();
     const response = await store.apiRequest(`/users/${selectedUser.id}/can/${selectedCapability}`);
-    testResult = response; // Now stores full response including disabled_roles if applicable
+    testResult = response;
     store.showSaved();
   } catch (error) {
     console.error('Error testing capability:', error);
@@ -101,11 +102,7 @@ let copiedButton = $state(null);
 async function generateShortcode() {
   if (!selectedCapability) return;
 
-  // Determine granted parameter based on test result
-  // If capability is granted, show content when granted="true"
-  // If capability is denied, not_set, or role_disabled, show content when granted="false"
   const grantedParam = testResult?.result === 'granted' ? 'true' : 'false';
-
   const shortcode = `[wpe_rm_cap capability="${selectedCapability}" granted="${grantedParam}"]Content only visible to users with this capability[/wpe_rm_cap]`;
 
   try {
@@ -315,7 +312,6 @@ async function generateREST() {
 async function generateBricks() {
   if (!selectedUser || !selectedCapability) return;
 
-  // Generate token with user ID: {wpe_rm_capability_status:cap_name:user_id}
   const bricksToken = `{wpe_rm_capability_status:${selectedCapability}:${selectedUser.id}}`;
 
   try {
@@ -373,16 +369,15 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
 
   <!-- Search Bar -->
   <div style="max-width: 300px;">
-    <input
+    <Input
       type="search"
       bind:value={searchQuery}
       placeholder="Search users..."
-      class="wpea-input"
     />
   </div>
 
   <!-- Users Table -->
-  <div class="wpea-card">
+  <Card>
     {#if filteredUsers.length === 0}
       <div style="padding: var(--wpea-space--lg); text-align: center;">
         <p class="wpea-text-muted">No users found.</p>
@@ -411,7 +406,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
                 {#if user.roles && user.roles.length > 0}
                   <div class="wpea-cluster wpea-cluster--sm">
                     {#each user.roles as role}
-                      <span class="badge">{role}</span>
+                      <Badge>{role}</Badge>
                     {/each}
                   </div>
                 {:else}
@@ -420,20 +415,12 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
               </td>
               <td>
                 <div class="wpea-cluster wpea-cluster--xs">
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--sm"
-                    onclick={() => editUserRoles(user)}
-                  >
+                  <Button size="sm" onclick={() => editUserRoles(user)}>
                     Edit Roles
-                  </button>
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--sm wpea-btn--ghost"
-                    onclick={() => testUserCapability(user)}
-                  >
+                  </Button>
+                  <Button size="sm" variant="ghost" onclick={() => testUserCapability(user)}>
                     Test Capability
-                  </button>
+                  </Button>
                 </div>
               </td>
             </tr>
@@ -442,346 +429,273 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
       </table>
       </div>
     {/if}
-  </div>
-
-  <!-- Edit Roles Modal -->
-  {#if showRolesModal && selectedUser}
-    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showRolesModal = false} onkeydown={(e) => e.key === 'Escape' && (showRolesModal = false)}>
-      <div class="wpea-card" style="max-width: 500px; max-height: 90vh; overflow: auto;" onclick={(e) => e.stopPropagation()} role="document">
-        <div class="wpea-card__header">
-          <h3 class="wpea-card__title">Edit Roles: {selectedUser.username}</h3>
-          <button
-            type="button"
-            style="background: none; border: none; padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl); cursor: pointer; color: var(--wpea-surface--text); line-height: 1;"
-            onclick={() => showRolesModal = false}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div class="wpea-stack">
-          <p class="wpea-help">Select one or more roles for this user. Changes are saved automatically.</p>
-
-          <div class="wpea-stack wpea-stack--sm">
-            {#each store.roles as role}
-              <label class="wpea-control" style="padding: var(--wpea-space--sm); border: 1px solid var(--wpea-surface--border); border-radius: var(--wpea-radius--sm); cursor: pointer; transition: background var(--wpea-anim-duration--fast);" onmouseover={(e) => e.currentTarget.style.background = 'var(--wpea-surface--muted)'} onmouseout={(e) => e.currentTarget.style.background = 'transparent'}>
-                <input
-                  type="checkbox"
-                  value={role.slug}
-                  checked={selectedUser.roles?.includes(role.slug)}
-                  onchange={async (e) => {
-                    if (e.target.checked) {
-                      selectedUser.roles = [...(selectedUser.roles || []), role.slug];
-                    } else {
-                      selectedUser.roles = selectedUser.roles.filter(r => r !== role.slug);
-                    }
-                    await updateUserRoles();
-                  }}
-                />
-                <span>{role.name}</span>
-                {#if role.isCore}
-                  <span class="badge core" style="margin-left: auto;">Core</span>
-                {/if}
-              </label>
-            {/each}
-          </div>
-        </div>
-      </div>
-    </div>
-  {/if}
-
-  <!-- Test Capability Modal -->
-  {#if showCapabilityTestModal && selectedUser}
-    <div class="modal-overlay" role="dialog" aria-modal="true" onclick={() => showCapabilityTestModal = false} onkeydown={(e) => e.key === 'Escape' && (showCapabilityTestModal = false)}>
-      <div class="wpea-card capability-test-modal" onclick={(e) => e.stopPropagation()} role="document">
-        <div class="wpea-card__header">
-          <h3 class="wpea-card__title">Test Capability: {selectedUser.username}</h3>
-          <button
-            type="button"
-            style="background: none; border: none; padding: 0; min-width: 2rem; font-size: var(--wpea-text--2xl); cursor: pointer; color: var(--wpea-surface--text); line-height: 1;"
-            onclick={() => showCapabilityTestModal = false}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div class="modal-content-scroll">
-          <div class="wpea-stack">
-            <!-- Filter capabilities -->
-            <div class="wpea-field">
-            <label for="cap-filter" class="wpea-label">Filter Capabilities</label>
-            <input
-              id="cap-filter"
-              type="search"
-              bind:value={capabilitySearchQuery}
-              placeholder="Type to filter capabilities..."
-              class="wpea-input"
-            />
-          </div>
-
-          <!-- Capability list -->
-          <div class="wpea-field">
-            <label class="wpea-label">Select Capability</label>
-            <div style="border: 1px solid var(--wpea-surface--border); border-radius: var(--wpea-radius--sm); max-height: 300px; overflow-y: auto;">
-              {#if filteredCapabilities.length === 0}
-                <div style="padding: var(--wpea-space--md); text-align: center;">
-                  <p class="wpea-text-muted">No capabilities found</p>
-                </div>
-              {:else}
-                {#each filteredCapabilities as capability}
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--ghost"
-                    style="width: 100%; text-align: left; border-radius: 0; border-bottom: 1px solid var(--wpea-surface--divider); justify-content: flex-start; {selectedCapability === capability ? 'background: var(--wpea-color--primary-l-9); color: var(--wpea-color--primary);' : ''}"
-                    onclick={() => {
-                      selectedCapability = capability;
-                      testResult = null;
-                    }}
-                  >
-                    <code style="font-size: var(--wpea-text--sm);">{capability}</code>
-                  </button>
-                {/each}
-              {/if}
-            </div>
-          </div>
-
-          {#if selectedCapability}
-            <div class="wpea-alert wpea-alert--info">
-              <p><strong>Selected:</strong> <code>{selectedCapability}</code></p>
-            </div>
-            <!-- Test Result -->
-            {#if testResult}
-              <div class="wpea-alert" class:wpea-alert--success={testResult.result === 'granted'} class:wpea-alert--danger={testResult.result === 'denied'} class:wpea-alert--warning={testResult.result === 'not_set' || testResult.result === 'role_disabled'}>
-                <p>
-                  <strong>Result:</strong>
-                  {#if testResult.result === 'granted'}
-                    ✓ Granted - User has this capability
-                    {#if testResult.granting_roles && testResult.granting_roles.length > 0}
-                      <br><small>Granted by: {testResult.granting_roles.join(', ')}</small>
-                    {/if}
-                  {:else if testResult.result === 'denied'}
-                    ✗ Denied - User does not have this capability
-                  {:else if testResult.result === 'role_disabled'}
-                    🚫 Role Disabled - This capability comes from a disabled role
-                    {#if testResult.disabled_roles && testResult.disabled_roles.length > 0}
-                      <br><small>Disabled roles: {testResult.disabled_roles.join(', ')}</small>
-                    {/if}
-                  {:else}
-                    − Not Set - Capability is not assigned to this user
-                  {/if}
-                </p>
-              </div>
-            {/if}
-
-            <!-- Action Buttons -->
-            <div class="wpea-stack wpea-stack--sm">
-              <button
-                type="button"
-                class="wpea-btn wpea-btn--primary"
-                onclick={testUserCan}
-              >
-                Test user_can()
-              </button>
-
-              <div style="border-top: 1px solid var(--wpea-surface--divider); padding-top: var(--wpea-space--sm);">
-                <p class="wpea-help" style="margin-bottom: var(--wpea-space--sm);">Generate code snippets (copied to clipboard):</p>
-
-                <div class="wpea-cluster wpea-cluster--sm" style="flex-wrap: wrap;">
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--sm"
-                    class:wpea-btn--success={copiedButton === 'shortcode'}
-                    onclick={generateShortcode}
-                  >
-                    {copiedButton === 'shortcode' ? 'Copied!' : 'Shortcode'}
-                  </button>
-
-                  <div style="position: relative;">
-                    <button
-                      type="button"
-                      class="wpea-btn wpea-btn--sm"
-                      class:wpea-btn--success={copiedButton === 'php'}
-                      onclick={togglePhpMenu}
-                    >
-                      {copiedButton === 'php' ? 'Copied!' : 'PHP'} ▾
-                    </button>
-
-                    {#if showPhpMenu}
-                      <div class="php-menu">
-                        <button
-                          type="button"
-                          class="php-menu-item"
-                          onclick={generatePHPHasCapability}
-                        >
-                          Has Capability
-                        </button>
-
-                        <button
-                          type="button"
-                          class="php-menu-item"
-                          onclick={generatePHPRedirectLogin}
-                        >
-                          Redirect on Login
-                        </button>
-
-                        <div class="php-menu-separator"></div>
-
-                        <div class="php-menu-section">
-                          <div class="php-menu-header">Restrict Page/Post</div>
-
-                          <div class="php-menu-radio-group">
-                            <label class="php-menu-radio">
-                              <input
-                                type="radio"
-                                name="filterType"
-                                value="capability"
-                                bind:group={phpMenuOption.filterType}
-                              />
-                              <span>Filter by Capability</span>
-                            </label>
-
-                            <label class="php-menu-radio">
-                              <input
-                                type="radio"
-                                name="filterType"
-                                value="role"
-                                bind:group={phpMenuOption.filterType}
-                              />
-                              <span>Filter by Role</span>
-                            </label>
-                          </div>
-
-                          <label class="php-menu-checkbox">
-                            <input
-                              type="checkbox"
-                              bind:checked={phpMenuOption.restrictChildren}
-                            />
-                            <span>Restrict all children</span>
-                          </label>
-
-                          <div class="php-menu-radio-group">
-                            <label class="php-menu-radio">
-                              <input
-                                type="radio"
-                                name="restrictionType"
-                                value="message"
-                                bind:group={phpMenuOption.restrictionType}
-                              />
-                              <span>Show restricted message</span>
-                            </label>
-
-                            <label class="php-menu-radio">
-                              <input
-                                type="radio"
-                                name="restrictionType"
-                                value="redirect"
-                                bind:group={phpMenuOption.restrictionType}
-                              />
-                              <span>Redirect to URL</span>
-                            </label>
-
-                            {#if phpMenuOption.restrictionType === 'redirect'}
-                              <input
-                                type="text"
-                                class="wpea-input php-menu-input"
-                                placeholder="Enter redirect URL"
-                                bind:value={phpMenuOption.redirectUrl}
-                              />
-                            {/if}
-                          </div>
-
-                          <button
-                            type="button"
-                            class="wpea-btn wpea-btn--sm wpea-btn--primary"
-                            style="width: 100%; margin-top: var(--wpea-space--xs);"
-                            onclick={generatePHPRestrictPage}
-                          >
-                            Generate Code
-                          </button>
-                        </div>
-                      </div>
-                    {/if}
-                  </div>
-
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--sm"
-                    class:wpea-btn--success={copiedButton === 'fetch'}
-                    onclick={generateFetch}
-                  >
-                    {copiedButton === 'fetch' ? 'Copied!' : 'Fetch'}
-                  </button>
-
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--sm"
-                    class:wpea-btn--success={copiedButton === 'rest'}
-                    onclick={generateREST}
-                  >
-                    {copiedButton === 'rest' ? 'Copied!' : 'REST URL'}
-                  </button>
-
-                  <button
-                    type="button"
-                    class="wpea-btn wpea-btn--sm"
-                    class:wpea-btn--success={copiedButton === 'bricks'}
-                    onclick={generateBricks}
-                  >
-                    {copiedButton === 'bricks' ? 'Copied!' : 'Bricks Token'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          {/if}
-          </div>
-        </div>
-      </div>
-    </div>
-  {/if}
+  </Card>
 </div>
 
+<!-- Edit Roles Modal -->
+<Modal bind:open={showRolesModal} title={selectedUser ? `Edit Roles: ${selectedUser.username}` : 'Edit Roles'} onClose={() => showRolesModal = false}>
+  {#snippet children()}
+    {#if selectedUser}
+      <div class="wpea-stack">
+        <p class="wpea-help">Select one or more roles for this user. Changes are saved automatically.</p>
+
+        <div class="wpea-stack wpea-stack--sm">
+          {#each store.roles as role}
+            <label class="wpea-control role-checkbox-label" style="padding: var(--wpea-space--sm); border: 1px solid var(--wpea-surface--border); border-radius: var(--wpea-radius--sm); cursor: pointer;">
+              <input
+                type="checkbox"
+                value={role.slug}
+                checked={selectedUser.roles?.includes(role.slug)}
+                onchange={async (e) => {
+                  if (e.target.checked) {
+                    selectedUser.roles = [...(selectedUser.roles || []), role.slug];
+                  } else {
+                    selectedUser.roles = selectedUser.roles.filter(r => r !== role.slug);
+                  }
+                  await updateUserRoles();
+                }}
+              />
+              <span>{role.name}</span>
+              {#if role.isCore}
+                <Badge class="core" style="margin-left: auto;">Core</Badge>
+              {/if}
+            </label>
+          {/each}
+        </div>
+      </div>
+    {/if}
+  {/snippet}
+</Modal>
+
+<!-- Test Capability Modal -->
+<Modal bind:open={showCapabilityTestModal} title={selectedUser ? `Test Capability: ${selectedUser.username}` : 'Test Capability'} size="large" onClose={() => showCapabilityTestModal = false}>
+  {#snippet children()}
+    {#if selectedUser}
+      <div class="wpea-stack">
+        <!-- Filter capabilities -->
+        <div class="wpea-field">
+          <label for="cap-filter" class="wpea-label">Filter Capabilities</label>
+          <input
+            id="cap-filter"
+            type="search"
+            bind:value={capabilitySearchQuery}
+            placeholder="Type to filter capabilities..."
+            class="wpea-input"
+          />
+        </div>
+
+        <!-- Capability list -->
+        <div class="wpea-field">
+          <span class="wpea-label">Select Capability</span>
+          <div style="border: 1px solid var(--wpea-surface--border); border-radius: var(--wpea-radius--sm); max-height: 300px; overflow-y: auto;">
+            {#if filteredCapabilities.length === 0}
+              <div style="padding: var(--wpea-space--md); text-align: center;">
+                <p class="wpea-text-muted">No capabilities found</p>
+              </div>
+            {:else}
+              {#each filteredCapabilities as capability}
+                <button
+                  type="button"
+                  class="wpea-btn wpea-btn--ghost"
+                  style="width: 100%; text-align: left; border-radius: 0; border-bottom: 1px solid var(--wpea-surface--divider); justify-content: flex-start; {selectedCapability === capability ? 'background: var(--wpea-color--primary-l-9); color: var(--wpea-color--primary);' : ''}"
+                  onclick={() => {
+                    selectedCapability = capability;
+                    testResult = null;
+                  }}
+                >
+                  <code style="font-size: var(--wpea-text--sm);">{capability}</code>
+                </button>
+              {/each}
+            {/if}
+          </div>
+        </div>
+
+        {#if selectedCapability}
+          <Alert variant="success">
+            <p><strong>Selected:</strong> <code>{selectedCapability}</code></p>
+          </Alert>
+
+          <!-- Test Result -->
+          {#if testResult}
+            <Alert variant={testResult.result === 'granted' ? 'success' : testResult.result === 'denied' ? 'danger' : 'warning'}>
+              <p>
+                <strong>Result:</strong>
+                {#if testResult.result === 'granted'}
+                  ✓ Granted - User has this capability
+                  {#if testResult.granting_roles && testResult.granting_roles.length > 0}
+                    <br><small>Granted by: {testResult.granting_roles.join(', ')}</small>
+                  {/if}
+                {:else if testResult.result === 'denied'}
+                  ✗ Denied - User does not have this capability
+                {:else if testResult.result === 'role_disabled'}
+                  🚫 Role Disabled - This capability comes from a disabled role
+                  {#if testResult.disabled_roles && testResult.disabled_roles.length > 0}
+                    <br><small>Disabled roles: {testResult.disabled_roles.join(', ')}</small>
+                  {/if}
+                {:else}
+                  − Not Set - Capability is not assigned to this user
+                {/if}
+              </p>
+            </Alert>
+          {/if}
+
+          <!-- Action Buttons -->
+          <div class="wpea-stack wpea-stack--sm">
+            <Button variant="primary" onclick={testUserCan}>
+              Test user_can()
+            </Button>
+
+            <div style="border-top: 1px solid var(--wpea-surface--divider); padding-top: var(--wpea-space--sm);">
+              <p class="wpea-help" style="margin-bottom: var(--wpea-space--sm);">Generate code snippets (copied to clipboard):</p>
+
+              <div class="wpea-cluster wpea-cluster--sm" style="flex-wrap: wrap;">
+                <Button
+                  size="sm"
+                  class={copiedButton === 'shortcode' ? 'wpea-btn--success' : ''}
+                  onclick={generateShortcode}
+                >
+                  {copiedButton === 'shortcode' ? 'Copied!' : 'Shortcode'}
+                </Button>
+
+                <div style="position: relative;">
+                  <Button
+                    size="sm"
+                    class={copiedButton === 'php' ? 'wpea-btn--success' : ''}
+                    onclick={togglePhpMenu}
+                  >
+                    {copiedButton === 'php' ? 'Copied!' : 'PHP'} ▾
+                  </Button>
+
+                  {#if showPhpMenu}
+                    <div class="php-menu">
+                      <button
+                        type="button"
+                        class="php-menu-item"
+                        onclick={generatePHPHasCapability}
+                      >
+                        Has Capability
+                      </button>
+
+                      <button
+                        type="button"
+                        class="php-menu-item"
+                        onclick={generatePHPRedirectLogin}
+                      >
+                        Redirect on Login
+                      </button>
+
+                      <div class="php-menu-separator"></div>
+
+                      <div class="php-menu-section">
+                        <div class="php-menu-header">Restrict Page/Post</div>
+
+                        <div class="php-menu-radio-group">
+                          <label class="php-menu-radio">
+                            <input
+                              type="radio"
+                              name="filterType"
+                              value="capability"
+                              bind:group={phpMenuOption.filterType}
+                            />
+                            <span>Filter by Capability</span>
+                          </label>
+
+                          <label class="php-menu-radio">
+                            <input
+                              type="radio"
+                              name="filterType"
+                              value="role"
+                              bind:group={phpMenuOption.filterType}
+                            />
+                            <span>Filter by Role</span>
+                          </label>
+                        </div>
+
+                        <label class="php-menu-checkbox">
+                          <input
+                            type="checkbox"
+                            bind:checked={phpMenuOption.restrictChildren}
+                          />
+                          <span>Restrict all children</span>
+                        </label>
+
+                        <div class="php-menu-radio-group">
+                          <label class="php-menu-radio">
+                            <input
+                              type="radio"
+                              name="restrictionType"
+                              value="message"
+                              bind:group={phpMenuOption.restrictionType}
+                            />
+                            <span>Show restricted message</span>
+                          </label>
+
+                          <label class="php-menu-radio">
+                            <input
+                              type="radio"
+                              name="restrictionType"
+                              value="redirect"
+                              bind:group={phpMenuOption.restrictionType}
+                            />
+                            <span>Redirect to URL</span>
+                          </label>
+
+                          {#if phpMenuOption.restrictionType === 'redirect'}
+                            <input
+                              type="text"
+                              class="wpea-input php-menu-input"
+                              placeholder="Enter redirect URL"
+                              bind:value={phpMenuOption.redirectUrl}
+                            />
+                          {/if}
+                        </div>
+
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          style="width: 100%; margin-top: var(--wpea-space--xs);"
+                          onclick={generatePHPRestrictPage}
+                        >
+                          Generate Code
+                        </Button>
+                      </div>
+                    </div>
+                  {/if}
+                </div>
+
+                <Button
+                  size="sm"
+                  class={copiedButton === 'fetch' ? 'wpea-btn--success' : ''}
+                  onclick={generateFetch}
+                >
+                  {copiedButton === 'fetch' ? 'Copied!' : 'Fetch'}
+                </Button>
+
+                <Button
+                  size="sm"
+                  class={copiedButton === 'rest' ? 'wpea-btn--success' : ''}
+                  onclick={generateREST}
+                >
+                  {copiedButton === 'rest' ? 'Copied!' : 'REST URL'}
+                </Button>
+
+                <Button
+                  size="sm"
+                  class={copiedButton === 'bricks' ? 'wpea-btn--success' : ''}
+                  onclick={generateBricks}
+                >
+                  {copiedButton === 'bricks' ? 'Copied!' : 'Bricks Token'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        {/if}
+      </div>
+    {/if}
+  {/snippet}
+</Modal>
+
 <style>
-/* Modal overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in oklab, var(--wpea-color--black), transparent 40%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100000;
-  padding: var(--wpea-space--md);
-}
-
-.capability-test-modal {
-  max-width: 600px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: visible;
-}
-
-.modal-content-scroll {
-  overflow-y: auto;
-  overflow-x: visible;
-  flex: 1;
-  min-height: 0;
-}
-
-/* Success button style for "Copied" state */
-.wpea-btn--success {
-  background-color: var(--wpea-color--success) !important;
-  border-color: var(--wpea-color--success) !important;
-  color: white !important;
-}
-
-.wpea-btn--success:hover {
-  background-color: var(--wpea-color--success-d-2) !important;
-  border-color: var(--wpea-color--success-d-2) !important;
-}
-
 /* PHP Menu Dropdown */
 .php-menu {
   position: absolute;
@@ -794,7 +708,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
   color: var(--wpea-surface--text);
   border: 1px solid var(--wpea-surface--border);
   border-radius: var(--wpea-radius--md);
-  box-shadow: var(--wpea-shadow--l);
+  box-shadow: var(--wpea-shadow--lg);
   z-index: 10001;
   padding: var(--wpea-space--xs);
 }
@@ -872,5 +786,13 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
 .php-menu-input:focus {
   outline: 2px solid var(--wpea-color--primary);
   outline-offset: 1px;
+}
+
+/* Role checkbox label hover */
+.role-checkbox-label {
+  transition: background var(--wpea-anim-duration--fast);
+}
+.role-checkbox-label:hover {
+  background: var(--wpea-surface--muted);
 }
 </style>
