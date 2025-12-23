@@ -47,7 +47,22 @@
       "Bash(mkdir:*)",
       "Bash(for file in Accordion.svelte AdvancedSelect.svelte Alert.svelte Badge.svelte Button.svelte Card.svelte Cluster.svelte DoubleOptInButton.svelte Input.svelte Modal.svelte MultiSelect.svelte Panel.svelte Popover.svelte Radio.svelte Range.svelte Select.svelte Stack.svelte Switch.svelte Table.svelte Tabs.svelte Textarea.svelte Toast.svelte Toggle3State.svelte VerticalTabs.svelte icons.svelte.ts index.ts transitions.ts types.ts)",
       "Bash(do)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(dir \"C:\\\\Users\\\\Alan.Blair\\\\Local Sites\\\\bricks-playground\\\\app\\\\public\\\\wp-content\\\\plugins\\\\wpe-role-manager\\\\assets\" /b /s)",
+      "Bash(npm install)",
+      "WebFetch(domain:www.wpeasy.au)",
+      "Bash(npm run build:instructions:*)",
+      "Bash(dir:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npm install:*)",
+      "Bash(copy:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(composer dump-autoload:*)",
+      "Bash(php -l:*)",
+      "Bash(npm run build:webhooks:*)",
+      "Bash(npm run build:main:*)",
+      "Bash(npm run build:shared:*)",
+      "Skill(zip-plugin)"
     ],
     "deny": [],
     "ask": []

@@ -1,18 +1,33 @@
 {
   "name": "wpe-role-manager",
-  "version": "1.0.1",
+  "version": "1.0.2-dev",
   "description": "WP Easy Role Manager - Svelte 5 Admin SPA",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --config vite.config.main.ts",
+    "build": "npm run build:clean && npm run build:shared && npm run build:main && npm run build:settings && npm run build:history && npm run build:instructions && npm run build:webhooks",
+    "build:shared": "vite build --config vite.config.shared.ts",
+    "build:main": "vite build --config vite.config.main.ts",
+    "build:settings": "vite build --config vite.config.settings.ts",
+    "build:history": "vite build --config vite.config.history.ts",
+    "build:instructions": "vite build --config vite.config.instructions.ts",
+    "build:webhooks": "vite build --config vite.config.webhooks.ts",
+    "build:clean": "rimraf assets/dist",
+    "watch": "vite build --config vite.config.main.ts --watch",
+    "watch:shared": "vite build --config vite.config.shared.ts --watch",
+    "watch:settings": "vite build --config vite.config.settings.ts --watch",
+    "watch:history": "vite build --config vite.config.history.ts --watch",
     "preview": "vite preview",
-    "watch": "vite build --watch"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "rimraf": "^5.0.0",
     "svelte": "^5.0.0",
+    "typescript": "^5.0.0",
     "vite": "^5.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "svelte-awesome-color-picker": "^4.1.0"
+  }
 }

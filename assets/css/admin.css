@@ -7,13 +7,22 @@
  * @version 1.0.0
  */
 
-/* Main Admin Wrapper */
+/* Main Admin Wrapper - acts as container for style queries */
 .wpe-rm-admin {
+    container-type: inline-size;
+    max-width: 1600px;
     margin: var(--wpea-space--lg) var(--wpea-space--lg) 0 0;
-    background: light-dark(var(--wpea-color--neutral-l-9), var(--wpea-color--neutral-d-9));
+    background: light-dark(var(--wpea-color--neutral-l-9), var(--wpea-color--neutral-l-9));
     padding: var(--wpea-space--lg);
     border-radius: var(--wpea-radius--md);
     min-height: calc(100vh - 100px);
+}
+
+/* Compact Mode - set density variable for WPEA container style query */
+/* Handles both: PHP adds class to wrapper, JS adds class to body */
+.wpe-rm-admin.wpea-compact,
+body.wpea-compact .wpe-rm-admin {
+    --wpea-density: compact;
 }
 
 /* App Container - minimal WordPress admin compatibility */
@@ -23,14 +32,41 @@
 
 /* Card backgrounds - elevated from app background */
 .wpe-rm-admin .wpea-card {
-    background: light-dark(var(--wpea-color--white), var(--wpea-color--neutral-d-8));
+    background: light-dark(var(--wpea-color--white), var(--wpea-color--neutral-l-8));
 }
 
 /* Loading State */
-.wpea-rm-loading {
+.wpe-rm-loading {
     padding: var(--wpea-space--2xl);
     text-align: center;
     color: var(--wpea-surface--text-muted);
+}
+
+/* Spinner Animation */
+@keyframes wpea-spin {
+    to { transform: rotate(360deg); }
+}
+
+.wpea-spinner {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border: 3px solid light-dark(var(--wpea-color--neutral-l-7), var(--wpea-color--neutral-l-5));
+    border-top-color: var(--wpea-color--primary);
+    border-radius: 50%;
+    animation: wpea-spin 0.8s linear infinite;
+}
+
+.wpea-spinner--sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+.wpea-spinner--lg {
+    width: 48px;
+    height: 48px;
+    border-width: 4px;
 }
 
 /* Header with Logo */
@@ -66,17 +102,7 @@
 :root[style*="dark only"] .wpe-rm-logo-light { display: block !important; }
 :root[style*="dark only"] .wpe-rm-logo-dark { display: none !important; }
 
-/* Badge Component (used in multiple tabs) */
-.badge {
-    display: inline-block;
-    padding: var(--wpea-space--2xs) var(--wpea-space--xs);
-    font-size: var(--wpea-text--xs);
-    font-weight: 600;
-    border-radius: var(--wpea-radius--sm);
-    background: var(--wpea-badge--bg);
-    color: var(--wpea-badge--fg);
-}
-
+/* Badge variants using WPEA tokens */
 .badge.core {
     background: var(--wpea-badge-core-bg);
     color: var(--wpea-badge-core-text);
@@ -88,7 +114,10 @@
 }
 
 .badge.disabled {
-    background: var(--wpea-color--danger-l-9);
+    background: light-dark(
+        var(--wpea-color--danger-l-9),
+        color-mix(in oklab, var(--wpea-color--danger), transparent 70%)
+    );
     color: var(--wpea-color--danger);
     opacity: 0.7;
 }
@@ -121,104 +150,9 @@
     );
 }
 
-/* Compact Mode */
-[data-compact-mode="true"] .wpe-rm-admin {
-    font-size: 14px;
-}
-
-[data-compact-mode="true"] .wpea-table {
-    font-size: 13px;
-}
-
-[data-compact-mode="true"] .wpea-table th,
-[data-compact-mode="true"] .wpea-table td {
-    padding-block: 0.4rem;
-    padding-inline: 0.6rem;
-}
-
-[data-compact-mode="true"] .wpea-card {
-    padding-block: var(--wpea-space--md);
-    padding-inline: var(--wpea-space--md);
-}
-
-[data-compact-mode="true"] .wpea-stack {
-    gap: var(--wpea-space--sm);
-}
-
-[data-compact-mode="true"] .wpea-heading--md {
-    font-size: var(--wpea-text--lg);
-}
-
-[data-compact-mode="true"] .wpea-heading--sm {
-    font-size: var(--wpea-text--md);
-}
-
-[data-compact-mode="true"] .wpea-btn {
-    padding-block: calc(var(--wpea-space--xs) * 0.7);
-    padding-inline: var(--wpea-space--sm);
-    font-size: var(--wpea-text--sm);
-}
-
-[data-compact-mode="true"] .wpea-btn--sm {
-    padding-block: calc(var(--wpea-space--xs) * 0.5);
-    padding-inline: calc(var(--wpea-space--xs) * 0.9);
-    font-size: var(--wpea-text--xs);
-}
-
-[data-compact-mode="true"] .badge {
-    padding: calc(var(--wpea-space--2xs) * 0.6) calc(var(--wpea-space--xs) * 0.8);
-    font-size: 10px;
-}
-
-[data-compact-mode="true"] .wpea-input,
-[data-compact-mode="true"] .wpea-select,
-[data-compact-mode="true"] .wpea-textarea {
-    padding-block: calc(var(--wpea-space--xs) * 0.6);
-    padding-inline: calc(var(--wpea-space--sm) * 0.8);
-    font-size: var(--wpea-text--sm);
-}
-
-[data-compact-mode="true"] code {
-    font-size: 12px;
-}
-
-[data-compact-mode="true"] .wpea-tabs__tab {
-    padding-block: calc(var(--wpea-space--xs) * 0.7);
-    padding-inline: var(--wpea-space--sm);
-    font-size: var(--wpea-text--sm);
-}
-
-[data-compact-mode="true"] .wpea-tabs__list {
-    gap: var(--wpea-space--xs);
-}
-
-[data-compact-mode="true"] .wpea-tabs__panel {
-    padding-block: var(--wpea-space--sm);
-}
-
-/* Compact mode for Vertical Tabs (Settings sub-tabs) */
-[data-compact-mode="true"] .wpea-vtabs__tab {
-    padding-block: calc(var(--wpea-space--xs) * 0.7);
-    padding-inline: var(--wpea-space--sm);
-    font-size: var(--wpea-text--sm);
-}
-
-[data-compact-mode="true"] .wpea-vtabs__list {
-    gap: var(--wpea-space--xs);
-}
-
-[data-compact-mode="true"] .wpea-vtabs__panel {
-    padding: var(--wpea-space--sm);
-}
-
-[data-compact-mode="true"] .wpea-vtabs__content {
-    padding-inline-start: var(--wpea-space--sm);
-}
-
 /* Table Wrapper with Overflow */
 .wpea-table-wrapper {
     overflow: auto;
-    /* Scrollbar for webkit browsers (Chrome, Safari, Edge) */
     scrollbar-width: thin;
     scrollbar-color: var(--wpea-scrollbar-thumb) var(--wpea-scrollbar-track);
 }
@@ -240,12 +174,12 @@
 
 .wpea-top-scrollbar::-webkit-scrollbar-track {
     background: var(--wpea-scrollbar-track);
-    border-radius: 6px;
+    border-radius: var(--wpea-radius--sm);
 }
 
 .wpea-top-scrollbar::-webkit-scrollbar-thumb {
     background: var(--wpea-scrollbar-thumb);
-    border-radius: 6px;
+    border-radius: var(--wpea-radius--sm);
     border: 2px solid var(--wpea-scrollbar-track);
 }
 
@@ -269,13 +203,13 @@
 .wpea-table-wrapper::-webkit-scrollbar-track,
 .wpea-card::-webkit-scrollbar-track {
     background: var(--wpea-scrollbar-track);
-    border-radius: 6px;
+    border-radius: var(--wpea-radius--sm);
 }
 
 .wpea-table-wrapper::-webkit-scrollbar-thumb,
 .wpea-card::-webkit-scrollbar-thumb {
     background: var(--wpea-scrollbar-thumb);
-    border-radius: 6px;
+    border-radius: var(--wpea-radius--sm);
     border: 2px solid var(--wpea-scrollbar-track);
 }
 
@@ -298,6 +232,41 @@
         var(--wpea-color--neutral-l-5),
         var(--wpea-color--neutral-d-4)
     );
+}
+
+/* Additional Button Sizes (aliases for convenience) */
+.wpea-btn--sm { font-size: var(--wpea-text--sm); padding-block: calc(var(--wpea-space--sm) * .45); padding-inline: var(--wpea-space--sm); }
+
+/* Additional Button Variants (not in base WPEA framework) */
+.wpea-btn--danger {
+    --_bg: var(--wpea-color--danger);
+    --_bg-hover: var(--wpea-color--danger-d-2);
+}
+
+.wpea-btn--danger-outline {
+    --_bg: transparent;
+    --_bg-hover: light-dark(var(--wpea-color--danger-l-9), color-mix(in oklab, var(--wpea-color--danger), transparent 85%));
+    --_fg: var(--wpea-color--danger);
+    border: 1px solid var(--wpea-color--danger);
+}
+
+.wpea-btn--primary-outline {
+    --_bg: transparent;
+    --_bg-hover: light-dark(var(--wpea-color--primary-l-9), color-mix(in oklab, var(--wpea-color--primary), transparent 85%));
+    --_fg: var(--wpea-color--primary);
+    border: 1px solid var(--wpea-color--primary);
+}
+
+.wpea-btn--success {
+    --_bg: var(--wpea-color--success);
+    --_bg-hover: var(--wpea-color--success-d-2);
+}
+
+.wpea-btn--success-outline {
+    --_bg: transparent;
+    --_bg-hover: light-dark(var(--wpea-color--success-l-9), color-mix(in oklab, var(--wpea-color--success), transparent 85%));
+    --_fg: var(--wpea-color--success);
+    border: 1px solid var(--wpea-color--success);
 }
 
 /* WordPress Admin Compatibility */

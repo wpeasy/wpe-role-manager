@@ -6,9 +6,17 @@
  */
 
 defined('ABSPATH') || exit;
+
+// Get settings for compact mode
+$settings = get_option('wpe_rm_settings', []);
+$compact_mode = !empty($settings['compact_mode']);
+$wrapper_classes = 'wrap wpe-rm-admin wpea';
+if ($compact_mode) {
+    $wrapper_classes .= ' wpea-compact';
+}
 ?>
 
-<div class="wrap wpe-rm-admin wpea">
+<div class="<?php echo esc_attr($wrapper_classes); ?>">
     <div class="wpe-rm-header">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
         <img

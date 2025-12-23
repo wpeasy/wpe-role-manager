@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2-dev] - 2025-12-23
+
+### Added
+
+- **Experimental Webhooks Feature**
+  - Webhooks system now behind experimental feature flag (disabled by default)
+  - New setting in Settings → Features → Experimental section
+  - Webhooks submenu only appears when feature is enabled
+  - All webhook functionality (dispatcher, processor, REST endpoints) disabled when turned off
+  - Rate limit setting only visible when webhooks are enabled
+
+- **Clean Uninstall Option**
+  - New setting in Settings → Security to enable complete data removal on plugin deletion
+  - Option to remove plugin-created roles on uninstall
+  - Option to remove plugin-created capabilities on uninstall
+  - Prominent warnings about data loss
+  - Removes all `wpe_rm_*` options, transients, and scheduled cron events
+
+- **Configurable Webhook Rate Limit**
+  - Incoming webhook rate limit now configurable (default: 100 requests/minute)
+  - Setting appears in Settings → Thresholds when webhooks are enabled
+
+### Changed
+
+- **Settings Tab Reorganization**
+  - Renamed "Performance" sub-tab to "Thresholds"
+  - Added "Experimental" section under Features tab
+
+- **Webhook Log Retention**
+  - Webhook logs now respect the global "Log Retention" setting instead of separate setting
+  - Unified log retention for activity logs and webhook logs
+
+### Technical
+
+- **Conditional Initialization**
+  - Plugin.php: Webhook Dispatcher and Processor only initialized when `enable_webhooks` setting is true
+  - Routes.php: Webhook REST endpoints only registered when webhooks are enabled
+  - Menu.php: Webhooks submenu conditionally added based on setting
+
+- **uninstall.php Rewrite**
+  - Complete rewrite for proper cleanup based on user settings
+  - Conditional removal of roles and capabilities
+  - Clears all WP Cron scheduled events for the plugin
+
 ## [1.0.1] - 2025-12-09
 
 ### Changed

@@ -5,6 +5,8 @@
  * @package WP_Easy\RoleManager
  */
 
+declare(strict_types=1);
+
 namespace WP_Easy\RoleManager\Admin;
 
 defined('ABSPATH') || exit;
@@ -49,6 +51,26 @@ final class Menu {
             [self::class, 'render_page']
         );
 
+        // Add settings submenu page
+        add_submenu_page(
+            'wpe-role-manager',
+            __('Settings', WPE_RM_TEXTDOMAIN),
+            __('Settings', WPE_RM_TEXTDOMAIN),
+            $capability,
+            'wpe-role-manager-settings',
+            [self::class, 'render_settings_page']
+        );
+
+        // Add history submenu page
+        add_submenu_page(
+            'wpe-role-manager',
+            __('History', WPE_RM_TEXTDOMAIN),
+            __('History', WPE_RM_TEXTDOMAIN),
+            $capability,
+            'wpe-role-manager-history',
+            [self::class, 'render_history_page']
+        );
+
         // Add instructions submenu page
         add_submenu_page(
             'wpe-role-manager',
@@ -58,6 +80,18 @@ final class Menu {
             'wpe-role-manager-instructions',
             [self::class, 'render_instructions_page']
         );
+
+        // Add webhooks submenu page (only if enabled in settings)
+        if (!empty($settings['enable_webhooks'])) {
+            add_submenu_page(
+                'wpe-role-manager',
+                __('Webhooks', WPE_RM_TEXTDOMAIN),
+                __('Webhooks', WPE_RM_TEXTDOMAIN),
+                $capability,
+                'wpe-role-manager-webhooks',
+                [self::class, 'render_webhooks_page']
+            );
+        }
 
         // Add network admin menu for multisite
         if (is_multisite()) {
@@ -136,6 +170,90 @@ final class Menu {
     }
 
     /**
+     * Render the settings page.
+     *
+     * @return void
+     */
+    public static function render_settings_page(): void {
+        // Check user capabilities
+        if (!current_user_can(self::get_required_capability())) {
+            wp_die(
+                esc_html__('You do not have sufficient permissions to access this page.', WPE_RM_TEXTDOMAIN),
+                esc_html__('Access Denied', WPE_RM_TEXTDOMAIN),
+                ['response' => 403]
+            );
+        }
+
+        // Check license status
+        if (!LicenseHelper::is_local_dev_site() && !LicenseHelper::has_valid_license()) {
+            self::render_license_required_page();
+            return;
+        }
+
+        // Apply theme immediately to prevent flash
+        self::output_theme_script();
+
+        // Load the settings page template
+        include WPE_RM_PLUGIN_PATH . 'templates/settings-page.php';
+    }
+
+    /**
+     * Render the history page.
+     *
+     * @return void
+     */
+    public static function render_history_page(): void {
+        // Check user capabilities
+        if (!current_user_can(self::get_required_capability())) {
+            wp_die(
+                esc_html__('You do not have sufficient permissions to access this page.', WPE_RM_TEXTDOMAIN),
+                esc_html__('Access Denied', WPE_RM_TEXTDOMAIN),
+                ['response' => 403]
+            );
+        }
+
+        // Check license status
+        if (!LicenseHelper::is_local_dev_site() && !LicenseHelper::has_valid_license()) {
+            self::render_license_required_page();
+            return;
+        }
+
+        // Apply theme immediately to prevent flash
+        self::output_theme_script();
+
+        // Load the history page template
+        include WPE_RM_PLUGIN_PATH . 'templates/history-page.php';
+    }
+
+    /**
+     * Render the webhooks page.
+     *
+     * @return void
+     */
+    public static function render_webhooks_page(): void {
+        // Check user capabilities
+        if (!current_user_can(self::get_required_capability())) {
+            wp_die(
+                esc_html__('You do not have sufficient permissions to access this page.', WPE_RM_TEXTDOMAIN),
+                esc_html__('Access Denied', WPE_RM_TEXTDOMAIN),
+                ['response' => 403]
+            );
+        }
+
+        // Check license status
+        if (!LicenseHelper::is_local_dev_site() && !LicenseHelper::has_valid_license()) {
+            self::render_license_required_page();
+            return;
+        }
+
+        // Apply theme immediately to prevent flash
+        self::output_theme_script();
+
+        // Load the webhooks page template
+        include WPE_RM_PLUGIN_PATH . 'templates/webhooks-page.php';
+    }
+
+    /**
      * Render the license required page when no valid license is found.
      *
      * @return void
@@ -198,35 +316,104 @@ final class Menu {
     }
 
     /**
-     * Output inline script to apply theme immediately (prevent flash).
+     * Output inline script and styles to apply theme immediately (prevent flash).
      *
      * @return void
      */
     private static function output_theme_script(): void {
         $settings = get_option('wpe_rm_settings', []);
         $color_scheme = $settings['color_scheme'] ?? 'auto';
-        $compact_mode = $settings['compact_mode'] ?? false;
+        $framework_settings = $settings['framework_settings'] ?? null;
+
+        // Default framework settings
+        $defaults = [
+            'compact_mode' => false,
+            'compact_multiplier' => 0.7,
+            'theme_mode' => 'system',
+            'space_base' => 8,
+            'space_scale' => 1.5,
+            'font_base' => 13,
+            'type_scale' => 1.2,
+            'radius_base' => 6,
+            'radius_scale' => 1.67,
+            'primary_light' => '#a402ba',
+            'primary_dark' => '#a402ba',
+            'secondary_light' => '#32a8ac',
+            'secondary_dark' => '#32a8ac',
+            'neutral_light' => '#777777',
+            'neutral_dark' => '#9aa0a6',
+            'success_light' => '#22c55e',
+            'success_dark' => '#4ade80',
+            'warning_light' => '#f59e0b',
+            'warning_dark' => '#fbbf24',
+            'danger_light' => '#ef4444',
+            'danger_dark' => '#f87171',
+            'info_light' => '#3b82f6',
+            'info_dark' => '#60a5fa',
+        ];
+
+        // Merge with saved settings
+        $fs = is_array($framework_settings) ? array_merge($defaults, $framework_settings) : $defaults;
+
+        // Use theme_mode from framework_settings if available, fallback to color_scheme
+        $theme_mode = $fs['theme_mode'] ?? $color_scheme;
         ?>
         <script>
         (function() {
-            var scheme = <?php echo json_encode($color_scheme); ?>;
-            var compact = <?php echo json_encode($compact_mode); ?>;
+            var STORAGE_KEY = 'wpe_rm_display_settings';
+            var serverSettings = <?php echo wp_json_encode($fs); ?>;
+            var themeMode = <?php echo wp_json_encode($theme_mode); ?>;
+
+            // Try to load from localStorage first (faster)
+            var settings = serverSettings;
+            try {
+                var stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    settings = JSON.parse(stored);
+                    themeMode = settings.theme_mode || themeMode;
+                }
+            } catch(e) {}
 
             // Apply color-scheme CSS property for light-dark() function
-            if (scheme === 'light') {
+            if (themeMode === 'light') {
                 document.documentElement.style.setProperty('color-scheme', 'light only');
-            } else if (scheme === 'dark') {
+            } else if (themeMode === 'dark') {
                 document.documentElement.style.setProperty('color-scheme', 'dark only');
             } else {
-                // Auto - respect OS setting
                 document.documentElement.style.setProperty('color-scheme', 'light dark');
             }
 
-            if (compact) {
-                document.documentElement.setAttribute('data-compact-mode', 'true');
-            }
+            // Store server settings to localStorage for future instant loads
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(serverSettings));
+            } catch(e) {}
         })();
         </script>
+        <style id="wpea-display-overrides">
+        :root {
+            --wpea-space-base: <?php echo (float) $fs['space_base']; ?>px !important;
+            --wpea-space-scale: <?php echo (float) $fs['space_scale']; ?> !important;
+            --wpea-space-compact: <?php echo (float) $fs['compact_multiplier']; ?> !important;
+            --wpea-fs-base: <?php echo (float) $fs['font_base']; ?>px !important;
+            --wpea-type-scale: <?php echo (float) $fs['type_scale']; ?> !important;
+            --wpea-radius-base: <?php echo (float) $fs['radius_base']; ?>px !important;
+            --wpea-radius-scale: <?php echo (float) $fs['radius_scale']; ?> !important;
+            --wpea-color--primary-light-override: <?php echo esc_attr($fs['primary_light']); ?>;
+            --wpea-color--primary-dark-override: <?php echo esc_attr($fs['primary_dark']); ?>;
+            --wpea-color--secondary-light-override: <?php echo esc_attr($fs['secondary_light']); ?>;
+            --wpea-color--secondary-dark-override: <?php echo esc_attr($fs['secondary_dark']); ?>;
+            --wpea-color--neutral-light-override: <?php echo esc_attr($fs['neutral_light']); ?>;
+            --wpea-color--neutral-dark-override: <?php echo esc_attr($fs['neutral_dark']); ?>;
+            --wpea-color--success-light-override: <?php echo esc_attr($fs['success_light']); ?>;
+            --wpea-color--success-dark-override: <?php echo esc_attr($fs['success_dark']); ?>;
+            --wpea-color--warning-light-override: <?php echo esc_attr($fs['warning_light']); ?>;
+            --wpea-color--warning-dark-override: <?php echo esc_attr($fs['warning_dark']); ?>;
+            --wpea-color--danger-light-override: <?php echo esc_attr($fs['danger_light']); ?>;
+            --wpea-color--danger-dark-override: <?php echo esc_attr($fs['danger_dark']); ?>;
+            --wpea-color--info-light-override: <?php echo esc_attr($fs['info_light']); ?>;
+            --wpea-color--info-dark-override: <?php echo esc_attr($fs['info_dark']); ?>;
+        }
+        </style>
         <?php
     }
 }

@@ -10,6 +10,7 @@
 
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
 import { Modal, Button, Card, Input, Alert, Badge } from '../../lib/index.ts';
+import { emit } from '../../shared/events';
 
 let { store } = $props();
 
@@ -47,6 +48,8 @@ function editUserRoles(user) {
 async function updateUserRoles() {
   if (!selectedUser) return;
 
+  const previousRoles = [...(selectedUser.roles || [])];
+
   try {
     store.showSaving();
     await store.apiRequest(`/users/${selectedUser.id}/roles`, {
@@ -58,6 +61,14 @@ async function updateUserRoles() {
 
     await store.fetchUsers();
     store.showSaved();
+
+    // Emit event for external scripts
+    emit('user:rolesUpdated', {
+      userId: selectedUser.id,
+      roles: selectedUser.roles,
+      previousRoles
+    });
+    emit('users:updated');
   } catch (error) {
     console.error('Error updating user roles:', error);
     store.showError();
@@ -85,10 +96,8 @@ async function testUserCan() {
   if (!selectedUser || !selectedCapability) return;
 
   try {
-    store.showSaving();
     const response = await store.apiRequest(`/users/${selectedUser.id}/can/${selectedCapability}`);
     testResult = response;
-    store.showSaved();
   } catch (error) {
     console.error('Error testing capability:', error);
     store.showError();
@@ -378,7 +387,11 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
 
   <!-- Users Table -->
   <Card>
-    {#if filteredUsers.length === 0}
+    {#if store.loadingUsers}
+      <div style="padding: var(--wpea-space--xl); text-align: center;">
+        <div class="wpea-spinner"></div>
+      </div>
+    {:else if filteredUsers.length === 0}
       <div style="padding: var(--wpea-space--lg); text-align: center;">
         <p class="wpea-text-muted">No users found.</p>
       </div>
@@ -653,7 +666,7 @@ fetch('/wp-json/wpe-rm/v1/users/${selectedUser.id}/can/${selectedCapability}', {
                         <Button
                           size="sm"
                           variant="primary"
-                          style="width: 100%; margin-top: var(--wpea-space--xs);"
+                          style="margin-top: var(--wpea-space--xs);"
                           onclick={generatePHPRestrictPage}
                         >
                           Generate Code

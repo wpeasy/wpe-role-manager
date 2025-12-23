@@ -7,9 +7,11 @@ export { default as Button } from './Button.svelte';
 export { default as Card } from './Card.svelte';
 export { default as Cluster } from './Cluster.svelte';
 export { default as DoubleOptInButton } from './DoubleOptInButton.svelte';
+export { default as FrameworkSettings } from './FrameworkSettings.svelte';
 export { default as Input } from './Input.svelte';
 export { default as Modal } from './Modal.svelte';
 export { default as MultiSelect } from './MultiSelect.svelte';
+export { default as NumberInput } from './NumberInput.svelte';
 export { default as Panel } from './Panel.svelte';
 export { default as Popover } from './Popover.svelte';
 export { default as Radio } from './Radio.svelte';
@@ -31,3 +33,5 @@ export * from './icons.svelte';
 // Types
 export type { Size, ColorVariant, ButtonVariant } from './types';
 export type { ToastItem } from './Toast.svelte';
+export type { FrameworkDisplaySettings } from './FrameworkSettings.svelte';
+export { defaultFrameworkSettings } from './FrameworkSettings.svelte';

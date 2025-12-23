@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /**
  * Settings Tab Component
  *
@@ -8,12 +8,21 @@
  */
 
 import { onMount } from 'svelte';
-import { Card, Button, Alert, Input, Switch, Badge, VerticalTabs } from '../../lib/index.ts';
+import { Card, Button, Alert, Input, Switch, Badge, VerticalTabs, FrameworkSettings, type FrameworkDisplaySettings, defaultFrameworkSettings } from '../../lib/index.ts';
 
 let { store } = $props();
 
-let activeSubTab = $state('appearance');
+let activeSubTab = $state('security');
 let postTypes = $state([]);
+
+// Get shared displaySettings module for live preview and localStorage sync
+const sharedDisplaySettings = window.WPE_RM?.displaySettings;
+
+// Framework display settings (for FrameworkSettings component)
+// Initialize from shared module which reads from localStorage/server
+let frameworkSettings = $state<FrameworkDisplaySettings>(
+  sharedDisplaySettings?.get() ?? { ...defaultFrameworkSettings }
+);
 
 let settings = $state({
   allowCoreCapAssignment: false,
@@ -21,12 +30,19 @@ let settings = $state({
   autosaveDebounce: 500,
   logRetention: 500,
   revisionRetention: 300,
+  webhookRateLimit: 100, // Incoming webhook rate limit per minute
   colorScheme: 'auto', // 'light', 'dark', 'auto'
   compactMode: false,
   restrictionsEnabledPostTypes: ['page'], // Array of post type slugs
   enableBlockConditions: true, // Enable block visibility conditions
   enableElementorConditions: true, // Enable Elementor visibility conditions
   enableBricksConditions: true, // Enable Bricks Builder conditions
+  // Experimental features
+  enableWebhooks: false, // Enable webhooks (experimental)
+  // Clean uninstall settings
+  enableCleanUninstall: false,
+  uninstallRemoveRoles: false,
+  uninstallRemoveCapabilities: false,
 });
 
 let pluginStatus = $state({
@@ -74,12 +90,19 @@ async function fetchSettings() {
       settings.autosaveDebounce = response.settings.autosave_debounce || 500;
       settings.logRetention = response.settings.log_retention || 500;
       settings.revisionRetention = response.settings.revision_retention || 300;
+      settings.webhookRateLimit = response.settings.webhook_rate_limit || 100;
       settings.colorScheme = response.settings.color_scheme || 'auto';
       settings.compactMode = response.settings.compact_mode || false;
       // Feature toggles - default to true if not set
       settings.enableBlockConditions = response.settings.enable_block_conditions ?? true;
       settings.enableElementorConditions = response.settings.enable_elementor_conditions ?? true;
       settings.enableBricksConditions = response.settings.enable_bricks_conditions ?? true;
+      // Experimental features
+      settings.enableWebhooks = response.settings.enable_webhooks || false;
+      // Clean uninstall settings
+      settings.enableCleanUninstall = response.settings.enable_clean_uninstall || false;
+      settings.uninstallRemoveRoles = response.settings.uninstall_remove_roles || false;
+      settings.uninstallRemoveCapabilities = response.settings.uninstall_remove_capabilities || false;
 
       // Handle both old and new format
       if (response.settings.restrictions_enabled_post_types) {
@@ -89,6 +112,14 @@ async function fetchSettings() {
         settings.restrictionsEnabledPostTypes = ['page', 'post'];
       } else {
         settings.restrictionsEnabledPostTypes = ['page']; // Default to page only
+      }
+
+      // Load framework display settings from shared module (has localStorage)
+      // The shared module already synced with server settings on init
+      if (sharedDisplaySettings) {
+        frameworkSettings = sharedDisplaySettings.get();
+      } else if (response.settings.framework_settings) {
+        frameworkSettings = { ...defaultFrameworkSettings, ...response.settings.framework_settings };
       }
     }
     // Plugin status
@@ -112,12 +143,17 @@ async function saveSettings() {
         autosave_debounce: settings.autosaveDebounce,
         log_retention: settings.logRetention,
         revision_retention: settings.revisionRetention,
+        webhook_rate_limit: settings.webhookRateLimit,
         color_scheme: settings.colorScheme,
         compact_mode: settings.compactMode,
         restrictions_enabled_post_types: settings.restrictionsEnabledPostTypes,
         enable_block_conditions: settings.enableBlockConditions,
         enable_elementor_conditions: settings.enableElementorConditions,
         enable_bricks_conditions: settings.enableBricksConditions,
+        enable_webhooks: settings.enableWebhooks,
+        enable_clean_uninstall: settings.enableCleanUninstall,
+        uninstall_remove_roles: settings.uninstallRemoveRoles,
+        uninstall_remove_capabilities: settings.uninstallRemoveCapabilities,
       }),
     });
 
@@ -145,13 +181,38 @@ function applyColorScheme(scheme) {
   }
 }
 
-// Apply compact mode to document
+// Apply compact mode to document (uses body class per WPEA framework)
 function applyCompactMode(compact) {
-  const root = document.documentElement;
   if (compact) {
-    root.setAttribute('data-compact-mode', 'true');
+    document.body.classList.add('wpea-compact');
   } else {
-    root.removeAttribute('data-compact-mode');
+    document.body.classList.remove('wpea-compact');
+  }
+}
+
+// Handle FrameworkSettings changes
+async function handleFrameworkSettingsChange(newSettings: FrameworkDisplaySettings) {
+  // Use shared module if available - it handles localStorage, DOM, and server sync
+  if (sharedDisplaySettings) {
+    store.showSaving();
+    // The set() method saves to localStorage, applies to DOM, and syncs to server
+    sharedDisplaySettings.set(newSettings);
+    store.showSaved();
+  } else {
+    // Fallback: direct API call
+    try {
+      store.showSaving();
+      await store.apiRequest('/settings', {
+        method: 'POST',
+        body: JSON.stringify({
+          framework_settings: newSettings,
+        }),
+      });
+      store.showSaved();
+    } catch (error) {
+      console.error('Error saving framework settings:', error);
+      store.showError();
+    }
   }
 }
 
@@ -170,7 +231,7 @@ function isPostTypeEnabled(postType) {
 }
 </script>
 
-<div class="wpea-stack" style="max-width: 1000px;">
+<div class="wpea-stack">
   <!-- Header -->
   <div class="wpea-stack wpea-stack--sm">
     <h2 class="wpea-heading wpea-heading--md">Settings</h2>
@@ -181,49 +242,20 @@ function isPostTypeEnabled(postType) {
   <VerticalTabs
     bind:activeTab={activeSubTab}
     tabs={[
-      { id: 'appearance', label: 'Appearance', content: appearanceContent },
       { id: 'security', label: 'Security', content: securityContent },
       { id: 'features', label: 'Features', content: featuresContent },
-      { id: 'performance', label: 'Performance', content: performanceContent },
+      { id: 'appearance', label: 'Appearance', content: appearanceContent },
+      { id: 'thresholds', label: 'Thresholds', content: thresholdsContent },
     ]}
   />
 
 </div>
 
 {#snippet appearanceContent()}
-  <div class="wpea-stack">
-    <Card>
-      {#snippet children()}
-      <h3 class="wpea-heading wpea-heading--sm">Appearance Settings</h3>
-
-      <div class="wpea-field">
-        <label for="color-scheme" class="wpea-label">Color Scheme:</label>
-        <select
-          id="color-scheme"
-          bind:value={settings.colorScheme}
-          onchange={saveSettings}
-          class="wpea-input"
-          style="max-width: 300px;"
-        >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="auto">Respect OS Setting</option>
-        </select>
-        <p class="wpea-help">Choose your preferred color scheme. "Respect OS Setting" will automatically match your system preference.</p>
-      </div>
-
-      <div class="wpea-field">
-        <Switch
-          size="sm"
-          bind:checked={settings.compactMode}
-          onchange={saveSettings}
-          label="Compact Mode"
-        />
-        <p class="wpea-help">Reduces font sizes, spacing, and padding throughout the interface, especially in tables. Useful for viewing more data on screen.</p>
-      </div>
-      {/snippet}
-    </Card>
-  </div>
+  <FrameworkSettings
+    bind:settings={frameworkSettings}
+    onchange={handleFrameworkSettingsChange}
+  />
 {/snippet}
 
 {#snippet securityContent()}
@@ -290,6 +322,62 @@ function isPostTypeEnabled(postType) {
             <p>You can now delete roles and capabilities created by other plugins. Be careful not to remove functionality that other plugins depend on. Make sure you know what you're deleting before proceeding.</p>
             {/snippet}
           </Alert>
+        {/if}
+      </div>
+
+      <div class="wpea-stack wpea-stack--sm" style="margin-top: var(--wpea-space--md); padding-top: var(--wpea-space--md); border-top: 1px solid var(--wpea-surface--divider);">
+        <div class="wpea-cluster" style="justify-content: space-between; align-items: center;">
+          <span>Enable clean uninstall</span>
+          <Switch
+            bind:checked={settings.enableCleanUninstall}
+            onchange={saveSettings}
+          />
+        </div>
+
+        <Alert variant="warning">
+          {#snippet children()}
+          <p><strong>What is clean uninstall?</strong></p>
+          <p>When enabled, <strong>deleting</strong> this plugin from the Plugins page will permanently remove all plugin data including:</p>
+          <ul style="margin: var(--wpea-space--xs) 0 0 var(--wpea-space--md); padding: 0;">
+            <li>Activity logs and revision history</li>
+            <li>Webhook configurations and activity logs</li>
+            <li>Plugin settings and preferences</li>
+            <li>Disabled roles/capabilities tracking</li>
+          </ul>
+          <p style="margin-top: var(--wpea-space--xs);"><strong>Note:</strong> Deactivating the plugin does NOT delete any data. Only deleting the plugin triggers cleanup.</p>
+          {/snippet}
+        </Alert>
+
+        {#if settings.enableCleanUninstall}
+          <Alert variant="danger">
+            {#snippet children()}
+            <p><strong>CLEAN UNINSTALL ENABLED</strong></p>
+            <p>Deleting this plugin will permanently erase all plugin data. This action cannot be undone.</p>
+            {/snippet}
+          </Alert>
+
+          <div class="wpea-stack wpea-stack--xs" style="margin-top: var(--wpea-space--sm); padding: var(--wpea-space--md); background: var(--wpea-surface--muted); border-radius: var(--wpea-radius--md);">
+            <p style="margin: 0 0 var(--wpea-space--sm) 0; font-weight: 500;">Additional cleanup options:</p>
+            <Switch
+              size="sm"
+              bind:checked={settings.uninstallRemoveRoles}
+              onchange={saveSettings}
+              label="Also remove roles created by this plugin"
+            />
+            <Switch
+              size="sm"
+              bind:checked={settings.uninstallRemoveCapabilities}
+              onchange={saveSettings}
+              label="Also remove capabilities created by this plugin"
+            />
+            {#if settings.uninstallRemoveRoles || settings.uninstallRemoveCapabilities}
+              <Alert variant="danger" style="margin-top: var(--wpea-space--sm);">
+                {#snippet children()}
+                <p><strong>Warning:</strong> Removing roles or capabilities may affect users who have those roles assigned or plugins that depend on those capabilities.</p>
+                {/snippet}
+              </Alert>
+            {/if}
+          </div>
         {/if}
       </div>
       {/snippet}
@@ -384,14 +472,48 @@ function isPostTypeEnabled(postType) {
       {/if}
       {/snippet}
     </Card>
+
+    <!-- Experimental Features -->
+    <Card>
+      {#snippet children()}
+      <h3 class="wpea-heading wpea-heading--sm">Experimental</h3>
+      <p class="wpea-help">These features are experimental and may change in future versions.</p>
+
+      <div class="wpea-stack wpea-stack--sm" style="margin-top: var(--wpea-space--md);">
+        <div class="wpea-cluster" style="justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-weight: 500;">Webhooks</span>
+            <Badge variant="warning" size="sm" style="margin-left: var(--wpea-space--xs);">Experimental</Badge>
+          </div>
+          <Switch
+            bind:checked={settings.enableWebhooks}
+            onchange={saveSettings}
+          />
+        </div>
+        <p class="wpea-help" style="margin-top: 0;">
+          Enable outgoing and incoming webhooks for integration with automation platforms like N8N, Zapier, and Make.
+          When enabled, a <strong>Webhooks</strong> submenu will appear.
+        </p>
+
+        {#if settings.enableWebhooks}
+          <Alert variant="info" style="margin-top: var(--wpea-space--sm);">
+            {#snippet children()}
+            <p><strong>Webhooks Enabled</strong></p>
+            <p>The Webhooks submenu is now available. Refresh the page to see the menu item.</p>
+            {/snippet}
+          </Alert>
+        {/if}
+      </div>
+      {/snippet}
+    </Card>
   </div>
 {/snippet}
 
-{#snippet performanceContent()}
+{#snippet thresholdsContent()}
   <div class="wpea-stack">
     <Card>
       {#snippet children()}
-      <h3 class="wpea-heading wpea-heading--sm">Performance Settings</h3>
+      <h3 class="wpea-heading wpea-heading--sm">Thresholds</h3>
 
       <div class="wpea-field">
         <label for="autosave-debounce" class="wpea-label">Autosave Delay (milliseconds):</label>
@@ -437,6 +559,23 @@ function isPostTypeEnabled(postType) {
         />
         <p class="wpea-help">Maximum number of revisions to retain (50-1000). Oldest revisions are automatically removed when this limit is reached. Revisions allow you to restore previous states of roles and capabilities.</p>
       </div>
+
+      {#if settings.enableWebhooks}
+        <div class="wpea-field">
+          <label for="webhook-rate-limit" class="wpea-label">Incoming Webhook Rate Limit (requests per minute):</label>
+          <Input
+            type="number"
+            id="webhook-rate-limit"
+            bind:value={settings.webhookRateLimit}
+            min={10}
+            max={1000}
+            step={10}
+            onchange={saveSettings}
+            style="max-width: 300px;"
+          />
+          <p class="wpea-help">Maximum number of incoming webhook requests allowed per minute per IP address (10-1000). Requests exceeding this limit receive a 429 Too Many Requests response.</p>
+        </div>
+      {/if}
       {/snippet}
     </Card>
   </div>

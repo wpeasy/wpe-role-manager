@@ -156,8 +156,8 @@ $effect(() => {
   <Card>
     {#snippet children()}
     {#if loading}
-      <div style="padding: var(--wpea-space--lg); text-align: center;">
-        <p class="wpea-text-muted">Loading logs...</p>
+      <div style="padding: var(--wpea-space--xl); text-align: center;">
+        <div class="wpea-spinner"></div>
       </div>
     {:else if logs.length === 0}
       <div style="padding: var(--wpea-space--lg); text-align: center;">

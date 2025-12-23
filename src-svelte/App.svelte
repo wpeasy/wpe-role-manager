@@ -20,6 +20,7 @@ import RevisionsTab from './components/tabs/RevisionsTab.svelte';
 import ToolsTab from './components/tabs/ToolsTab.svelte';
 import SettingsTab from './components/tabs/SettingsTab.svelte';
 import LogsTab from './components/tabs/LogsTab.svelte';
+import WebhooksTab from './components/tabs/WebhooksTab.svelte';
 
 // Props
 let { wpData = {} } = $props();
@@ -78,14 +79,12 @@ function applyColorScheme(scheme) {
   }
 }
 
-// Apply compact mode to document
+// Apply compact mode to document (uses body class per WPEA framework)
 function applyCompactMode(compact) {
-  const root = document.documentElement;
-
   if (compact) {
-    root.setAttribute('data-compact-mode', 'true');
+    document.body.classList.add('wpea-compact');
   } else {
-    root.removeAttribute('data-compact-mode');
+    document.body.classList.remove('wpea-compact');
   }
 }
 
@@ -172,6 +171,7 @@ $effect(() => {
       { id: 'tools', label: wpData.i18n?.toolsTab || 'Tools', content: toolsContent },
       { id: 'revisions', label: wpData.i18n?.revisionsTab || 'Revisions', content: revisionsContent },
       { id: 'logs', label: wpData.i18n?.logsTab || 'Logs', content: logsContent },
+      { id: 'webhooks', label: wpData.i18n?.webhooksTab || 'Webhooks', content: webhooksContent },
     ]}
   />
 </div>
@@ -206,6 +206,10 @@ $effect(() => {
 
 {#snippet logsContent()}
   <LogsTab {store} />
+{/snippet}
+
+{#snippet webhooksContent()}
+  <WebhooksTab {store} />
 {/snippet}
 
 <!-- Toast Notifications -->

@@ -17,6 +17,11 @@ use WP_Easy\RoleManager\Helpers\RoleManager;
 use WP_Easy\RoleManager\Helpers\CapabilityManager;
 use WP_Easy\RoleManager\Helpers\UserManager;
 use WP_Easy\RoleManager\Helpers\Logger;
+use WP_Easy\RoleManager\Webhooks\Manager as WebhookManager;
+use WP_Easy\RoleManager\Webhooks\Dispatcher as WebhookDispatcher;
+use WP_Easy\RoleManager\Webhooks\Processor as WebhookProcessor;
+use WP_Easy\RoleManager\Webhooks\Logger as WebhookLogger;
+use WP_Easy\RoleManager\Webhooks\IncomingHandler;
 
 /**
  * Register and handle REST API routes.
@@ -296,6 +301,125 @@ final class Routes {
                 'permission_callback' => [self::class, 'check_permissions'],
             ]
         );
+
+        // Webhook management endpoints (only if enabled in settings)
+        $settings = get_option('wpe_rm_settings', []);
+        if (!empty($settings['enable_webhooks'])) {
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhooks',
+                [
+                    [
+                        'methods' => WP_REST_Server::READABLE,
+                        'callback' => [self::class, 'get_webhooks'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                    [
+                        'methods' => WP_REST_Server::CREATABLE,
+                        'callback' => [self::class, 'create_webhook'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                ]
+            );
+
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhooks/events',
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [self::class, 'get_webhook_events'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ]
+            );
+
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhooks/queue',
+                [
+                    [
+                        'methods' => WP_REST_Server::READABLE,
+                        'callback' => [self::class, 'get_webhook_queue'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                    [
+                        'methods' => WP_REST_Server::DELETABLE,
+                        'callback' => [self::class, 'clear_webhook_queue'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                ]
+            );
+
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhooks/log',
+                [
+                    [
+                        'methods' => WP_REST_Server::READABLE,
+                        'callback' => [self::class, 'get_webhook_log'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                    [
+                        'methods' => WP_REST_Server::DELETABLE,
+                        'callback' => [self::class, 'clear_webhook_log'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                ]
+            );
+
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhooks/(?P<id>[a-zA-Z0-9_-]+)',
+                [
+                    [
+                        'methods' => WP_REST_Server::READABLE,
+                        'callback' => [self::class, 'get_webhook'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                    [
+                        'methods' => WP_REST_Server::EDITABLE,
+                        'callback' => [self::class, 'update_webhook'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                    [
+                        'methods' => WP_REST_Server::DELETABLE,
+                        'callback' => [self::class, 'delete_webhook'],
+                        'permission_callback' => [self::class, 'check_permissions'],
+                    ],
+                ]
+            );
+
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhooks/(?P<id>[a-zA-Z0-9_-]+)/test',
+                [
+                    'methods' => WP_REST_Server::CREATABLE,
+                    'callback' => [self::class, 'test_webhook'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ]
+            );
+
+            // Incoming webhook endpoint (external access with Application Password)
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhook/incoming',
+                [
+                    'methods' => WP_REST_Server::CREATABLE,
+                    'callback' => [IncomingHandler::class, 'handle_request'],
+                    'permission_callback' => [IncomingHandler::class, 'check_permissions'],
+                ]
+            );
+
+            // Incoming webhook documentation endpoint
+            register_rest_route(
+                self::NAMESPACE,
+                '/webhook/incoming/actions',
+                [
+                    'methods' => WP_REST_Server::READABLE,
+                    'callback' => [self::class, 'get_incoming_actions'],
+                    'permission_callback' => [self::class, 'check_permissions'],
+                ]
+            );
+        }
     }
 
     /**
@@ -397,6 +521,31 @@ final class Routes {
             );
         }
 
+        /**
+         * Filter role creation data before the role is created.
+         *
+         * @param array  $role_data Array with 'slug', 'name', 'copy_from' keys.
+         * @param string $slug      The role slug.
+         * @param string $name      The role display name.
+         */
+        $role_data = apply_filters('wpe_rm_role_creation_data', [
+            'slug' => $slug,
+            'name' => $name,
+            'copy_from' => $copy_from,
+        ], $slug, $name);
+        $slug = $role_data['slug'];
+        $name = $role_data['name'];
+        $copy_from = $role_data['copy_from'];
+
+        /**
+         * Fires before a role is created.
+         *
+         * @param string $slug      The role slug.
+         * @param string $name      The role display name.
+         * @param string $copy_from The role to copy capabilities from (if any).
+         */
+        do_action('wpe_rm_before_role_create', $slug, $name, $copy_from);
+
         $role = RoleManager::create_role($slug, $name, $copy_from);
 
         if (!$role) {
@@ -421,6 +570,16 @@ final class Routes {
             ? sprintf('Created role "%s" (slug: %s) based on "%s"', $name, $slug, $copy_from)
             : sprintf('Created role "%s" (slug: %s)', $name, $slug);
         Logger::log('Role Created', $log_details);
+
+        /**
+         * Fires after a role is created.
+         *
+         * @param string   $slug      The role slug.
+         * @param string   $name      The role display name.
+         * @param WP_Role  $role      The created WP_Role object.
+         * @param string   $copy_from The role capabilities were copied from (if any).
+         */
+        do_action('wpe_rm_after_role_create', $slug, $name, $role, $copy_from);
 
         return new WP_REST_Response([
             'success' => true,
@@ -461,6 +620,14 @@ final class Routes {
             }
         }
 
+        /**
+         * Fires before a role is updated.
+         *
+         * @param string $role_slug The role slug.
+         * @param array  $params    The update parameters.
+         */
+        do_action('wpe_rm_before_role_update', $role_slug, $params);
+
         $success = RoleManager::update_role($role_slug, $params);
 
         if (!$success) {
@@ -476,6 +643,15 @@ final class Routes {
             $action = $params['disabled'] ? 'Role Disabled' : 'Role Enabled';
             Logger::log($action, sprintf('Role "%s" %s', $role_slug, $params['disabled'] ? 'disabled' : 'enabled'));
         }
+
+        /**
+         * Fires after a role is updated.
+         *
+         * @param string $role_slug The role slug.
+         * @param array  $params    The update parameters.
+         * @param bool   $success   Whether the update was successful.
+         */
+        do_action('wpe_rm_after_role_update', $role_slug, $params, $success);
 
         return new WP_REST_Response([
             'success' => true,
@@ -554,6 +730,32 @@ final class Routes {
             );
         }
 
+        /**
+         * Filter whether a role can be deleted.
+         *
+         * @param bool   $allow     Whether to allow the deletion. Default true.
+         * @param string $role_slug The role slug.
+         * @param array  $role_data The role data.
+         * @param int    $user_count Number of users with this role.
+         */
+        $allow_delete = apply_filters('wpe_rm_allow_role_deletion', true, $role_slug, $role_data, $user_count);
+        if (!$allow_delete) {
+            return new WP_Error(
+                'role_deletion_blocked',
+                __('Role deletion was blocked by a filter.', WPE_RM_TEXTDOMAIN),
+                ['status' => 403]
+            );
+        }
+
+        /**
+         * Fires before a role is deleted.
+         *
+         * @param string $role_slug  The role slug.
+         * @param array  $role_data  The role data.
+         * @param int    $user_count Number of users with this role.
+         */
+        do_action('wpe_rm_before_role_delete', $role_slug, $role_data, $user_count);
+
         // Remove all capabilities that belong to this role from ALL roles
         $caps_removed = CapabilityManager::remove_role_capabilities_from_all_roles($role_slug);
 
@@ -577,6 +779,15 @@ final class Routes {
         }
 
         Logger::log('Role Deleted', $log_details);
+
+        /**
+         * Fires after a role is deleted.
+         *
+         * @param string $role_slug  The deleted role slug.
+         * @param array  $role_data  The deleted role data.
+         * @param int    $caps_removed Number of capabilities removed from other roles.
+         */
+        do_action('wpe_rm_after_role_delete', $role_slug, $role_data, $caps_removed);
 
         return new WP_REST_Response([
             'success' => true,
@@ -652,7 +863,12 @@ final class Routes {
         // Blacklist dangerous capabilities that allow code execution or security bypasses
         // Only enforce if the setting is disabled (default)
         if (!$allow_dangerous_caps) {
-            $dangerous_caps = [
+            /**
+             * Filter the list of dangerous capabilities that are blocked by default.
+             *
+             * @param array $dangerous_caps Array of capability names considered dangerous.
+             */
+            $dangerous_caps = apply_filters('wpe_rm_dangerous_capabilities', [
                 'unfiltered_html',
                 'unfiltered_upload',
                 'edit_plugins',
@@ -679,16 +895,25 @@ final class Routes {
                 'delete_site',
                 'import',
                 'export',
-            ];
+            ]);
 
             if (in_array($capability, $dangerous_caps, true)) {
-                return new WP_Error(
-                    'dangerous_capability',
-                    __('This capability cannot be added for security reasons. Enable "Allow assigning dangerous capabilities to roles" in Settings to override this protection.', WPE_RM_TEXTDOMAIN),
-                    ['status' => 403]
-                );
+                return new WP_REST_Response([
+                    'success' => false,
+                    'error' => 'dangerous_capability',
+                    'message' => __('This capability cannot be added for security reasons. Enable "Allow assigning dangerous capabilities to roles" in Settings to override this protection.', WPE_RM_TEXTDOMAIN),
+                ], 200);
             }
         }
+
+        /**
+         * Fires before a capability is added to a role.
+         *
+         * @param string $role_slug  The role slug.
+         * @param string $capability The capability name.
+         * @param bool   $grant      Whether to grant (true) or deny (false) the capability.
+         */
+        do_action('wpe_rm_before_capability_add', $role_slug, $capability, $grant);
 
         $success = CapabilityManager::add_capability($role_slug, $capability, $grant, $belongs_to);
 
@@ -712,6 +937,15 @@ final class Routes {
         // Log the action
         $action_text = $grant ? 'granted' : 'denied';
         Logger::log('Capability Added', sprintf('Added capability "%s" to role "%s" (%s)', $capability, $role_slug, $action_text));
+
+        /**
+         * Fires after a capability is added to a role.
+         *
+         * @param string $role_slug  The role slug.
+         * @param string $capability The capability name.
+         * @param bool   $grant      Whether the capability was granted (true) or denied (false).
+         */
+        do_action('wpe_rm_after_capability_add', $role_slug, $capability, $grant);
 
         return new WP_REST_Response([
             'success' => true,
@@ -745,7 +979,8 @@ final class Routes {
 
         // Prevent adding dangerous capabilities for security (unless setting is enabled)
         if (!$allow_dangerous_caps && $action !== 'unset') {
-            $dangerous_caps = [
+            /** This filter is documented in Routes.php::add_capability() */
+            $dangerous_caps = apply_filters('wpe_rm_dangerous_capabilities', [
                 'unfiltered_html',
                 'unfiltered_upload',
                 'edit_plugins',
@@ -772,16 +1007,25 @@ final class Routes {
                 'delete_site',
                 'import',
                 'export',
-            ];
+            ]);
 
             if (in_array($capability, $dangerous_caps, true)) {
-                return new WP_Error(
-                    'dangerous_capability',
-                    __('This capability cannot be added for security reasons. Enable "Allow assigning dangerous capabilities to roles" in Settings to override this protection.', WPE_RM_TEXTDOMAIN),
-                    ['status' => 403]
-                );
+                return new WP_REST_Response([
+                    'success' => false,
+                    'error' => 'dangerous_capability',
+                    'message' => __('This capability cannot be added for security reasons. Enable "Allow assigning dangerous capabilities to roles" in Settings to override this protection.', WPE_RM_TEXTDOMAIN),
+                ], 200);
             }
         }
+
+        /**
+         * Fires before a capability is toggled on a role.
+         *
+         * @param string $role_slug  The role slug.
+         * @param string $capability The capability name.
+         * @param string $action     The toggle action: 'grant', 'deny', or 'unset'.
+         */
+        do_action('wpe_rm_before_capability_toggle', $role_slug, $capability, $action);
 
         // Save revision before toggling capability with complete snapshot
         $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
@@ -793,6 +1037,15 @@ final class Routes {
         );
 
         if ($action === 'unset') {
+            // Check if it's a core capability before trying
+            if (CapabilityManager::is_core_capability($capability)) {
+                return new WP_REST_Response([
+                    'success' => false,
+                    'error' => 'core_capability',
+                    'message' => __('Core WordPress capabilities cannot be modified. They are read-only.', WPE_RM_TEXTDOMAIN),
+                ], 200);
+            }
+
             // Remove the capability completely
             $success = CapabilityManager::remove_capability($role_slug, $capability);
             if (!$success) {
@@ -807,6 +1060,16 @@ final class Routes {
         } else {
             // Grant (true) or deny (false)
             $grant = $action === 'grant';
+
+            // Check if it's a core capability before trying
+            if (CapabilityManager::is_core_capability($capability)) {
+                return new WP_REST_Response([
+                    'success' => false,
+                    'error' => 'core_capability',
+                    'message' => __('Core WordPress capabilities cannot be modified. They are read-only.', WPE_RM_TEXTDOMAIN),
+                ], 200);
+            }
+
             $success = CapabilityManager::add_capability($role_slug, $capability, $grant);
             if (!$success) {
                 return new WP_Error(
@@ -822,6 +1085,16 @@ final class Routes {
             );
             Logger::log('Capability Toggled', sprintf('Toggled capability "%s" on role "%s" to %s', $capability, $role_slug, $action));
         }
+
+        /**
+         * Fires after a capability is toggled on a role.
+         *
+         * @param string $role_slug  The role slug.
+         * @param string $capability The capability name.
+         * @param string $action     The toggle action: 'grant', 'deny', or 'unset'.
+         * @param bool   $success    Whether the toggle was successful.
+         */
+        do_action('wpe_rm_after_capability_toggle', $role_slug, $capability, $action, true);
 
         return new WP_REST_Response([
             'success' => true,
@@ -881,6 +1154,14 @@ final class Routes {
             );
         }
 
+        /**
+         * Fires before a capability is removed from a role.
+         *
+         * @param string $role_slug  The role slug.
+         * @param string $capability The capability name.
+         */
+        do_action('wpe_rm_before_capability_remove', $role_slug, $capability);
+
         $success = CapabilityManager::remove_capability($role_slug, $capability);
 
         if (!$success) {
@@ -893,6 +1174,14 @@ final class Routes {
 
         // Log the action
         Logger::log('Capability Removed', sprintf('Removed capability "%s" from role "%s"', $capability, $role_slug));
+
+        /**
+         * Fires after a capability is removed from a role.
+         *
+         * @param string $role_slug  The role slug.
+         * @param string $capability The capability name.
+         */
+        do_action('wpe_rm_after_capability_remove', $role_slug, $capability);
 
         return new WP_REST_Response([
             'success' => true,
@@ -991,6 +1280,26 @@ final class Routes {
         // Sanitize roles
         $roles = array_map('sanitize_key', $params['roles']);
 
+        /**
+         * Filter the roles before assigning to a user.
+         *
+         * @param array    $roles       The roles to assign.
+         * @param int      $user_id     The user ID.
+         * @param WP_User  $target_user The user object.
+         * @param string[] $old_roles   The user's current roles.
+         */
+        $roles = apply_filters('wpe_rm_user_roles', $roles, $user_id, $target_user, $target_user->roles);
+
+        /**
+         * Fires before a user's roles are updated.
+         *
+         * @param int      $user_id     The user ID.
+         * @param array    $new_roles   The new roles to assign.
+         * @param string[] $old_roles   The user's current roles.
+         * @param WP_User  $target_user The user object.
+         */
+        do_action('wpe_rm_before_user_roles_update', $user_id, $roles, $target_user->roles, $target_user);
+
         // Save revision before updating user roles with complete snapshot
         $snapshot = \WP_Easy\RoleManager\Helpers\Revisions::get_complete_snapshot();
         $snapshot['changed_user'] = [
@@ -1021,6 +1330,16 @@ final class Routes {
         $username = $user ? $user->user_login : "ID:$user_id";
         $roles_list = empty($roles) ? 'none' : implode(', ', $roles);
         Logger::log('User Roles Updated', sprintf('Updated roles for user "%s": %s', $username, $roles_list));
+
+        /**
+         * Fires after a user's roles are updated.
+         *
+         * @param int      $user_id   The user ID.
+         * @param array    $new_roles The roles that were assigned.
+         * @param string[] $old_roles The user's previous roles.
+         * @param WP_User  $user      The updated user object.
+         */
+        do_action('wpe_rm_after_user_roles_update', $user_id, $roles, $target_user->roles, $user);
 
         return new WP_REST_Response([
             'success' => true,
@@ -1239,6 +1558,22 @@ final class Routes {
             $export_data = RoleManager::export_custom_roles($selected_roles);
         }
 
+        /**
+         * Fires before export data is returned.
+         *
+         * @param array  $export_data The data being exported.
+         * @param string $export_type The type of export: 'full' or 'roles'.
+         */
+        do_action('wpe_rm_before_export', $export_data, $export_type ?? 'roles');
+
+        /**
+         * Filter the export data before returning.
+         *
+         * @param array  $export_data The data being exported.
+         * @param string $export_type The type of export: 'full' or 'roles'.
+         */
+        $export_data = apply_filters('wpe_rm_export_data', $export_data, $export_type ?? 'roles');
+
         return new WP_REST_Response([
             'export' => $export_data,
             'success' => true,
@@ -1264,6 +1599,22 @@ final class Routes {
 
         // Check if this is a full backup
         $is_full_backup = isset($params['backup_type']) && $params['backup_type'] === 'full' && isset($params['version']);
+
+        /**
+         * Filter the import data before processing.
+         *
+         * @param array $params         The import data.
+         * @param bool  $is_full_backup Whether this is a full backup import.
+         */
+        $params = apply_filters('wpe_rm_import_data', $params, $is_full_backup);
+
+        /**
+         * Fires before roles are imported.
+         *
+         * @param array $params         The import data.
+         * @param bool  $is_full_backup Whether this is a full backup import.
+         */
+        do_action('wpe_rm_before_import', $params, $is_full_backup);
 
         if ($is_full_backup) {
             // Full backup restore
@@ -1343,6 +1694,16 @@ final class Routes {
                 sprintf('Restored %d role(s) and %d capability(ies)', $restored_roles, $restored_caps)
             );
 
+            /**
+             * Fires after a full backup import is completed.
+             *
+             * @param int   $restored_roles The number of roles restored.
+             * @param int   $restored_caps  The number of capabilities restored.
+             * @param int   $errors         The number of errors.
+             * @param array $messages       Import messages.
+             */
+            do_action('wpe_rm_after_import', $restored_roles, $restored_caps, $errors, $messages);
+
             return new WP_REST_Response([
                 'success' => $errors === 0,
                 'imported' => $restored_roles,
@@ -1361,6 +1722,15 @@ final class Routes {
             if ($result['success'] > 0) {
                 Logger::log('Roles Imported', sprintf('Imported %d role(s) with %d error(s)', $result['success'], $result['errors']));
             }
+
+            /**
+             * Fires after a roles-only import is completed.
+             *
+             * @param int   $imported The number of roles imported.
+             * @param int   $errors   The number of errors.
+             * @param array $messages Import messages.
+             */
+            do_action('wpe_rm_after_import', $result['success'], 0, $result['errors'], $result['messages']);
 
             return new WP_REST_Response([
                 'success' => $result['errors'] === 0,
@@ -1422,19 +1792,29 @@ final class Routes {
      * @return WP_REST_Response
      */
     public static function get_settings(): WP_REST_Response {
-        $settings = get_option('wpe_rm_settings', [
+        $defaults = [
             'allow_core_cap_assignment' => false,
             'allow_external_deletion' => false,
             'autosave_debounce' => 500,
             'log_retention' => 500,
             'revision_retention' => 300,
+            'webhook_rate_limit' => 100,
             'color_scheme' => 'auto',
             'compact_mode' => false,
-            'restrictions_enabled_post_types' => ['page'], // Default to page only
-            'enable_block_conditions' => true, // Block visibility conditions enabled by default
-            'enable_elementor_conditions' => true, // Elementor visibility conditions enabled by default
-            'enable_bricks_conditions' => true, // Bricks Builder conditions enabled by default
-        ]);
+            'restrictions_enabled_post_types' => ['page'],
+            'enable_block_conditions' => true,
+            'enable_elementor_conditions' => true,
+            'enable_bricks_conditions' => true,
+            'enable_webhooks' => false,
+            'enable_clean_uninstall' => false,
+            'uninstall_remove_roles' => false,
+            'uninstall_remove_capabilities' => false,
+            'framework_settings' => null,
+        ];
+
+        // Merge saved settings with defaults to ensure all keys exist
+        $saved = get_option('wpe_rm_settings', []);
+        $settings = array_merge($defaults, $saved);
 
         return new WP_REST_Response([
             'settings' => $settings,
@@ -1455,40 +1835,61 @@ final class Routes {
     public static function update_settings(WP_REST_Request $request) {
         $params = $request->get_json_params();
 
+        // Get existing settings to preserve framework_settings if not being updated
+        $existing_settings = get_option('wpe_rm_settings', []);
+
         $settings = [
             'allow_core_cap_assignment' => isset($params['allow_core_cap_assignment'])
                 ? (bool) $params['allow_core_cap_assignment']
-                : false,
+                : ($existing_settings['allow_core_cap_assignment'] ?? false),
             'allow_external_deletion' => isset($params['allow_external_deletion'])
                 ? (bool) $params['allow_external_deletion']
-                : false,
+                : ($existing_settings['allow_external_deletion'] ?? false),
             'autosave_debounce' => isset($params['autosave_debounce'])
                 ? absint($params['autosave_debounce'])
-                : 500,
+                : ($existing_settings['autosave_debounce'] ?? 500),
             'log_retention' => isset($params['log_retention'])
                 ? absint($params['log_retention'])
-                : 500,
+                : ($existing_settings['log_retention'] ?? 500),
             'revision_retention' => isset($params['revision_retention'])
                 ? absint($params['revision_retention'])
-                : 300,
+                : ($existing_settings['revision_retention'] ?? 300),
+            'webhook_rate_limit' => isset($params['webhook_rate_limit'])
+                ? absint($params['webhook_rate_limit'])
+                : ($existing_settings['webhook_rate_limit'] ?? 100),
             'color_scheme' => isset($params['color_scheme'])
                 ? sanitize_text_field($params['color_scheme'])
-                : 'auto',
+                : ($existing_settings['color_scheme'] ?? 'auto'),
             'compact_mode' => isset($params['compact_mode'])
                 ? (bool) $params['compact_mode']
-                : false,
+                : ($existing_settings['compact_mode'] ?? false),
             'restrictions_enabled_post_types' => isset($params['restrictions_enabled_post_types'])
                 ? array_map('sanitize_key', (array) $params['restrictions_enabled_post_types'])
-                : ['page'],
+                : ($existing_settings['restrictions_enabled_post_types'] ?? ['page']),
             'enable_block_conditions' => isset($params['enable_block_conditions'])
                 ? (bool) $params['enable_block_conditions']
-                : true,
+                : ($existing_settings['enable_block_conditions'] ?? true),
             'enable_elementor_conditions' => isset($params['enable_elementor_conditions'])
                 ? (bool) $params['enable_elementor_conditions']
-                : true,
+                : ($existing_settings['enable_elementor_conditions'] ?? true),
             'enable_bricks_conditions' => isset($params['enable_bricks_conditions'])
                 ? (bool) $params['enable_bricks_conditions']
-                : true,
+                : ($existing_settings['enable_bricks_conditions'] ?? true),
+            'enable_webhooks' => isset($params['enable_webhooks'])
+                ? (bool) $params['enable_webhooks']
+                : ($existing_settings['enable_webhooks'] ?? false),
+            'enable_clean_uninstall' => isset($params['enable_clean_uninstall'])
+                ? (bool) $params['enable_clean_uninstall']
+                : ($existing_settings['enable_clean_uninstall'] ?? false),
+            'uninstall_remove_roles' => isset($params['uninstall_remove_roles'])
+                ? (bool) $params['uninstall_remove_roles']
+                : ($existing_settings['uninstall_remove_roles'] ?? false),
+            'uninstall_remove_capabilities' => isset($params['uninstall_remove_capabilities'])
+                ? (bool) $params['uninstall_remove_capabilities']
+                : ($existing_settings['uninstall_remove_capabilities'] ?? false),
+            'framework_settings' => isset($params['framework_settings'])
+                ? $params['framework_settings']
+                : ($existing_settings['framework_settings'] ?? null),
         ];
 
         // Validate autosave_debounce range
@@ -1506,10 +1907,23 @@ final class Routes {
             $settings['revision_retention'] = 300;
         }
 
+        // Validate webhook_rate_limit range
+        if ($settings['webhook_rate_limit'] < 10 || $settings['webhook_rate_limit'] > 1000) {
+            $settings['webhook_rate_limit'] = 100;
+        }
+
         // Validate color_scheme
         if (!in_array($settings['color_scheme'], ['light', 'dark', 'auto'], true)) {
             $settings['color_scheme'] = 'auto';
         }
+
+        /**
+         * Fires before settings are updated.
+         *
+         * @param array $settings     The new settings to save.
+         * @param array $old_settings The previous settings.
+         */
+        do_action('wpe_rm_before_settings_update', $settings, $existing_settings);
 
         update_option('wpe_rm_settings', $settings);
 
@@ -1536,6 +1950,9 @@ final class Routes {
         if (isset($params['revision_retention'])) {
             $changes[] = sprintf('Revision retention: %d entries', $settings['revision_retention']);
         }
+        if (isset($params['webhook_rate_limit'])) {
+            $changes[] = sprintf('Webhook rate limit: %d requests/min', $settings['webhook_rate_limit']);
+        }
         if (isset($params['color_scheme'])) {
             $changes[] = sprintf('Color scheme: %s', $settings['color_scheme']);
         }
@@ -1555,10 +1972,31 @@ final class Routes {
         if (isset($params['enable_bricks_conditions'])) {
             $changes[] = sprintf('Bricks Builder conditions: %s', $settings['enable_bricks_conditions'] ? 'enabled' : 'disabled');
         }
+        if (isset($params['enable_webhooks'])) {
+            $changes[] = sprintf('Webhooks (experimental): %s', $settings['enable_webhooks'] ? 'enabled' : 'disabled');
+        }
+        if (isset($params['enable_clean_uninstall'])) {
+            $changes[] = sprintf('Clean uninstall: %s', $settings['enable_clean_uninstall'] ? 'enabled' : 'disabled');
+        }
+        if (isset($params['uninstall_remove_roles'])) {
+            $changes[] = sprintf('Uninstall remove roles: %s', $settings['uninstall_remove_roles'] ? 'enabled' : 'disabled');
+        }
+        if (isset($params['uninstall_remove_capabilities'])) {
+            $changes[] = sprintf('Uninstall remove capabilities: %s', $settings['uninstall_remove_capabilities'] ? 'enabled' : 'disabled');
+        }
 
         if (!empty($changes)) {
             Logger::log('Settings Updated', implode(', ', $changes));
         }
+
+        /**
+         * Fires after settings are updated.
+         *
+         * @param array $settings     The new settings.
+         * @param array $old_settings The previous settings.
+         * @param array $changes      Human-readable list of changes.
+         */
+        do_action('wpe_rm_after_settings_update', $settings, $existing_settings, $changes);
 
         return new WP_REST_Response([
             'settings' => $settings,
@@ -1696,6 +2134,17 @@ final class Routes {
             );
         }
 
+        // Get revision data before restoring
+        $revision = \WP_Easy\RoleManager\Helpers\Revisions::get($revision_id);
+
+        /**
+         * Fires before a revision is restored.
+         *
+         * @param int   $revision_id The revision ID.
+         * @param array $revision    The revision data.
+         */
+        do_action('wpe_rm_before_revision_restore', $revision_id, $revision);
+
         $success = \WP_Easy\RoleManager\Helpers\Revisions::restore($revision_id);
 
         if (!$success) {
@@ -1705,6 +2154,14 @@ final class Routes {
                 ['status' => 400]
             );
         }
+
+        /**
+         * Fires after a revision is successfully restored.
+         *
+         * @param int   $revision_id The revision ID.
+         * @param array $revision    The revision data that was restored.
+         */
+        do_action('wpe_rm_after_revision_restore', $revision_id, $revision);
 
         return new WP_REST_Response([
             'success' => true,
@@ -1748,6 +2205,301 @@ final class Routes {
                 $result['reset_count']
             ),
             'result' => $result,
+        ], 200);
+    }
+
+    // =========================================================================
+    // WEBHOOK ENDPOINTS
+    // =========================================================================
+
+    /**
+     * Get all webhooks.
+     *
+     * @return WP_REST_Response
+     */
+    public static function get_webhooks(): WP_REST_Response {
+        $webhooks = WebhookManager::get_webhooks();
+
+        return new WP_REST_Response([
+            'success' => true,
+            'webhooks' => array_values($webhooks),
+            'total' => count($webhooks),
+        ], 200);
+    }
+
+    /**
+     * Get a single webhook.
+     *
+     * @param WP_REST_Request $request REST request.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_webhook(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = $request->get_param('id');
+        $webhook = WebhookManager::get_webhook($id);
+
+        if (!$webhook) {
+            return new WP_Error(
+                'webhook_not_found',
+                __('Webhook not found.', WPE_RM_TEXTDOMAIN),
+                ['status' => 404]
+            );
+        }
+
+        return new WP_REST_Response([
+            'success' => true,
+            'webhook' => $webhook,
+        ], 200);
+    }
+
+    /**
+     * Create a new webhook.
+     *
+     * @param WP_REST_Request $request REST request.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function create_webhook(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $params = $request->get_json_params();
+
+        // Validate URL
+        $url = $params['url'] ?? '';
+        $url_valid = WebhookManager::validate_url($url);
+        if ($url_valid !== true) {
+            return new WP_Error(
+                'invalid_url',
+                $url_valid,
+                ['status' => 400]
+            );
+        }
+
+        $webhook = WebhookManager::create_webhook($params);
+
+        Logger::log(
+            'Webhook Created',
+            sprintf('Created webhook "%s" (%s)', $webhook['name'], $webhook['id'])
+        );
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Webhook created successfully.', WPE_RM_TEXTDOMAIN),
+            'webhook' => $webhook,
+        ], 201);
+    }
+
+    /**
+     * Update a webhook.
+     *
+     * @param WP_REST_Request $request REST request.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function update_webhook(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = $request->get_param('id');
+        $params = $request->get_json_params();
+
+        // Validate URL if provided
+        if (isset($params['url'])) {
+            $url_valid = WebhookManager::validate_url($params['url']);
+            if ($url_valid !== true) {
+                return new WP_Error(
+                    'invalid_url',
+                    $url_valid,
+                    ['status' => 400]
+                );
+            }
+        }
+
+        $webhook = WebhookManager::update_webhook($id, $params);
+
+        if (!$webhook) {
+            return new WP_Error(
+                'webhook_not_found',
+                __('Webhook not found.', WPE_RM_TEXTDOMAIN),
+                ['status' => 404]
+            );
+        }
+
+        Logger::log(
+            'Webhook Updated',
+            sprintf('Updated webhook "%s" (%s)', $webhook['name'], $webhook['id'])
+        );
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Webhook updated successfully.', WPE_RM_TEXTDOMAIN),
+            'webhook' => $webhook,
+        ], 200);
+    }
+
+    /**
+     * Delete a webhook.
+     *
+     * @param WP_REST_Request $request REST request.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function delete_webhook(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = $request->get_param('id');
+        $webhook = WebhookManager::get_webhook($id);
+
+        if (!$webhook) {
+            return new WP_Error(
+                'webhook_not_found',
+                __('Webhook not found.', WPE_RM_TEXTDOMAIN),
+                ['status' => 404]
+            );
+        }
+
+        $deleted = WebhookManager::delete_webhook($id);
+
+        if (!$deleted) {
+            return new WP_Error(
+                'delete_failed',
+                __('Failed to delete webhook.', WPE_RM_TEXTDOMAIN),
+                ['status' => 500]
+            );
+        }
+
+        Logger::log(
+            'Webhook Deleted',
+            sprintf('Deleted webhook "%s" (%s)', $webhook['name'], $id)
+        );
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Webhook deleted successfully.', WPE_RM_TEXTDOMAIN),
+        ], 200);
+    }
+
+    /**
+     * Test a webhook by sending a test payload.
+     *
+     * @param WP_REST_Request $request REST request.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function test_webhook(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = $request->get_param('id');
+        $webhook = WebhookManager::get_webhook($id);
+
+        if (!$webhook) {
+            return new WP_Error(
+                'webhook_not_found',
+                __('Webhook not found.', WPE_RM_TEXTDOMAIN),
+                ['status' => 404]
+            );
+        }
+
+        $result = WebhookProcessor::send_test($webhook);
+
+        return new WP_REST_Response([
+            'success' => $result['success'],
+            'message' => $result['success']
+                ? __('Test webhook sent successfully.', WPE_RM_TEXTDOMAIN)
+                : sprintf(__('Test failed: %s', WPE_RM_TEXTDOMAIN), $result['error']),
+            'response_code' => $result['code'],
+            'response_body' => $result['body'],
+            'duration_ms' => $result['duration_ms'],
+        ], $result['success'] ? 200 : 502);
+    }
+
+    /**
+     * Get available webhook events.
+     *
+     * @return WP_REST_Response
+     */
+    public static function get_webhook_events(): WP_REST_Response {
+        $events = WebhookManager::get_available_events();
+
+        return new WP_REST_Response([
+            'success' => true,
+            'events' => $events,
+        ], 200);
+    }
+
+    /**
+     * Get the webhook queue.
+     *
+     * @return WP_REST_Response
+     */
+    public static function get_webhook_queue(): WP_REST_Response {
+        $queue = WebhookDispatcher::get_queue();
+
+        return new WP_REST_Response([
+            'success' => true,
+            'queue' => $queue,
+            'total' => count($queue),
+        ], 200);
+    }
+
+    /**
+     * Clear the webhook queue.
+     *
+     * @return WP_REST_Response
+     */
+    public static function clear_webhook_queue(): WP_REST_Response {
+        WebhookDispatcher::clear_queue();
+
+        Logger::log(
+            'Webhook Queue Cleared',
+            'Cleared all pending webhook deliveries'
+        );
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Webhook queue cleared.', WPE_RM_TEXTDOMAIN),
+        ], 200);
+    }
+
+    /**
+     * Get the webhook activity log.
+     *
+     * @param WP_REST_Request $request REST request.
+     * @return WP_REST_Response
+     */
+    public static function get_webhook_log(WP_REST_Request $request): WP_REST_Response {
+        $direction = $request->get_param('direction');
+        $status = $request->get_param('status');
+        $search = $request->get_param('search');
+
+        $logs = WebhookLogger::get_filtered_logs($direction, $status, $search);
+        $stats = WebhookLogger::get_stats();
+
+        return new WP_REST_Response([
+            'success' => true,
+            'logs' => $logs,
+            'total' => count($logs),
+            'stats' => $stats,
+        ], 200);
+    }
+
+    /**
+     * Clear the webhook activity log.
+     *
+     * @return WP_REST_Response
+     */
+    public static function clear_webhook_log(): WP_REST_Response {
+        WebhookLogger::clear_logs();
+
+        Logger::log(
+            'Webhook Log Cleared',
+            'Cleared webhook activity log'
+        );
+
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => __('Webhook log cleared.', WPE_RM_TEXTDOMAIN),
+        ], 200);
+    }
+
+    /**
+     * Get available incoming webhook actions.
+     *
+     * @return WP_REST_Response
+     */
+    public static function get_incoming_actions(): WP_REST_Response {
+        $actions = IncomingHandler::get_allowed_actions();
+
+        return new WP_REST_Response([
+            'success' => true,
+            'actions' => $actions,
+            'endpoint' => rest_url('wpe-rm/v1/webhook/incoming'),
         ], 200);
     }
 }

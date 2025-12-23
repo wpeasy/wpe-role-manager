@@ -61,7 +61,7 @@ async function confirmResetCoreRoles() {
 }
 </script>
 
-<div class="wpea-stack" style="max-width: 800px;">
+<div class="wpea-stack">
   <!-- Header -->
   <div class="wpea-stack wpea-stack--sm">
     <h2 class="wpea-heading wpea-heading--md">Tools</h2>

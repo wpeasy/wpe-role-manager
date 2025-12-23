@@ -97,6 +97,11 @@ final class CapabilityManager {
             return false;
         }
 
+        // Cannot modify core capabilities (add, deny, or change)
+        if (self::is_core_capability($capability)) {
+            return false;
+        }
+
         $role->add_cap($capability, $grant);
 
         // Track this role+capability pair as managed by the plugin

@@ -8,263 +8,38 @@
    - Dark Mode via CSS light-dark() function
    ========================================================= */
 
-/* Import settings (fixed values) */
+/* Import settings (includes all colors and base values) */
 @import url('./wpea-framework-settings.css');
 
 /* =========================
    TOKENS — CORE
    ========================= */
    :root {
-    /* Palette bases using settings */
-    --wpea-color--primary: light-dark(var(--wpea-color--primary-light), var(--wpea-color--primary-dark));
-    --wpea-color--secondary: light-dark(var(--wpea-color--secondary-light), var(--wpea-color--secondary-dark));
-    --wpea-color--neutral: light-dark(var(--wpea-color--neutral-light), var(--wpea-color--neutral-dark));
-    --wpea-color--text: light-dark(var(--wpea-color--text-light), var(--wpea-color--text-dark));
-    --wpea-color--text-muted: light-dark(var(--wpea-color--text-muted-light), var(--wpea-color--text-muted-dark));
-    --wpea-color--heading: light-dark(var(--wpea-color--heading-light), var(--wpea-color--heading-dark));
-  
-    /* ---------- Primary: 10 light / 10 dark / 10 transparencies ---------- */
-    --wpea-color--primary-l-1:  color-mix(in oklab, var(--wpea-color--primary), white 10%);
-    --wpea-color--primary-l-2:  color-mix(in oklab, var(--wpea-color--primary), white 20%);
-    --wpea-color--primary-l-3:  color-mix(in oklab, var(--wpea-color--primary), white 30%);
-    --wpea-color--primary-l-4:  color-mix(in oklab, var(--wpea-color--primary), white 40%);
-    --wpea-color--primary-l-5:  color-mix(in oklab, var(--wpea-color--primary), white 50%);
-    --wpea-color--primary-l-6:  color-mix(in oklab, var(--wpea-color--primary), white 60%);
-    --wpea-color--primary-l-7:  color-mix(in oklab, var(--wpea-color--primary), white 70%);
-    --wpea-color--primary-l-8:  color-mix(in oklab, var(--wpea-color--primary), white 80%);
-    --wpea-color--primary-l-9:  color-mix(in oklab, var(--wpea-color--primary), white 90%);
-    --wpea-color--primary-l-10: color-mix(in oklab, var(--wpea-color--primary), white 100%);
-    --wpea-color--primary-d-1:  color-mix(in oklab, var(--wpea-color--primary), black 10%);
-    --wpea-color--primary-d-2:  color-mix(in oklab, var(--wpea-color--primary), black 20%);
-    --wpea-color--primary-d-3:  color-mix(in oklab, var(--wpea-color--primary), black 30%);
-    --wpea-color--primary-d-4:  color-mix(in oklab, var(--wpea-color--primary), black 40%);
-    --wpea-color--primary-d-5:  color-mix(in oklab, var(--wpea-color--primary), black 50%);
-    --wpea-color--primary-d-6:  color-mix(in oklab, var(--wpea-color--primary), black 60%);
-    --wpea-color--primary-d-7:  color-mix(in oklab, var(--wpea-color--primary), black 70%);
-    --wpea-color--primary-d-8:  color-mix(in oklab, var(--wpea-color--primary), black 80%);
-    --wpea-color--primary-d-9:  color-mix(in oklab, var(--wpea-color--primary), black 90%);
-    --wpea-color--primary-d-10: color-mix(in oklab, var(--wpea-color--primary), black 100%);
-    --wpea-color--primary-t-10: color-mix(in oklab, var(--wpea-color--primary), transparent 90%);
-    --wpea-color--primary-t-20: color-mix(in oklab, var(--wpea-color--primary), transparent 80%);
-    --wpea-color--primary-t-30: color-mix(in oklab, var(--wpea-color--primary), transparent 70%);
-    --wpea-color--primary-t-40: color-mix(in oklab, var(--wpea-color--primary), transparent 60%);
-    --wpea-color--primary-t-50: color-mix(in oklab, var(--wpea-color--primary), transparent 50%);
-    --wpea-color--primary-t-60: color-mix(in oklab, var(--wpea-color--primary), transparent 40%);
-    --wpea-color--primary-t-70: color-mix(in oklab, var(--wpea-color--primary), transparent 30%);
-    --wpea-color--primary-t-80: color-mix(in oklab, var(--wpea-color--primary), transparent 20%);
-    --wpea-color--primary-t-90: color-mix(in oklab, var(--wpea-color--primary), transparent 10%);
-    --wpea-color--primary-t-100: var(--wpea-color--primary);
-  
-    /* ---------- Secondary: 10 light / 10 dark / 10 transparencies ---------- */
-    --wpea-color--secondary-l-1:  color-mix(in oklab, var(--wpea-color--secondary), white 10%);
-    --wpea-color--secondary-l-2:  color-mix(in oklab, var(--wpea-color--secondary), white 20%);
-    --wpea-color--secondary-l-3:  color-mix(in oklab, var(--wpea-color--secondary), white 30%);
-    --wpea-color--secondary-l-4:  color-mix(in oklab, var(--wpea-color--secondary), white 40%);
-    --wpea-color--secondary-l-5:  color-mix(in oklab, var(--wpea-color--secondary), white 50%);
-    --wpea-color--secondary-l-6:  color-mix(in oklab, var(--wpea-color--secondary), white 60%);
-    --wpea-color--secondary-l-7:  color-mix(in oklab, var(--wpea-color--secondary), white 70%);
-    --wpea-color--secondary-l-8:  color-mix(in oklab, var(--wpea-color--secondary), white 80%);
-    --wpea-color--secondary-l-9:  color-mix(in oklab, var(--wpea-color--secondary), white 90%);
-    --wpea-color--secondary-l-10: color-mix(in oklab, var(--wpea-color--secondary), white 100%);
-    --wpea-color--secondary-d-1:  color-mix(in oklab, var(--wpea-color--secondary), black 10%);
-    --wpea-color--secondary-d-2:  color-mix(in oklab, var(--wpea-color--secondary), black 20%);
-    --wpea-color--secondary-d-3:  color-mix(in oklab, var(--wpea-color--secondary), black 30%);
-    --wpea-color--secondary-d-4:  color-mix(in oklab, var(--wpea-color--secondary), black 40%);
-    --wpea-color--secondary-d-5:  color-mix(in oklab, var(--wpea-color--secondary), black 50%);
-    --wpea-color--secondary-d-6:  color-mix(in oklab, var(--wpea-color--secondary), black 60%);
-    --wpea-color--secondary-d-7:  color-mix(in oklab, var(--wpea-color--secondary), black 70%);
-    --wpea-color--secondary-d-8:  color-mix(in oklab, var(--wpea-color--secondary), black 80%);
-    --wpea-color--secondary-d-9:  color-mix(in oklab, var(--wpea-color--secondary), black 90%);
-    --wpea-color--secondary-d-10: color-mix(in oklab, var(--wpea-color--secondary), black 100%);
-    --wpea-color--secondary-t-10: color-mix(in oklab, var(--wpea-color--secondary), transparent 90%);
-    --wpea-color--secondary-t-20: color-mix(in oklab, var(--wpea-color--secondary), transparent 80%);
-    --wpea-color--secondary-t-30: color-mix(in oklab, var(--wpea-color--secondary), transparent 70%);
-    --wpea-color--secondary-t-40: color-mix(in oklab, var(--wpea-color--secondary), transparent 60%);
-    --wpea-color--secondary-t-50: color-mix(in oklab, var(--wpea-color--secondary), transparent 50%);
-    --wpea-color--secondary-t-60: color-mix(in oklab, var(--wpea-color--secondary), transparent 40%);
-    --wpea-color--secondary-t-70: color-mix(in oklab, var(--wpea-color--secondary), transparent 30%);
-    --wpea-color--secondary-t-80: color-mix(in oklab, var(--wpea-color--secondary), transparent 20%);
-    --wpea-color--secondary-t-90: color-mix(in oklab, var(--wpea-color--secondary), transparent 10%);
-    --wpea-color--secondary-t-100: var(--wpea-color--secondary);
-  
-    /* ---------- Neutral: 10 light / 10 dark / 10 transparencies ---------- */
-    --wpea-color--neutral-l-1:  color-mix(in oklab, var(--wpea-color--neutral), white 10%);
-    --wpea-color--neutral-l-2:  color-mix(in oklab, var(--wpea-color--neutral), white 20%);
-    --wpea-color--neutral-l-3:  color-mix(in oklab, var(--wpea-color--neutral), white 30%);
-    --wpea-color--neutral-l-4:  color-mix(in oklab, var(--wpea-color--neutral), white 40%);
-    --wpea-color--neutral-l-5:  color-mix(in oklab, var(--wpea-color--neutral), white 50%);
-    --wpea-color--neutral-l-6:  color-mix(in oklab, var(--wpea-color--neutral), white 60%);
-    --wpea-color--neutral-l-7:  color-mix(in oklab, var(--wpea-color--neutral), white 70%);
-    --wpea-color--neutral-l-8:  color-mix(in oklab, var(--wpea-color--neutral), white 80%);
-    --wpea-color--neutral-l-9:  color-mix(in oklab, var(--wpea-color--neutral), white 90%);
-    --wpea-color--neutral-l-10: color-mix(in oklab, var(--wpea-color--neutral), white 100%);
-    --wpea-color--neutral-d-1:  color-mix(in oklab, var(--wpea-color--neutral), black 10%);
-    --wpea-color--neutral-d-2:  color-mix(in oklab, var(--wpea-color--neutral), black 20%);
-    --wpea-color--neutral-d-3:  color-mix(in oklab, var(--wpea-color--neutral), black 30%);
-    --wpea-color--neutral-d-4:  color-mix(in oklab, var(--wpea-color--neutral), black 40%);
-    --wpea-color--neutral-d-5:  color-mix(in oklab, var(--wpea-color--neutral), black 50%);
-    --wpea-color--neutral-d-6:  color-mix(in oklab, var(--wpea-color--neutral), black 60%);
-    --wpea-color--neutral-d-7:  color-mix(in oklab, var(--wpea-color--neutral), black 70%);
-    --wpea-color--neutral-d-8:  color-mix(in oklab, var(--wpea-color--neutral), black 80%);
-    --wpea-color--neutral-d-9:  color-mix(in oklab, var(--wpea-color--neutral), black 90%);
-    --wpea-color--neutral-d-10: color-mix(in oklab, var(--wpea-color--neutral), black 100%);
-    --wpea-color--neutral-t-10: color-mix(in oklab, var(--wpea-color--neutral), transparent 90%);
-    --wpea-color--neutral-t-20: color-mix(in oklab, var(--wpea-color--neutral), transparent 80%);
-    --wpea-color--neutral-t-30: color-mix(in oklab, var(--wpea-color--neutral), transparent 70%);
-    --wpea-color--neutral-t-40: color-mix(in oklab, var(--wpea-color--neutral), transparent 60%);
-    --wpea-color--neutral-t-50: color-mix(in oklab, var(--wpea-color--neutral), transparent 50%);
-    --wpea-color--neutral-t-60: color-mix(in oklab, var(--wpea-color--neutral), transparent 40%);
-    --wpea-color--neutral-t-70: color-mix(in oklab, var(--wpea-color--neutral), transparent 30%);
-    --wpea-color--neutral-t-80: color-mix(in oklab, var(--wpea-color--neutral), transparent 20%);
-    --wpea-color--neutral-t-90: color-mix(in oklab, var(--wpea-color--neutral), transparent 10%);
-    --wpea-color--neutral-t-100: var(--wpea-color--neutral);
+    /* Spacing scale (8px base with 1.5x multiplier) */
+    --wpea-space--xs: calc(var(--wpea-space-base) / 2);                          /* 4px */
+    --wpea-space--sm: var(--wpea-space-base);                                     /* 8px */
+    --wpea-space--md: calc(var(--wpea-space-base) * var(--wpea-space-scale));     /* 12px */
+    --wpea-space--lg: calc(var(--wpea-space--md) * var(--wpea-space-scale));      /* 18px */
+    --wpea-space--xl: calc(var(--wpea-space--lg) * var(--wpea-space-scale));      /* 27px */
+    --wpea-space--2xl: calc(var(--wpea-space--xl) * var(--wpea-space-scale));     /* 40px */
+    --wpea-space--3xl: calc(var(--wpea-space--2xl) * var(--wpea-space-scale));    /* 60px */
+    --wpea-space--4xl: calc(var(--wpea-space--3xl) * var(--wpea-space-scale));    /* 90px */
 
-    /* ---------- Success: 10 light / 10 dark / 10 transparencies ---------- */
-    --wpea-color--success-l-1:  color-mix(in oklab, var(--wpea-color--success), white 10%);
-    --wpea-color--success-l-2:  color-mix(in oklab, var(--wpea-color--success), white 20%);
-    --wpea-color--success-l-3:  color-mix(in oklab, var(--wpea-color--success), white 30%);
-    --wpea-color--success-l-4:  color-mix(in oklab, var(--wpea-color--success), white 40%);
-    --wpea-color--success-l-5:  color-mix(in oklab, var(--wpea-color--success), white 50%);
-    --wpea-color--success-l-6:  color-mix(in oklab, var(--wpea-color--success), white 60%);
-    --wpea-color--success-l-7:  color-mix(in oklab, var(--wpea-color--success), white 70%);
-    --wpea-color--success-l-8:  color-mix(in oklab, var(--wpea-color--success), white 80%);
-    --wpea-color--success-l-9:  color-mix(in oklab, var(--wpea-color--success), white 90%);
-    --wpea-color--success-l-10: color-mix(in oklab, var(--wpea-color--success), white 100%);
-    --wpea-color--success-d-1:  color-mix(in oklab, var(--wpea-color--success), black 10%);
-    --wpea-color--success-d-2:  color-mix(in oklab, var(--wpea-color--success), black 20%);
-    --wpea-color--success-d-3:  color-mix(in oklab, var(--wpea-color--success), black 30%);
-    --wpea-color--success-d-4:  color-mix(in oklab, var(--wpea-color--success), black 40%);
-    --wpea-color--success-d-5:  color-mix(in oklab, var(--wpea-color--success), black 50%);
-    --wpea-color--success-d-6:  color-mix(in oklab, var(--wpea-color--success), black 60%);
-    --wpea-color--success-d-7:  color-mix(in oklab, var(--wpea-color--success), black 70%);
-    --wpea-color--success-d-8:  color-mix(in oklab, var(--wpea-color--success), black 80%);
-    --wpea-color--success-d-9:  color-mix(in oklab, var(--wpea-color--success), black 90%);
-    --wpea-color--success-d-10: color-mix(in oklab, var(--wpea-color--success), black 100%);
-    --wpea-color--success-t-10: color-mix(in oklab, var(--wpea-color--success), transparent 90%);
-    --wpea-color--success-t-20: color-mix(in oklab, var(--wpea-color--success), transparent 80%);
-    --wpea-color--success-t-30: color-mix(in oklab, var(--wpea-color--success), transparent 70%);
-    --wpea-color--success-t-40: color-mix(in oklab, var(--wpea-color--success), transparent 60%);
-    --wpea-color--success-t-50: color-mix(in oklab, var(--wpea-color--success), transparent 50%);
-    --wpea-color--success-t-60: color-mix(in oklab, var(--wpea-color--success), transparent 40%);
-    --wpea-color--success-t-70: color-mix(in oklab, var(--wpea-color--success), transparent 30%);
-    --wpea-color--success-t-80: color-mix(in oklab, var(--wpea-color--success), transparent 20%);
-    --wpea-color--success-t-90: color-mix(in oklab, var(--wpea-color--success), transparent 10%);
-    --wpea-color--success-t-100: var(--wpea-color--success);
+    /* Typography scale (--sm as baseline, 1.2x ratio) */
+    --wpea-text--xs: calc(var(--wpea-fs-base) / var(--wpea-type-scale));          /* ~11px */
+    --wpea-text--sm: var(--wpea-fs-base);                                          /* 13px (baseline) */
+    --wpea-text--md: calc(var(--wpea-fs-base) * var(--wpea-type-scale));           /* ~16px */
+    --wpea-text--lg: calc(var(--wpea-text--md) * var(--wpea-type-scale));          /* ~19px */
+    --wpea-text--xl: calc(var(--wpea-text--lg) * var(--wpea-type-scale));          /* ~23px */
+    --wpea-text--2xl: calc(var(--wpea-text--xl) * var(--wpea-type-scale));         /* ~28px */
+    --wpea-text--3xl: calc(var(--wpea-text--2xl) * var(--wpea-type-scale));        /* ~33px */
+    --wpea-text--4xl: calc(var(--wpea-text--3xl) * var(--wpea-type-scale));        /* ~40px */
 
-    /* ---------- Warning: 10 light / 10 dark / 10 transparencies ---------- */
-    --wpea-color--warning-l-1:  color-mix(in oklab, var(--wpea-color--warning), white 10%);
-    --wpea-color--warning-l-2:  color-mix(in oklab, var(--wpea-color--warning), white 20%);
-    --wpea-color--warning-l-3:  color-mix(in oklab, var(--wpea-color--warning), white 30%);
-    --wpea-color--warning-l-4:  color-mix(in oklab, var(--wpea-color--warning), white 40%);
-    --wpea-color--warning-l-5:  color-mix(in oklab, var(--wpea-color--warning), white 50%);
-    --wpea-color--warning-l-6:  color-mix(in oklab, var(--wpea-color--warning), white 60%);
-    --wpea-color--warning-l-7:  color-mix(in oklab, var(--wpea-color--warning), white 70%);
-    --wpea-color--warning-l-8:  color-mix(in oklab, var(--wpea-color--warning), white 80%);
-    --wpea-color--warning-l-9:  color-mix(in oklab, var(--wpea-color--warning), white 90%);
-    --wpea-color--warning-l-10: color-mix(in oklab, var(--wpea-color--warning), white 100%);
-    --wpea-color--warning-d-1:  color-mix(in oklab, var(--wpea-color--warning), black 10%);
-    --wpea-color--warning-d-2:  color-mix(in oklab, var(--wpea-color--warning), black 20%);
-    --wpea-color--warning-d-3:  color-mix(in oklab, var(--wpea-color--warning), black 30%);
-    --wpea-color--warning-d-4:  color-mix(in oklab, var(--wpea-color--warning), black 40%);
-    --wpea-color--warning-d-5:  color-mix(in oklab, var(--wpea-color--warning), black 50%);
-    --wpea-color--warning-d-6:  color-mix(in oklab, var(--wpea-color--warning), black 60%);
-    --wpea-color--warning-d-7:  color-mix(in oklab, var(--wpea-color--warning), black 70%);
-    --wpea-color--warning-d-8:  color-mix(in oklab, var(--wpea-color--warning), black 80%);
-    --wpea-color--warning-d-9:  color-mix(in oklab, var(--wpea-color--warning), black 90%);
-    --wpea-color--warning-d-10: color-mix(in oklab, var(--wpea-color--warning), black 100%);
-    --wpea-color--warning-t-10: color-mix(in oklab, var(--wpea-color--warning), transparent 90%);
-    --wpea-color--warning-t-20: color-mix(in oklab, var(--wpea-color--warning), transparent 80%);
-    --wpea-color--warning-t-30: color-mix(in oklab, var(--wpea-color--warning), transparent 70%);
-    --wpea-color--warning-t-40: color-mix(in oklab, var(--wpea-color--warning), transparent 60%);
-    --wpea-color--warning-t-50: color-mix(in oklab, var(--wpea-color--warning), transparent 50%);
-    --wpea-color--warning-t-60: color-mix(in oklab, var(--wpea-color--warning), transparent 40%);
-    --wpea-color--warning-t-70: color-mix(in oklab, var(--wpea-color--warning), transparent 30%);
-    --wpea-color--warning-t-80: color-mix(in oklab, var(--wpea-color--warning), transparent 20%);
-    --wpea-color--warning-t-90: color-mix(in oklab, var(--wpea-color--warning), transparent 10%);
-    --wpea-color--warning-t-100: var(--wpea-color--warning);
+    /* Border radius scale (6px base with 1.67x multiplier) */
+    --wpea-radius--sm: var(--wpea-radius-base);                                    /* 6px */
+    --wpea-radius--md: calc(var(--wpea-radius-base) * var(--wpea-radius-scale));   /* ~10px */
+    --wpea-radius--lg: calc(var(--wpea-radius--md) * var(--wpea-radius-scale));    /* ~17px */
 
-    /* ---------- Danger: 10 light / 10 dark / 10 transparencies ---------- */
-    --wpea-color--danger-l-1:  color-mix(in oklab, var(--wpea-color--danger), white 10%);
-    --wpea-color--danger-l-2:  color-mix(in oklab, var(--wpea-color--danger), white 20%);
-    --wpea-color--danger-l-3:  color-mix(in oklab, var(--wpea-color--danger), white 30%);
-    --wpea-color--danger-l-4:  color-mix(in oklab, var(--wpea-color--danger), white 40%);
-    --wpea-color--danger-l-5:  color-mix(in oklab, var(--wpea-color--danger), white 50%);
-    --wpea-color--danger-l-6:  color-mix(in oklab, var(--wpea-color--danger), white 60%);
-    --wpea-color--danger-l-7:  color-mix(in oklab, var(--wpea-color--danger), white 70%);
-    --wpea-color--danger-l-8:  color-mix(in oklab, var(--wpea-color--danger), white 80%);
-    --wpea-color--danger-l-9:  color-mix(in oklab, var(--wpea-color--danger), white 90%);
-    --wpea-color--danger-l-10: color-mix(in oklab, var(--wpea-color--danger), white 100%);
-    --wpea-color--danger-d-1:  color-mix(in oklab, var(--wpea-color--danger), black 10%);
-    --wpea-color--danger-d-2:  color-mix(in oklab, var(--wpea-color--danger), black 20%);
-    --wpea-color--danger-d-3:  color-mix(in oklab, var(--wpea-color--danger), black 30%);
-    --wpea-color--danger-d-4:  color-mix(in oklab, var(--wpea-color--danger), black 40%);
-    --wpea-color--danger-d-5:  color-mix(in oklab, var(--wpea-color--danger), black 50%);
-    --wpea-color--danger-d-6:  color-mix(in oklab, var(--wpea-color--danger), black 60%);
-    --wpea-color--danger-d-7:  color-mix(in oklab, var(--wpea-color--danger), black 70%);
-    --wpea-color--danger-d-8:  color-mix(in oklab, var(--wpea-color--danger), black 80%);
-    --wpea-color--danger-d-9:  color-mix(in oklab, var(--wpea-color--danger), black 90%);
-    --wpea-color--danger-d-10: color-mix(in oklab, var(--wpea-color--danger), black 100%);
-    --wpea-color--danger-t-10: color-mix(in oklab, var(--wpea-color--danger), transparent 90%);
-    --wpea-color--danger-t-20: color-mix(in oklab, var(--wpea-color--danger), transparent 80%);
-    --wpea-color--danger-t-30: color-mix(in oklab, var(--wpea-color--danger), transparent 70%);
-    --wpea-color--danger-t-40: color-mix(in oklab, var(--wpea-color--danger), transparent 60%);
-    --wpea-color--danger-t-50: color-mix(in oklab, var(--wpea-color--danger), transparent 50%);
-    --wpea-color--danger-t-60: color-mix(in oklab, var(--wpea-color--danger), transparent 40%);
-    --wpea-color--danger-t-70: color-mix(in oklab, var(--wpea-color--danger), transparent 30%);
-    --wpea-color--danger-t-80: color-mix(in oklab, var(--wpea-color--danger), transparent 20%);
-    --wpea-color--danger-t-90: color-mix(in oklab, var(--wpea-color--danger), transparent 10%);
-    --wpea-color--danger-t-100: var(--wpea-color--danger);
-
-    /* ---------- Info: 10 light / 10 dark / 10 transparencies ---------- */
-    --wpea-color--info-l-1:  color-mix(in oklab, var(--wpea-color--info), white 10%);
-    --wpea-color--info-l-2:  color-mix(in oklab, var(--wpea-color--info), white 20%);
-    --wpea-color--info-l-3:  color-mix(in oklab, var(--wpea-color--info), white 30%);
-    --wpea-color--info-l-4:  color-mix(in oklab, var(--wpea-color--info), white 40%);
-    --wpea-color--info-l-5:  color-mix(in oklab, var(--wpea-color--info), white 50%);
-    --wpea-color--info-l-6:  color-mix(in oklab, var(--wpea-color--info), white 60%);
-    --wpea-color--info-l-7:  color-mix(in oklab, var(--wpea-color--info), white 70%);
-    --wpea-color--info-l-8:  color-mix(in oklab, var(--wpea-color--info), white 80%);
-    --wpea-color--info-l-9:  color-mix(in oklab, var(--wpea-color--info), white 90%);
-    --wpea-color--info-l-10: color-mix(in oklab, var(--wpea-color--info), white 100%);
-    --wpea-color--info-d-1:  color-mix(in oklab, var(--wpea-color--info), black 10%);
-    --wpea-color--info-d-2:  color-mix(in oklab, var(--wpea-color--info), black 20%);
-    --wpea-color--info-d-3:  color-mix(in oklab, var(--wpea-color--info), black 30%);
-    --wpea-color--info-d-4:  color-mix(in oklab, var(--wpea-color--info), black 40%);
-    --wpea-color--info-d-5:  color-mix(in oklab, var(--wpea-color--info), black 50%);
-    --wpea-color--info-d-6:  color-mix(in oklab, var(--wpea-color--info), black 60%);
-    --wpea-color--info-d-7:  color-mix(in oklab, var(--wpea-color--info), black 70%);
-    --wpea-color--info-d-8:  color-mix(in oklab, var(--wpea-color--info), black 80%);
-    --wpea-color--info-d-9:  color-mix(in oklab, var(--wpea-color--info), black 90%);
-    --wpea-color--info-d-10: color-mix(in oklab, var(--wpea-color--info), black 100%);
-    --wpea-color--info-t-10: color-mix(in oklab, var(--wpea-color--info), transparent 90%);
-    --wpea-color--info-t-20: color-mix(in oklab, var(--wpea-color--info), transparent 80%);
-    --wpea-color--info-t-30: color-mix(in oklab, var(--wpea-color--info), transparent 70%);
-    --wpea-color--info-t-40: color-mix(in oklab, var(--wpea-color--info), transparent 60%);
-    --wpea-color--info-t-50: color-mix(in oklab, var(--wpea-color--info), transparent 50%);
-    --wpea-color--info-t-60: color-mix(in oklab, var(--wpea-color--info), transparent 40%);
-    --wpea-color--info-t-70: color-mix(in oklab, var(--wpea-color--info), transparent 30%);
-    --wpea-color--info-t-80: color-mix(in oklab, var(--wpea-color--info), transparent 20%);
-    --wpea-color--info-t-90: color-mix(in oklab, var(--wpea-color--info), transparent 10%);
-    --wpea-color--info-t-100: var(--wpea-color--info);
-
-    /* Spacing scale (aliases helpful for short utilities) */
-    --wpea-space--xs: calc(var(--wpea-fs-base) * 0.5);
-    --wpea-space--sm: calc(var(--wpea-space--xs) * var(--wpea-scale));
-    --wpea-space--md: calc(var(--wpea-space--sm) * var(--wpea-scale));
-    --wpea-space--lg: calc(var(--wpea-space--md) * var(--wpea-scale));
-    --wpea-space--xl: calc(var(--wpea-space--lg) * var(--wpea-scale));
-    --wpea-space--2xl: calc(var(--wpea-space--xl) * var(--wpea-scale));
-
-    /* Typography sizes */
-    --wpea-text--xs: calc(var(--wpea-fs-base) * 0.75);
-    --wpea-text--sm: calc(var(--wpea-text--xs) * var(--wpea-scale));
-    --wpea-text--md: calc(var(--wpea-text--sm) * var(--wpea-scale));
-    --wpea-text--lg: calc(var(--wpea-text--md) * var(--wpea-scale));
-    --wpea-text--xl: calc(var(--wpea-text--lg) * var(--wpea-scale));
-    --wpea-text--2xl: calc(var(--wpea-text--xl) * var(--wpea-scale));
-    --wpea-text--3xl: calc(var(--wpea-text--2xl) * var(--wpea-scale));
-    --wpea-text--4xl: calc(var(--wpea-text--3xl) * var(--wpea-scale));
-  
     /* Grids */
     --wpea-grid--1: repeat(1, minmax(0, 1fr));
     --wpea-grid--2: repeat(2, minmax(0, 1fr));
@@ -295,44 +70,19 @@
       0 8px 24px color-mix(in oklab, var(--wpea-color--primary), transparent 75%), 0 4px 12px color-mix(in oklab, var(--wpea-color--black), transparent 20%)
     );
   
-    /* Surfaces */
-    --wpea-surface--bg: light-dark(var(--wpea-color--white), var(--wpea-surface--bg-dark));
-    --wpea-surface--muted: light-dark(var(--wpea-color--neutral-l-9), var(--wpea-color--neutral-d-9));
-    --wpea-surface--panel: light-dark(var(--wpea-color--white), var(--wpea-color--neutral-d-8));
-    --wpea-surface--border: light-dark(var(--wpea-color--neutral-l-7), color-mix(in oklab, var(--wpea-color--white), transparent 84%));
-    --wpea-surface--divider: light-dark(var(--wpea-color--neutral-l-7), color-mix(in oklab, var(--wpea-color--white), transparent 80%));
-    --wpea-surface--text: var(--wpea-color--text);
-    --wpea-surface--text-muted: var(--wpea-color--text-muted);
+    /* Focus surface (derived from primary) */
     --wpea-surface--focus: light-dark(var(--wpea-color--primary-t-50), color-mix(in oklab, var(--wpea-color--primary), transparent 55%));
     --wpea-focus-shadow: 0 0 0 3px var(--wpea-surface--focus);
-
-    /* Elevations mapped to neutral ladder */
-    --wpea-surface--elev-1: light-dark(var(--wpea-color--neutral-l-9), var(--wpea-color--neutral-d-8));
-    --wpea-surface--elev-2: light-dark(var(--wpea-color--neutral-l-8), var(--wpea-color--neutral-d-7));
-    --wpea-surface--elev-3: light-dark(var(--wpea-color--neutral-l-7), var(--wpea-color--neutral-d-6));
 
     /* Badge tokens */
     --wpea-badge--bg: light-dark(var(--wpea-color--neutral-l-9), var(--wpea-color--neutral-d-3));
     --wpea-badge--fg: light-dark(var(--wpea-surface--text), var(--wpea-color--white));
 
-    /* Form input tokens */
-    --wpea-input--bg: light-dark(var(--wpea-input--bg-light), var(--wpea-input--bg-dark));
-    --wpea-input--bg-hover: light-dark(var(--wpea-input--bg-hover-light), var(--wpea-input--bg-hover-dark));
-    --wpea-input--bg-focus: light-dark(var(--wpea-input--bg-focus-light), var(--wpea-input--bg-focus-dark));
-    --wpea-input--border: light-dark(var(--wpea-input--border-light), var(--wpea-input--border-dark));
-    --wpea-input--border-hover: light-dark(var(--wpea-input--border-hover-light), var(--wpea-input--border-hover-dark));
-    --wpea-input--border-focus: light-dark(var(--wpea-input--border-focus-light), var(--wpea-input--border-focus-dark));
-    --wpea-input--placeholder: light-dark(var(--wpea-input--placeholder-light), var(--wpea-input--placeholder-dark));
+    /* Form input tokens - focus shadow only (others defined in settings) */
     --wpea-input--focus-shadow: 0 0 0 3px light-dark(
       color-mix(in oklab, var(--wpea-color--primary), transparent 85%),
       color-mix(in oklab, var(--wpea-color--primary), transparent 70%)
     );
-    --wpea-select-option--bg: light-dark(var(--wpea-select-option--bg-light), var(--wpea-select-option--bg-dark));
-
-    /* Popover tokens */
-    --wpea-popover--bg: light-dark(var(--wpea-popover--bg-light), var(--wpea-popover--bg-dark));
-    --wpea-popover--text: light-dark(var(--wpea-popover--text-light), var(--wpea-popover--text-dark));
-    --wpea-popover--border: light-dark(var(--wpea-popover--border-light), var(--wpea-popover--border-dark));
   }
 
   /* =========================
@@ -388,33 +138,136 @@
   /* Visibility helpers using container width */
   .wpea-cq .wpea-hide-md-down { display: none !important; }
   @container (min-width: 48rem) { .wpea-hide-md-down { display: initial !important; } }
-  
+
+  /* =========================
+     COMPACT MODE (class-based)
+     Add .wpea-compact to body or container to enable
+     ========================= */
+  .wpea-compact {
+    /* Reduce spacing scale */
+    --wpea-space--xs: calc(var(--wpea-space-base) / 2 * var(--wpea-space-compact));
+    --wpea-space--sm: calc(var(--wpea-space-base) * var(--wpea-space-compact));
+    --wpea-space--md: calc(var(--wpea-space-base) * var(--wpea-space-scale) * var(--wpea-space-compact));
+    --wpea-space--lg: calc(var(--wpea-space--md) * var(--wpea-space-scale));
+    --wpea-space--xl: calc(var(--wpea-space--lg) * var(--wpea-space-scale));
+    --wpea-space--2xl: calc(var(--wpea-space--xl) * var(--wpea-space-scale));
+    --wpea-space--3xl: calc(var(--wpea-space--2xl) * var(--wpea-space-scale));
+    --wpea-space--4xl: calc(var(--wpea-space--3xl) * var(--wpea-space-scale));
+
+    /* Reduce typography scale */
+    --wpea-text--xs: calc(var(--wpea-fs-base) * var(--wpea-text-compact) / var(--wpea-type-scale));
+    --wpea-text--sm: calc(var(--wpea-fs-base) * var(--wpea-text-compact));
+    --wpea-text--md: calc(var(--wpea-text--sm) * var(--wpea-type-scale));
+    --wpea-text--lg: calc(var(--wpea-text--md) * var(--wpea-type-scale));
+    --wpea-text--xl: calc(var(--wpea-text--lg) * var(--wpea-type-scale));
+    --wpea-text--2xl: calc(var(--wpea-text--xl) * var(--wpea-type-scale));
+    --wpea-text--3xl: calc(var(--wpea-text--2xl) * var(--wpea-type-scale));
+    --wpea-text--4xl: calc(var(--wpea-text--3xl) * var(--wpea-type-scale));
+  }
+
+  /* Compact mode component adjustments */
+  .wpea-compact .wpea-stack { gap: calc(var(--wpea-space--md) * var(--wpea-space-compact)); }
+  .wpea-compact .wpea-stack--sm { gap: calc(var(--wpea-space--sm) * var(--wpea-space-compact)); }
+  .wpea-compact .wpea-stack--lg { gap: calc(var(--wpea-space--lg) * 0.8); }
+  .wpea-compact .wpea-cluster { gap: calc(var(--wpea-space--sm) * 0.6); }
+  .wpea-compact .wpea-cluster--md { gap: calc(var(--wpea-space--md) * 0.7); }
+  .wpea-compact .wpea-cluster--lg { gap: calc(var(--wpea-space--lg) * 0.7); }
+
+  .wpea-compact .wpea-panel,
+  .wpea-compact .wpea-card {
+    padding-block: calc(var(--wpea-space--md) * 0.7);
+    padding-inline: calc(var(--wpea-space--md) * 0.8);
+    gap: calc(var(--wpea-space--md) * 0.7);
+  }
+  .wpea-compact .wpea-panel__header,
+  .wpea-compact .wpea-card__header {
+    padding-block-end: calc(var(--wpea-space--sm) * 0.7);
+    gap: calc(var(--wpea-space--sm) * 0.7);
+  }
+  .wpea-compact .wpea-card__title { font-size: var(--wpea-text--md); }
+  .wpea-compact .wpea-card__actions { gap: calc(var(--wpea-space--sm) * 0.6); }
+
+  .wpea-compact .wpea-heading--sm { font-size: var(--wpea-text--md); }
+  .wpea-compact .wpea-heading--md { font-size: var(--wpea-text--lg); }
+  .wpea-compact .wpea-heading--lg { font-size: var(--wpea-text--xl); }
+
+  .wpea-compact .wpea-field { gap: .25rem; }
+  .wpea-compact .wpea-input,
+  .wpea-compact .wpea-select,
+  .wpea-compact .wpea-textarea {
+    padding-block: calc(var(--wpea-space--sm) * 0.4);
+    padding-inline: calc(var(--wpea-space--sm) * 0.7);
+  }
+
+  .wpea-compact .wpea-btn {
+    padding-block: calc(var(--wpea-space--sm) * 0.4);
+    padding-inline: calc(var(--wpea-space--md) * 0.75);
+    gap: .4em;
+  }
+
+  .wpea-compact .wpea-tabs { gap: calc(var(--wpea-space--md) * 0.7); }
+  .wpea-compact .wpea-tabs__list { gap: calc(var(--wpea-space--xs) * 0.6); }
+  .wpea-compact .wpea-tabs__tab {
+    padding: calc(var(--wpea-space--sm) * 0.6) calc(var(--wpea-space--md) * 0.7);
+    font-size: var(--wpea-text--sm);
+  }
+
+  .wpea-compact .wpea-vtabs { gap: calc(var(--wpea-space--lg) * 0.7); }
+  .wpea-compact .wpea-vtabs__list {
+    gap: calc(var(--wpea-space--xs) * 0.6);
+    min-width: 140px;
+  }
+  .wpea-compact .wpea-vtabs__tab {
+    padding: calc(var(--wpea-space--sm) * 0.6) calc(var(--wpea-space--md) * 0.7);
+    font-size: var(--wpea-text--sm);
+  }
+
+  .wpea-compact .wpea-accordion { gap: calc(var(--wpea-space--sm) * 0.6); }
+  .wpea-compact .wpea-accordion__header {
+    padding: calc(var(--wpea-space--md) * 0.7);
+    font-size: var(--wpea-text--sm);
+  }
+  .wpea-compact .wpea-accordion__body { padding: calc(var(--wpea-space--md) * 0.7); }
+
+  .wpea-compact .wpea-table th,
+  .wpea-compact .wpea-table td {
+    padding-block: .4rem;
+    padding-inline: .6rem;
+  }
+
+  .wpea-compact .wpea-alert {
+    padding-block: calc(var(--wpea-space--sm) * 0.7);
+    padding-inline: calc(var(--wpea-space--sm) * 0.8);
+  }
+
   /* Density (container-style query) */
   @container style(--wpea-density: compact) {
     /* Apply to all elements inside the container */
     * {
-      /* Reduce spacing scale variables */
-      --wpea-space--xs: calc(var(--wpea-fs-base) * 0.375);
-      --wpea-space--sm: calc(var(--wpea-space--xs) * var(--wpea-scale) * 0.9);
-      --wpea-space--md: calc(var(--wpea-space--sm) * var(--wpea-scale) * 0.9);
-      --wpea-space--lg: calc(var(--wpea-space--md) * var(--wpea-scale) * 0.9);
-      --wpea-space--xl: calc(var(--wpea-space--lg) * var(--wpea-scale) * 0.9);
-      --wpea-space--2xl: calc(var(--wpea-space--xl) * var(--wpea-scale) * 0.9);
+      /* Reduce spacing scale (uses --wpea-space-compact multiplier) */
+      --wpea-space--xs: calc(var(--wpea-space-base) / 2 * var(--wpea-space-compact));
+      --wpea-space--sm: calc(var(--wpea-space-base) * var(--wpea-space-compact));
+      --wpea-space--md: calc(var(--wpea-space-base) * var(--wpea-space-scale) * var(--wpea-space-compact));
+      --wpea-space--lg: calc(var(--wpea-space--md) * var(--wpea-space-scale));
+      --wpea-space--xl: calc(var(--wpea-space--lg) * var(--wpea-space-scale));
+      --wpea-space--2xl: calc(var(--wpea-space--xl) * var(--wpea-space-scale));
+      --wpea-space--3xl: calc(var(--wpea-space--2xl) * var(--wpea-space-scale));
+      --wpea-space--4xl: calc(var(--wpea-space--3xl) * var(--wpea-space-scale));
 
-      /* Reduce typography scale variables */
-      --wpea-text--xs: calc(var(--wpea-fs-base) * 0.75 * 0.875);
-      --wpea-text--sm: calc(var(--wpea-text--xs) * var(--wpea-scale));
-      --wpea-text--md: calc(var(--wpea-text--sm) * var(--wpea-scale));
-      --wpea-text--lg: calc(var(--wpea-text--md) * var(--wpea-scale));
-      --wpea-text--xl: calc(var(--wpea-text--lg) * var(--wpea-scale));
-      --wpea-text--2xl: calc(var(--wpea-text--xl) * var(--wpea-scale));
-      --wpea-text--3xl: calc(var(--wpea-text--2xl) * var(--wpea-scale));
-      --wpea-text--4xl: calc(var(--wpea-text--3xl) * var(--wpea-scale));
+      /* Reduce typography scale (uses --wpea-text-compact multiplier) */
+      --wpea-text--xs: calc(var(--wpea-fs-base) * var(--wpea-text-compact) / var(--wpea-type-scale));
+      --wpea-text--sm: calc(var(--wpea-fs-base) * var(--wpea-text-compact));
+      --wpea-text--md: calc(var(--wpea-text--sm) * var(--wpea-type-scale));
+      --wpea-text--lg: calc(var(--wpea-text--md) * var(--wpea-type-scale));
+      --wpea-text--xl: calc(var(--wpea-text--lg) * var(--wpea-type-scale));
+      --wpea-text--2xl: calc(var(--wpea-text--xl) * var(--wpea-type-scale));
+      --wpea-text--3xl: calc(var(--wpea-text--2xl) * var(--wpea-type-scale));
+      --wpea-text--4xl: calc(var(--wpea-text--3xl) * var(--wpea-type-scale));
     }
 
     /* Layout components - tighter spacing */
-    .wpea-stack { gap: calc(var(--wpea-space--md) * 0.7); }
-    .wpea-stack--sm { gap: calc(var(--wpea-space--sm) * 0.7); }
+    .wpea-stack { gap: calc(var(--wpea-space--md) * var(--wpea-space-compact)); }
+    .wpea-stack--sm { gap: calc(var(--wpea-space--sm) * var(--wpea-space-compact)); }
     .wpea-stack--lg { gap: calc(var(--wpea-space--lg) * 0.8); }
     .wpea-cluster { gap: calc(var(--wpea-space--sm) * 0.6); }
     .wpea-cluster--md { gap: calc(var(--wpea-space--md) * 0.7); }
@@ -669,6 +522,91 @@
     color: var(--wpea-surface--text) !important;
   }
 
+  /* Number input spinner styling */
+  .wpea-input[type="number"] {
+    -moz-appearance: textfield;
+    padding-right: calc(var(--wpea-space--sm) + 24px);
+    position: relative;
+  }
+
+  /* Webkit spinner buttons */
+  .wpea-input[type="number"]::-webkit-outer-spin-button,
+  .wpea-input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background: transparent;
+    border-left: 1px solid var(--wpea-surface--border);
+    cursor: pointer;
+    opacity: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Custom number input with up/down arrows wrapper */
+  .wpea-number-wrapper {
+    position: relative;
+    display: inline-flex;
+    width: 100%;
+  }
+
+  .wpea-number-wrapper .wpea-input[type="number"] {
+    padding-right: calc(var(--wpea-space--sm) + 32px);
+  }
+
+  .wpea-number-wrapper__controls {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    bottom: 1px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--wpea-surface--border);
+    border-radius: 0 calc(var(--wpea-radius--sm) - 1px) calc(var(--wpea-radius--sm) - 1px) 0;
+    overflow: hidden;
+  }
+
+  .wpea-number-wrapper__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    padding: 0;
+    background: var(--wpea-surface--muted);
+    border: none;
+    color: var(--wpea-surface--text-muted);
+    cursor: pointer;
+    transition: background var(--wpea-anim-duration--fast), color var(--wpea-anim-duration--fast);
+  }
+
+  .wpea-number-wrapper__btn:hover {
+    background: var(--wpea-color--primary-t-20);
+    color: var(--wpea-color--primary);
+  }
+
+  .wpea-number-wrapper__btn:active {
+    background: var(--wpea-color--primary-t-30);
+  }
+
+  .wpea-number-wrapper__btn + .wpea-number-wrapper__btn {
+    border-top: 1px solid var(--wpea-surface--border);
+  }
+
+  .wpea-number-wrapper__btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Focus state for number wrapper */
+  .wpea-number-wrapper:focus-within .wpea-number-wrapper__controls {
+    border-left-color: var(--wpea-color--primary);
+  }
+
   /* Input sizes */
   .wpea-input--xs  { padding-block: calc(var(--wpea-space--xs) * .5); padding-inline: calc(var(--wpea-space--sm) * .7); font-size: var(--wpea-text--xs); }
   .wpea-input--s   { padding-block: calc(var(--wpea-space--xs) * .7); padding-inline: var(--wpea-space--sm); font-size: var(--wpea-text--sm); }
@@ -733,83 +671,83 @@
 
   /* Switch size variants */
   .wpea-switch--xs {
-    width: var(--wpea-switch-width-xs);
-    height: var(--wpea-switch-height-xs);
+    width: var(--wpea-switch-width--xs);
+    height: var(--wpea-switch-height--xs);
   }
 
   .wpea-switch--xs .wpea-switch__slider {
-    border-radius: calc(var(--wpea-switch-height-xs) / 2);
+    border-radius: calc(var(--wpea-switch-height--xs) / 2);
   }
 
   .wpea-switch--xs .wpea-switch__slider::before {
-    width: var(--wpea-switch-knob-size-xs);
-    height: var(--wpea-switch-knob-size-xs);
-    top: var(--wpea-switch-knob-offset-xs);
-    left: var(--wpea-switch-knob-offset-xs);
+    width: var(--wpea-switch-knob-size--xs);
+    height: var(--wpea-switch-knob-size--xs);
+    top: var(--wpea-switch-knob-offset--xs);
+    left: var(--wpea-switch-knob-offset--xs);
   }
 
   .wpea-switch--xs input:checked + .wpea-switch__slider::before {
-    transform: translateX(var(--wpea-switch-translate-xs));
+    transform: translateX(var(--wpea-switch-translate--xs));
   }
 
   .wpea-switch--s {
-    width: var(--wpea-switch-width-s);
-    height: var(--wpea-switch-height-s);
+    width: var(--wpea-switch-width--s);
+    height: var(--wpea-switch-height--s);
   }
 
   .wpea-switch--s .wpea-switch__slider {
-    border-radius: calc(var(--wpea-switch-height-s) / 2);
+    border-radius: calc(var(--wpea-switch-height--s) / 2);
   }
 
   .wpea-switch--s .wpea-switch__slider::before {
-    width: var(--wpea-switch-knob-size-s);
-    height: var(--wpea-switch-knob-size-s);
-    top: var(--wpea-switch-knob-offset-s);
-    left: var(--wpea-switch-knob-offset-s);
+    width: var(--wpea-switch-knob-size--s);
+    height: var(--wpea-switch-knob-size--s);
+    top: var(--wpea-switch-knob-offset--s);
+    left: var(--wpea-switch-knob-offset--s);
   }
 
   .wpea-switch--s input:checked + .wpea-switch__slider::before {
-    transform: translateX(var(--wpea-switch-translate-s));
+    transform: translateX(var(--wpea-switch-translate--s));
   }
 
   .wpea-switch--m {
-    width: var(--wpea-switch-width-m);
-    height: var(--wpea-switch-height-m);
+    width: var(--wpea-switch-width--m);
+    height: var(--wpea-switch-height--m);
   }
 
   .wpea-switch--m .wpea-switch__slider {
-    border-radius: calc(var(--wpea-switch-height-m) / 2);
+    border-radius: calc(var(--wpea-switch-height--m) / 2);
   }
 
   .wpea-switch--m .wpea-switch__slider::before {
-    width: var(--wpea-switch-knob-size-m);
-    height: var(--wpea-switch-knob-size-m);
-    top: var(--wpea-switch-knob-offset-m);
-    left: var(--wpea-switch-knob-offset-m);
+    width: var(--wpea-switch-knob-size--m);
+    height: var(--wpea-switch-knob-size--m);
+    top: var(--wpea-switch-knob-offset--m);
+    left: var(--wpea-switch-knob-offset--m);
   }
 
   .wpea-switch--m input:checked + .wpea-switch__slider::before {
-    transform: translateX(var(--wpea-switch-translate-m));
+    transform: translateX(var(--wpea-switch-translate--m));
   }
 
   .wpea-switch--l {
-    width: var(--wpea-switch-width-l);
-    height: var(--wpea-switch-height-l);
+    width: var(--wpea-switch-width--l);
+    height: var(--wpea-switch-height--l);
   }
 
   .wpea-switch--l .wpea-switch__slider {
-    border-radius: calc(var(--wpea-switch-height-l) / 2);
+    border-radius: calc(var(--wpea-switch-height--l) / 2);
   }
 
   .wpea-switch--l .wpea-switch__slider::before {
-    width: var(--wpea-switch-knob-size-l);
-    height: var(--wpea-switch-knob-size-l);
-    top: var(--wpea-switch-knob-offset-l);
-    left: var(--wpea-switch-knob-offset-l);
+    width: var(--wpea-switch-knob-size--l);
+    height: var(--wpea-switch-knob-size--l);
+    top: var(--wpea-switch-knob-offset--l);
+    left: var(--wpea-switch-knob-offset--l);
   }
 
   .wpea-switch--l input:checked + .wpea-switch__slider::before {
-    transform: translateX(var(--wpea-switch-translate-l));
+    transform: translateX(var(--wpea-switch-translate--l));
   }
 
   /* Switch color variants */
@@ -1133,11 +1071,11 @@
   .wpea-range-dual.wpea-range--secondary .wpea-range-dual__input:focus::-moz-range-thumb { box-shadow: 0 0 0 3px var(--wpea-color--secondary-t-40); }
 
   /* Select2-style MultiSelect */
-  .wpea-select2 {
+  .wpea-multiselect {
     position: relative;
   }
 
-  .wpea-select2__control {
+  .wpea-multiselect__control {
     display: flex;
     align-items: center;
     min-height: 38px;
@@ -1150,22 +1088,22 @@
     transition: all var(--wpea-anim-duration--fast);
   }
 
-  .wpea-select2__control:hover {
+  .wpea-multiselect__control:hover {
     border-color: var(--wpea-color--neutral-t-60);
   }
 
-  .wpea-select2--open .wpea-select2__control {
+  .wpea-multiselect--open .wpea-multiselect__control {
     border-color: var(--wpea-color--primary);
     box-shadow: 0 0 0 2px var(--wpea-color--primary-t-30);
   }
 
-  .wpea-select2--disabled .wpea-select2__control {
+  .wpea-multiselect--disabled .wpea-multiselect__control {
     background: var(--wpea-surface--muted);
     cursor: not-allowed;
     opacity: 0.6;
   }
 
-  .wpea-select2__value-container {
+  .wpea-multiselect__value-container {
     display: flex;
     flex-wrap: wrap;
     gap: var(--wpea-space--xs);
@@ -1174,11 +1112,11 @@
     min-width: 0;
   }
 
-  .wpea-select2__placeholder {
+  .wpea-multiselect__placeholder {
     color: var(--wpea-surface--text-muted);
   }
 
-  .wpea-select2__tag {
+  .wpea-multiselect__tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -1190,13 +1128,13 @@
     max-width: 100%;
   }
 
-  .wpea-select2__tag-label {
+  .wpea-multiselect__tag-label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .wpea-select2__tag-remove {
+  .wpea-multiselect__tag-remove {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1210,12 +1148,12 @@
     transition: opacity var(--wpea-anim-duration--fast);
   }
 
-  .wpea-select2__tag-remove:hover {
+  .wpea-multiselect__tag-remove:hover {
     opacity: 1;
     background: var(--wpea-color--primary-t-30);
   }
 
-  .wpea-select2__input {
+  .wpea-multiselect__input {
     flex: 1;
     min-width: 60px;
     border: none;
@@ -1226,18 +1164,18 @@
     padding: 2px 0;
   }
 
-  .wpea-select2__input::placeholder {
+  .wpea-multiselect__input::placeholder {
     color: var(--wpea-surface--text-muted);
   }
 
-  .wpea-select2__indicators {
+  .wpea-multiselect__indicators {
     display: flex;
     align-items: center;
     gap: var(--wpea-space--xs);
     flex-shrink: 0;
   }
 
-  .wpea-select2__clear {
+  .wpea-multiselect__clear {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1250,28 +1188,28 @@
     transition: color var(--wpea-anim-duration--fast);
   }
 
-  .wpea-select2__clear:hover {
+  .wpea-multiselect__clear:hover {
     color: var(--wpea-surface--text);
   }
 
-  .wpea-select2__separator {
+  .wpea-multiselect__separator {
     width: 1px;
     height: 20px;
     background: var(--wpea-surface--border);
   }
 
-  .wpea-select2__dropdown-indicator {
+  .wpea-multiselect__dropdown-indicator {
     display: flex;
     align-items: center;
     color: var(--wpea-surface--text-muted);
     transition: transform var(--wpea-anim-duration--fast);
   }
 
-  .wpea-select2--open .wpea-select2__dropdown-indicator {
+  .wpea-multiselect--open .wpea-multiselect__dropdown-indicator {
     transform: rotate(180deg);
   }
 
-  .wpea-select2__menu {
+  .wpea-multiselect__menu {
     position: absolute;
     top: 100%;
     left: 0;
@@ -1283,10 +1221,10 @@
     box-shadow: var(--wpea-shadow--lg);
     z-index: 100;
     overflow: hidden;
-    animation: wpea-select2-open 0.15s ease;
+    animation: wpea-multiselect-open 0.15s ease;
   }
 
-  @keyframes wpea-select2-open {
+  @keyframes wpea-multiselect-open {
     from {
       opacity: 0;
       transform: translateY(-8px);
@@ -1297,13 +1235,13 @@
     }
   }
 
-  .wpea-select2__menu-list {
+  .wpea-multiselect__menu-list {
     max-height: 250px;
     overflow-y: auto;
     padding: var(--wpea-space--xs);
   }
 
-  .wpea-select2__option {
+  .wpea-multiselect__option {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1313,39 +1251,39 @@
     transition: background var(--wpea-anim-duration--fast);
   }
 
-  .wpea-select2__option:hover,
-  .wpea-select2__option--highlighted {
+  .wpea-multiselect__option:hover,
+  .wpea-multiselect__option--highlighted {
     background: var(--wpea-surface--muted);
   }
 
-  .wpea-select2__option--selected {
+  .wpea-multiselect__option--selected {
     background: var(--wpea-color--primary-t-10);
     color: var(--wpea-color--primary);
   }
 
-  .wpea-select2__option--selected:hover,
-  .wpea-select2__option--selected.wpea-select2__option--highlighted {
+  .wpea-multiselect__option--selected:hover,
+  .wpea-multiselect__option--selected.wpea-multiselect__option--highlighted {
     background: var(--wpea-color--primary-t-20);
   }
 
-  .wpea-select2__option--disabled {
+  .wpea-multiselect__option--disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  .wpea-select2__option-check {
+  .wpea-multiselect__option-check {
     flex-shrink: 0;
     color: var(--wpea-color--primary);
   }
 
-  .wpea-select2__no-options {
+  .wpea-multiselect__no-options {
     padding: var(--wpea-space--md);
     text-align: center;
     color: var(--wpea-surface--text-muted);
   }
 
   /* Single select mode */
-  .wpea-select2--single .wpea-select2__single-value {
+  .wpea-multiselect--single .wpea-multiselect__single-value {
     color: var(--wpea-surface--text);
     white-space: nowrap;
     overflow: hidden;
@@ -1353,24 +1291,24 @@
   }
 
   /* Create option styling */
-  .wpea-select2__option--create {
+  .wpea-multiselect__option--create {
     display: flex;
     align-items: center;
     color: var(--wpea-color--primary);
     font-weight: 500;
   }
 
-  .wpea-select2__option--create:hover,
-  .wpea-select2__option--create.wpea-select2__option--highlighted {
+  .wpea-multiselect__option--create:hover,
+  .wpea-multiselect__option--create.wpea-multiselect__option--highlighted {
     background: var(--wpea-color--primary-t-10);
   }
 
-  .wpea-select2__option--creating {
+  .wpea-multiselect__option--creating {
     opacity: 0.7;
     pointer-events: none;
   }
 
-  .wpea-select2__creating-spinner {
+  .wpea-multiselect__creating-spinner {
     display: inline-block;
     width: 14px;
     height: 14px;
@@ -1386,22 +1324,22 @@
   }
 
   /* Option with label and actions */
-  .wpea-select2__option-label {
+  .wpea-multiselect__option-label {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .wpea-select2__option-actions {
+  .wpea-multiselect__option-actions {
     display: flex;
     align-items: center;
     gap: 4px;
     margin-left: 8px;
   }
 
-  .wpea-select2__option-delete,
-  .wpea-select2__option-lock {
+  .wpea-multiselect__option-delete,
+  .wpea-multiselect__option-lock {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1415,42 +1353,42 @@
     transition: opacity 0.15s, color 0.15s, background 0.15s;
   }
 
-  .wpea-select2__option:hover .wpea-select2__option-delete,
-  .wpea-select2__option:hover .wpea-select2__option-lock {
+  .wpea-multiselect__option:hover .wpea-multiselect__option-delete,
+  .wpea-multiselect__option:hover .wpea-multiselect__option-lock {
     opacity: 1;
   }
 
-  .wpea-select2__option-delete:hover {
+  .wpea-multiselect__option-delete:hover {
     color: var(--wpea-color--danger);
     background: var(--wpea-color--danger-t-10);
   }
 
-  .wpea-select2__option-delete--disabled {
+  .wpea-multiselect__option-delete--disabled {
     opacity: 0.3;
     cursor: not-allowed;
   }
 
-  .wpea-select2__option-delete--disabled:hover {
+  .wpea-multiselect__option-delete--disabled:hover {
     color: var(--wpea-surface--text-muted);
     background: transparent;
   }
 
-  .wpea-select2__option-lock:hover {
+  .wpea-multiselect__option-lock:hover {
     color: var(--wpea-color--warning);
     background: var(--wpea-color--warning-t-10);
   }
 
-  .wpea-select2__option-lock--locked {
+  .wpea-multiselect__option-lock--locked {
     color: var(--wpea-color--danger);
     opacity: 1;
   }
 
-  .wpea-select2__option-lock--locked:hover {
+  .wpea-multiselect__option-lock--locked:hover {
     color: var(--wpea-color--danger);
     background: var(--wpea-color--danger-t-10);
   }
 
-  .wpea-select2__option-protected {
+  .wpea-multiselect__option-protected {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1460,23 +1398,23 @@
   }
 
   /* Select2 Color Variants */
-  .wpea-select2--primary .wpea-select2__tag {
+  .wpea-multiselect--primary .wpea-multiselect__tag {
     background: var(--wpea-color--primary-t-20);
     color: var(--wpea-color--primary);
   }
 
-  .wpea-select2--secondary .wpea-select2__tag {
+  .wpea-multiselect--secondary .wpea-multiselect__tag {
     background: var(--wpea-color--secondary-t-20);
     color: var(--wpea-color--secondary);
   }
-  .wpea-select2--secondary .wpea-select2__option--selected {
+  .wpea-multiselect--secondary .wpea-multiselect__option--selected {
     background: var(--wpea-color--secondary-t-10);
     color: var(--wpea-color--secondary);
   }
-  .wpea-select2--secondary .wpea-select2__option--selected:hover {
+  .wpea-multiselect--secondary .wpea-multiselect__option--selected:hover {
     background: var(--wpea-color--secondary-t-20);
   }
-  .wpea-select2--secondary .wpea-select2__option-check {
+  .wpea-multiselect--secondary .wpea-multiselect__option-check {
     color: var(--wpea-color--secondary);
   }
 
@@ -1486,8 +1424,9 @@
     --_bg-hover: var(--wpea-color--neutral-d-2);
     --_fg: var(--wpea-color--white);
     --_shadow: var(--wpea-shadow--s);
-  
+
     display:inline-flex; align-items:center; justify-content:center; gap:.6em;
+    width: fit-content;
     font-size: var(--wpea-text--md);
     padding-block: calc(var(--wpea-space--sm) * .6);
     padding-inline: var(--wpea-space--md);
@@ -1522,8 +1461,8 @@
   }
   .wpea-table th, .wpea-table td { padding-block: .75rem; padding-inline: 1rem; border-block-start: 1px solid var(--wpea-surface--divider); }
   .wpea-table thead th { background: var(--wpea-surface--muted); text-align:left; font-weight:600; }
-  .wpea-table--striped tbody tr:nth-child(odd) { background: var(--wpea-surface--muted); }
-  .wpea-table--striped tbody tr:nth-child(even) { background: var(--wpea-surface--panel); }
+  .wpea-table--striped tbody tr:nth-child(odd) { background: light-dark(var(--wpea-color--neutral-l-9), var(--wpea-color--neutral-l-6)); }
+  .wpea-table--striped tbody tr:nth-child(even) { background: transparent; }
 
   /* Alerts */
   .wpea-alert { border: 1px solid; padding-block: var(--wpea-space--md); padding-inline: var(--wpea-space--md); border-radius: var(--wpea-radius--md); }
@@ -1692,19 +1631,33 @@
 .wpea .wpea-input--2xl,
 .wpea input.wpea-input--2xl { padding-block: calc(var(--wpea-space--sm) * 1.4); padding-inline: calc(var(--wpea-space--md) * 1.4); font-size: var(--wpea-text--2xl); }
 
-/* Select dropdown arrow (keeps our appearance across WP) */
-.wpea .wpea-select {
-  background-image:
-    linear-gradient(45deg, transparent 49%, currentColor 50%),
-    linear-gradient(135deg, currentColor 50%, transparent 51%),
-    linear-gradient(to right, transparent, transparent);
-  background-position:
-    calc(100% - .9rem) center,
-    calc(100% - .6rem) center,
-    100% 0;
-  background-size: .45rem .45rem, .45rem .45rem, 2.5rem 100%;
+/* Custom Select dropdown arrow - matches AdvancedSelect chevron style */
+.wpea .wpea-select,
+.wpea select.wpea-select {
+  padding-inline-end: calc(var(--wpea-space--md) + 20px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3.5 5.25L7 8.75L10.5 5.25' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  padding-inline-end: 2.4rem;
+  background-position: right var(--wpea-space--sm) center;
+  background-size: 14px;
+  cursor: pointer;
+}
+
+.wpea .wpea-select:hover:not(:disabled),
+.wpea select.wpea-select:hover:not(:disabled) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3.5 5.25L7 8.75L10.5 5.25' stroke='%23374151' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--wpea-space--sm) center;
+  background-size: 14px;
+}
+
+.wpea .wpea-select:focus,
+.wpea .wpea-select:focus-visible,
+.wpea select.wpea-select:focus,
+.wpea select.wpea-select:focus-visible {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3.5 5.25L7 8.75L10.5 5.25' stroke='%232563eb' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--wpea-space--sm) center;
+  background-size: 14px;
 }
 
 /* =========================
@@ -2021,8 +1974,9 @@
   visibility: visible;
 }
 
-/* Arrow/caret */
-.wpea .wpea-popover__content::before {
+/* Arrow/caret - ::after for border, ::before for fill */
+.wpea .wpea-popover__content::before,
+.wpea .wpea-popover__content::after {
   content: '';
   position: absolute;
   width: 0;
@@ -2037,12 +1991,21 @@
   transform: translateX(-50%);
 }
 
+.wpea .wpea-popover__content--top::after {
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 7px 7px 0 7px;
+  border-color: var(--wpea-popover--border) transparent transparent transparent;
+}
+
 .wpea .wpea-popover__content--top::before {
-  bottom: -6px;
+  bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
   border-width: 6px 6px 0 6px;
   border-color: var(--wpea-popover--bg) transparent transparent transparent;
+  z-index: 1;
 }
 
 .wpea .wpea-popover__content--top-start {
@@ -2050,11 +2013,19 @@
   left: 0;
 }
 
-.wpea .wpea-popover__content--top-start::before {
-  bottom: -6px;
+.wpea .wpea-popover__content--top-start::after {
+  bottom: -7px;
   left: 12px;
+  border-width: 7px 7px 0 7px;
+  border-color: var(--wpea-popover--border) transparent transparent transparent;
+}
+
+.wpea .wpea-popover__content--top-start::before {
+  bottom: -5px;
+  left: 13px;
   border-width: 6px 6px 0 6px;
   border-color: var(--wpea-popover--bg) transparent transparent transparent;
+  z-index: 1;
 }
 
 .wpea .wpea-popover__content--top-end {
@@ -2062,11 +2033,19 @@
   right: 0;
 }
 
-.wpea .wpea-popover__content--top-end::before {
-  bottom: -6px;
+.wpea .wpea-popover__content--top-end::after {
+  bottom: -7px;
   right: 12px;
+  border-width: 7px 7px 0 7px;
+  border-color: var(--wpea-popover--border) transparent transparent transparent;
+}
+
+.wpea .wpea-popover__content--top-end::before {
+  bottom: -5px;
+  right: 13px;
   border-width: 6px 6px 0 6px;
   border-color: var(--wpea-popover--bg) transparent transparent transparent;
+  z-index: 1;
 }
 
 /* Positioning - Bottom */
@@ -2076,12 +2055,21 @@
   transform: translateX(-50%);
 }
 
+.wpea .wpea-popover__content--bottom::after {
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 7px 7px 7px;
+  border-color: transparent transparent var(--wpea-popover--border) transparent;
+}
+
 .wpea .wpea-popover__content--bottom::before {
-  top: -6px;
+  top: -5px;
   left: 50%;
   transform: translateX(-50%);
   border-width: 0 6px 6px 6px;
   border-color: transparent transparent var(--wpea-popover--bg) transparent;
+  z-index: 1;
 }
 
 .wpea .wpea-popover__content--bottom-start {
@@ -2089,11 +2077,19 @@
   left: 0;
 }
 
-.wpea .wpea-popover__content--bottom-start::before {
-  top: -6px;
+.wpea .wpea-popover__content--bottom-start::after {
+  top: -7px;
   left: 12px;
+  border-width: 0 7px 7px 7px;
+  border-color: transparent transparent var(--wpea-popover--border) transparent;
+}
+
+.wpea .wpea-popover__content--bottom-start::before {
+  top: -5px;
+  left: 13px;
   border-width: 0 6px 6px 6px;
   border-color: transparent transparent var(--wpea-popover--bg) transparent;
+  z-index: 1;
 }
 
 .wpea .wpea-popover__content--bottom-end {
@@ -2101,11 +2097,19 @@
   right: 0;
 }
 
-.wpea .wpea-popover__content--bottom-end::before {
-  top: -6px;
+.wpea .wpea-popover__content--bottom-end::after {
+  top: -7px;
   right: 12px;
+  border-width: 0 7px 7px 7px;
+  border-color: transparent transparent var(--wpea-popover--border) transparent;
+}
+
+.wpea .wpea-popover__content--bottom-end::before {
+  top: -5px;
+  right: 13px;
   border-width: 0 6px 6px 6px;
   border-color: transparent transparent var(--wpea-popover--bg) transparent;
+  z-index: 1;
 }
 
 /* Positioning - Left */
@@ -2115,12 +2119,21 @@
   transform: translateY(-50%);
 }
 
+.wpea .wpea-popover__content--left::after {
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 7px 0 7px 7px;
+  border-color: transparent transparent transparent var(--wpea-popover--border);
+}
+
 .wpea .wpea-popover__content--left::before {
-  right: -6px;
+  right: -5px;
   top: 50%;
   transform: translateY(-50%);
   border-width: 6px 0 6px 6px;
   border-color: transparent transparent transparent var(--wpea-popover--bg);
+  z-index: 1;
 }
 
 /* Positioning - Right */
@@ -2130,12 +2143,21 @@
   transform: translateY(-50%);
 }
 
+.wpea .wpea-popover__content--right::after {
+  left: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 7px 7px 7px 0;
+  border-color: transparent var(--wpea-popover--border) transparent transparent;
+}
+
 .wpea .wpea-popover__content--right::before {
-  left: -6px;
+  left: -5px;
   top: 50%;
   transform: translateY(-50%);
   border-width: 6px 6px 6px 0;
   border-color: transparent var(--wpea-popover--bg) transparent transparent;
+  z-index: 1;
 }
 
 /* Size variants */
@@ -2408,6 +2430,9 @@
 .wpea-vtabs__content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wpea-space--lg);
 }
 
 .wpea-vtabs__panel {
@@ -2632,34 +2657,34 @@
 /* =========================
    SCROLLBAR CUSTOMIZATION
    ========================= */
-/* Custom scrollbars for modal body and other scrollable containers */
-.wpea-modal__body::-webkit-scrollbar,
-.wpea-scrollable::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Thin custom scrollbars for all .wpea containers */
+.wpea ::-webkit-scrollbar,
+.wpea::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.wpea-modal__body::-webkit-scrollbar-track,
-.wpea-scrollable::-webkit-scrollbar-track {
-  background: var(--wpea-color--neutral-t-20);
+.wpea ::-webkit-scrollbar-track,
+.wpea::-webkit-scrollbar-track {
+  background: var(--wpea-surface--muted);
   border-radius: var(--wpea-radius--sm);
 }
 
-.wpea-modal__body::-webkit-scrollbar-thumb,
-.wpea-scrollable::-webkit-scrollbar-thumb {
-  background: var(--wpea-color--primary-t-60);
+.wpea ::-webkit-scrollbar-thumb,
+.wpea::-webkit-scrollbar-thumb {
+  background: var(--wpea-color--primary);
   border-radius: var(--wpea-radius--sm);
   transition: background var(--wpea-anim-duration--fast);
 }
 
-.wpea-modal__body::-webkit-scrollbar-thumb:hover,
-.wpea-scrollable::-webkit-scrollbar-thumb:hover {
-  background: var(--wpea-color--primary-t-80);
+.wpea ::-webkit-scrollbar-thumb:hover,
+.wpea::-webkit-scrollbar-thumb:hover {
+  background: var(--wpea-color--primary-d-2);
 }
 
 /* Firefox scrollbar */
-.wpea-modal__body,
-.wpea-scrollable {
+.wpea,
+.wpea * {
   scrollbar-width: thin;
-  scrollbar-color: var(--wpea-color--primary-t-60) var(--wpea-color--neutral-t-20);
+  scrollbar-color: var(--wpea-color--primary) var(--wpea-surface--muted);
 }

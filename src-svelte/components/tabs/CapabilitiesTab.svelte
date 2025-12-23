@@ -11,6 +11,7 @@
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
 import { sanitizeSlug, validateSlug } from '../../lib/utils.js';
 import { Modal, Button, Card, Input, Select, Alert, Badge } from '../../lib/index.ts';
+import { emit } from '../../shared/events';
 
 let { store } = $props();
 
@@ -108,6 +109,11 @@ async function addCapability() {
 
     await store.fetchCapabilityMatrix();
     store.showSaved();
+
+    // Emit event for external scripts
+    emit('capability:added', { role: newCapability.role, capability: newCapability.capability, granted: true });
+    emit('capabilities:updated');
+
     newCapability = { role: '', capability: '', autoAddToAdmin: true };
     showAddCapModal = false;
   } catch (error) {
@@ -139,6 +145,10 @@ async function toggleCapability(roleSlug, capability, currentState) {
 
     await store.fetchCapabilityMatrix();
     store.showSaved();
+
+    // Emit event for external scripts
+    emit('capability:toggled', { role: roleSlug, capability, action: nextAction });
+    emit('capabilities:updated');
   } catch (error) {
     console.error('Error toggling capability:', error);
     alert(error.message || 'Failed to toggle capability. It may not have been added by this plugin.');
@@ -160,6 +170,10 @@ async function deleteCapability(roleSlug, capability) {
 
     await store.fetchCapabilityMatrix();
     store.showSaved();
+
+    // Emit event for external scripts
+    emit('capability:removed', { role: roleSlug, capability });
+    emit('capabilities:updated');
   } catch (error) {
     console.error('Error deleting capability:', error);
     alert(error.message || 'Failed to delete capability. It may not have been added by this plugin.');
@@ -252,7 +266,11 @@ async function deleteCapability(roleSlug, capability) {
 
   <!-- Capabilities Matrix -->
   <Card>
-    {#if filteredCapabilities.length === 0}
+    {#if store.loadingCapabilities}
+      <div style="padding: var(--wpea-space--xl); text-align: center;">
+        <div class="wpea-spinner"></div>
+      </div>
+    {:else if filteredCapabilities.length === 0}
       <div style="padding: var(--wpea-space--lg); text-align: center;">
         <p class="wpea-text-muted">No capabilities found.</p>
       </div>

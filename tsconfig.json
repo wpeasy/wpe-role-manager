@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": false,
+    "allowJs": true,
+    "checkJs": false,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["svelte"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src-svelte/*"],
+      "@shared/*": ["src-svelte/shared/*"],
+      "@components/*": ["src-svelte/components/*"],
+      "@stores/*": ["src-svelte/stores/*"]
+    }
+  },
+  "include": [
+    "src-svelte/**/*.ts",
+    "src-svelte/**/*.js",
+    "src-svelte/**/*.svelte",
+    "vite.config.*.ts"
+  ],
+  "exclude": ["node_modules", "assets/dist"]
+}

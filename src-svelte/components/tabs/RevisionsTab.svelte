@@ -9,6 +9,7 @@
 
 import { onMount } from 'svelte';
 import { Card, Button, Badge, Input, Select } from '../../lib/index.ts';
+import { emit } from '../../shared/events';
 
 let { store } = $props();
 
@@ -18,6 +19,7 @@ let revisionActions = $state([]);
 let filterType = $state('');
 let filterAction = $state('');
 let searchQuery = $state('');
+let loading = $state(true);
 
 // Double opt-in state
 let pendingAction = $state(null); // { id, type: 'delete'|'restore', timeout }
@@ -30,6 +32,7 @@ onMount(() => {
 
 async function fetchRevisions() {
   try {
+    loading = true;
     const params = new URLSearchParams();
     if (filterType) params.append('revision_type', filterType);
     if (filterAction) params.append('action', filterAction);
@@ -38,6 +41,8 @@ async function fetchRevisions() {
     revisions = response.revisions || [];
   } catch (error) {
     console.error('Error fetching revisions:', error);
+  } finally {
+    loading = false;
   }
 }
 
@@ -102,6 +107,9 @@ async function confirmDelete(revisionId) {
     });
     store.showSaved();
     await fetchRevisions();
+
+    // Emit event for external scripts
+    emit('revision:deleted', { revisionId });
   } catch (error) {
     console.error('Error deleting revision:', error);
     store.showError();
@@ -126,6 +134,11 @@ async function confirmRestore(revisionId) {
     // Refresh other data
     await store.fetchRoles();
     await store.fetchCapabilityMatrix();
+
+    // Emit event for external scripts
+    emit('revision:restored', { revisionId });
+    emit('roles:updated');
+    emit('capabilities:updated');
   } catch (error) {
     console.error('Error restoring revision:', error);
     store.showError();
@@ -240,7 +253,13 @@ function getActionBadgeColor(action) {
   </div>
 
   <!-- Revisions List -->
-  {#if filteredRevisions.length === 0}
+  {#if loading}
+    <Card style="text-align: center; padding: var(--wpea-space--xl);">
+      {#snippet children()}
+      <div class="wpea-spinner"></div>
+      {/snippet}
+    </Card>
+  {:else if filteredRevisions.length === 0}
     <Card style="text-align: center; padding: var(--wpea-space--xl);">
       {#snippet children()}
       <p class="wpea-text-muted">No revisions found.</p>

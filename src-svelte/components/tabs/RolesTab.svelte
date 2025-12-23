@@ -10,6 +10,7 @@
 import { doubleScrollbar } from '../../lib/doubleScrollbar.js';
 import { sanitizeSlug, validateSlug, generateCapabilityName } from '../../lib/utils.js';
 import { Modal, Button, Card, Input, Select, Alert, Badge } from '../../lib/index.ts';
+import { emit } from '../../shared/events';
 
 let { store } = $props();
 
@@ -154,6 +155,11 @@ async function createRole() {
     await store.fetchRoles();
     await store.fetchCapabilityMatrix();
     store.showSaved();
+
+    // Emit event for external scripts
+    emit('role:created', { slug: newRole.slug, name: newRole.name, copyFrom: newRole.copyFrom || undefined });
+    emit('roles:updated');
+
     closeCreateModal();
   } catch (error) {
     console.error('Error creating role:', error);
@@ -165,16 +171,23 @@ async function createRole() {
 async function toggleRoleStatus(role) {
   try {
     store.showSaving();
+    const newDisabledState = !role.disabled;
+
     await store.apiRequest(`/roles/${role.slug}`, {
       method: 'PATCH',
       body: JSON.stringify({
-        disabled: !role.disabled,
+        disabled: newDisabledState,
       }),
     });
 
     await store.fetchRoles();
     await store.fetchCapabilityMatrix();
     store.showSaved();
+
+    // Emit event for external scripts
+    emit(newDisabledState ? 'role:disabled' : 'role:enabled', { slug: role.slug });
+    emit('role:updated', { slug: role.slug, changes: { disabled: newDisabledState } });
+    emit('roles:updated');
   } catch (error) {
     console.error('Error toggling role:', error);
     store.showError();
@@ -220,6 +233,11 @@ async function deleteRole() {
     await store.fetchRoles();
     await store.fetchCapabilityMatrix();
     store.showSaved();
+
+    // Emit event for external scripts
+    emit('role:deleted', { slug: roleToDelete.slug, name: roleToDelete.name });
+    emit('roles:updated');
+
     showDeleteModal = false;
     roleToDelete = null;
     deleteConfirmation = '';
@@ -255,7 +273,11 @@ async function deleteRole() {
 
   <!-- Roles Table -->
   <Card>
-    {#if filteredRoles.length === 0}
+    {#if store.loadingRoles}
+      <div style="padding: var(--wpea-space--xl); text-align: center;">
+        <div class="wpea-spinner"></div>
+      </div>
+    {:else if filteredRoles.length === 0}
       <div style="padding: var(--wpea-space--lg); text-align: center;">
         <p class="wpea-text-muted">No roles found. {searchQuery ? 'Try a different search term.' : 'Create your first role!'}</p>
       </div>
