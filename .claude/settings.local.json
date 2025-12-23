@@ -62,7 +62,9 @@
       "Bash(npm run build:webhooks:*)",
       "Bash(npm run build:main:*)",
       "Bash(npm run build:shared:*)",
-      "Skill(zip-plugin)"
+      "Skill(zip-plugin)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
